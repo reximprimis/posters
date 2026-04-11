@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ContentGenerator = require('./contentGenerator');
-const ImageGenerator = require('./imageGenerator');
+const CanvaGenerator = require('./canvaGenerator');
 const PDFGenerator = require('./pdfGenerator');
 const config = require('../config');
 const { v4: uuidv4 } = require('uuid');
@@ -9,7 +9,12 @@ const { v4: uuidv4 } = require('uuid');
 class PosterBatchGenerator {
   constructor() {
     this.contentGen = new ContentGenerator();
-    this.imageGen = new ImageGenerator();
+    try {
+      this.imageGen = new CanvaGenerator();
+    } catch (error) {
+      console.warn('⚠️  Canva not configured, falling back to placeholder images:', error.message);
+      this.imageGen = new CanvaGenerator(); // Still create instance for fallback functionality
+    }
     this.pdfGen = new PDFGenerator();
     this.dbFile = 'posters_inventory.json';
     this.db = this.loadDatabase();
@@ -78,7 +83,7 @@ class PosterBatchGenerator {
       // Generate image
       console.log(`  → Generating image...`);
       const imagePath = path.join(categoryDir, `${title.replace(/\s+/g, '_')}.png`);
-      await this.imageGen.generateImage(imagePrompt, imagePath);
+      await this.imageGen.createAndExportDesign(title, category, style, imagePath);
 
       // Create PDFs for all sizes
       console.log(`  → Creating PDFs (6 sizes)...`);
