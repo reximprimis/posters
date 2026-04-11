@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const config = {
   // API Keys
-  openaiKey: process.env.OPENAI_API_KEY,
+  anthropicKey: process.env.ANTHROPIC_API_KEY,
   geminiKey: process.env.GEMINI_API_KEY,
   canvaKey: process.env.CANVA_API_KEY,
   canvaSecret: process.env.CANVA_API_SECRET,

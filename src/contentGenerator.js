@@ -1,11 +1,11 @@
-const { OpenAI } = require('openai');
+const Anthropic = require('@anthropic-ai/sdk');
 const config = require('../config');
 
 class ContentGenerator {
   constructor() {
-    if (config.openaiKey) {
-      this.client = new OpenAI({
-        apiKey: config.openaiKey,
+    if (config.anthropicKey) {
+      this.client = new Anthropic({
+        apiKey: config.anthropicKey,
       });
     } else {
       this.client = null;
@@ -49,21 +49,25 @@ Requirements:
 - Each title should be 2-5 words max
 - Titles must be engaging and suitable for wall art
 - Each title must be unique and different from others
-- Return as JSON array of strings only, no other text
+- Return ONLY a JSON array of strings, nothing else
 
 Example format: ["Title One", "Title Two", "Title Three"]
 
 Generate now:`;
 
     try {
-      const response = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
+      const response = await this.client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 500,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
       });
 
-      const content = response.choices[0].message.content.trim();
+      const content = response.content[0].text.trim();
       const titles = JSON.parse(content);
       return titles.slice(0, count);
     } catch (error) {
@@ -95,14 +99,18 @@ Ensure the description:
 Generate the prompt only, no other text:`;
 
     try {
-      const response = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
+      const response = await this.client.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 200,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
       });
 
-      return response.choices[0].message.content.trim();
+      return response.content[0].text.trim();
     } catch (error) {
       console.error('Error generating image prompt:', error.message);
       return `A beautiful ${style} illustration for "${title}" in the ${category} category`;
