@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const config = require('../config');
+const { resolveDesignMdUrl, fetchDesignMdBody } = require('./designMd');
 
 class ContentGenerator {
   constructor() {
@@ -10,6 +11,32 @@ class ContentGenerator {
     } else {
       this.client = null;
     }
+    this._designMdSuffixPromise = null;
+  }
+
+  /**
+   * Cached snippet from getdesign.md (or URL-only fallback) for image prompt generation.
+   */
+  async getDesignMdSuffix() {
+    if (this._designMdSuffixPromise) return this._designMdSuffixPromise;
+
+    this._designMdSuffixPromise = (async () => {
+      const url = resolveDesignMdUrl(config.designMdSlug, config.designMdUrl);
+      if (!url) return '';
+
+      try {
+        const { text } = await fetchDesignMdBody(url, config.designMdMaxChars);
+        if (!text) {
+          return `\nBrand/design reference (URL only): ${url}\nUse its typical visual language where it fits wall art (no logos or trademarks).`;
+        }
+        return `\nBrand/design reference (summarize visually for the poster; no logos or trademarks):\n${text}\n(Source: ${url})`;
+      } catch (err) {
+        console.warn('design-md: could not fetch, using URL only:', err.message);
+        return `\nBrand/design reference (URL only): ${url}\nInfer mood, palette, and composition from the associated design system where appropriate.`;
+      }
+    })();
+
+    return this._designMdSuffixPromise;
   }
 
   async generatePosterTitles(category, count = 5) {
@@ -77,9 +104,11 @@ Generate now:`;
   }
 
   async generateImagePrompt(title, category, style) {
+    const designSuffix = await this.getDesignMdSuffix();
+
     if (!this.client) {
-      // Use fallback prompt when API key is not set
-      return `A beautiful ${style} illustration for "${title}" in the ${category} category with vibrant colors`;
+      const base = `A beautiful ${style} illustration for "${title}" in the ${category} category with vibrant colors`;
+      return designSuffix ? `${base}${designSuffix}` : base;
     }
 
     const prompt = `Create a detailed visual description for an AI art generation prompt.
@@ -87,6 +116,7 @@ Generate now:`;
 Poster Title: "${title}"
 Category: ${category}
 Art Style: ${style}
+${designSuffix}
 
 Generate a concise but detailed prompt (2-3 sentences) that describes the visual elements, mood, colors, and composition for this poster. The image should be suitable for printing and selling as wall art.
 

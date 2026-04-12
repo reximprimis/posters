@@ -7,6 +7,11 @@ const config = {
   canvaKey: process.env.CANVA_API_KEY,
   canvaSecret: process.env.CANVA_API_SECRET,
 
+  // design-md / getdesign.md — set DESIGN_MD_SLUG to a folder name under design-md/ (e.g. vercel, stripe)
+  designMdSlug: (process.env.DESIGN_MD_SLUG || '').trim(),
+  designMdUrl: (process.env.DESIGN_MD_URL || '').trim(),
+  designMdMaxChars: Math.min(Math.max(parseInt(process.env.DESIGN_MD_MAX_CHARS, 10) || 6000, 500), 20000),
+
   // Output
   outputDir: process.env.OUTPUT_DIR || './posters',
 

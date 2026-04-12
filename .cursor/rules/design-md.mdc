@@ -1,0 +1,10 @@
+---
+description: Use repo design-md and getdesign.md for visual and UI direction
+alwaysApply: true
+---
+
+# design-md
+
+- For poster aesthetics, previews, or any UI work, use `design-md/<brand>/README.md` in this repo. Each file links to the full design write-up on getdesign.md.
+- Project default: Claude-inspired direction via `design-md/claude/` → https://getdesign.md/claude/design-md (`DESIGN_MD_SLUG=claude` in `.env`). Other slugs match folder names under `design-md/` (e.g. `stripe`, `linear.app`).
+- Optional: `DESIGN_MD_URL` overrides the URL; `DESIGN_MD_MAX_CHARS` caps fetched text (default 6000).
