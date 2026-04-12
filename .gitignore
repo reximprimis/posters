@@ -36,6 +36,7 @@ venv.bak/
 *~
 .DS_Store
 posters/
+.preview-staging/
 posters_inventory.json
 prompt_cache.json
 *.pdf

@@ -2,7 +2,11 @@ require('dotenv').config();
 
 const config = {
   // API Keys
-  anthropicKey: process.env.ANTHROPIC_API_KEY,
+  openaiKey: process.env.OPENAI_API_KEY,
+  /** Model czatu do tytułów / promptu obrazu (Chat Completions). */
+  openaiPromptModel: (process.env.OPENAI_PROMPT_MODEL || 'gpt-4o-mini').trim(),
+  /** Zarezerwowane — aplikacja używa wyłącznie OpenAI do promptów (gdy jest klucz). */
+  promptLlmDefault: 'openai',
   geminiKey: process.env.GEMINI_API_KEY,
   canvaKey: process.env.CANVA_API_KEY,
   canvaSecret: process.env.CANVA_API_SECRET,

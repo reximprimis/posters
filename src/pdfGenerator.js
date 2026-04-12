@@ -1,7 +1,25 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const config = require('../config');
+
+/**
+ * Raster dokładnie tw×th — Sharp `contain` + `centre` + białe tło (jeden pipeline).
+ * Daje symetryczne paski: lewo = prawo, góra = dół (w pikselach strony PDF).
+ * Uwaga: „grafika” w sensie kompozycji DALL‑E (pasy, gradient) może wizualnie
+ * nie pokrywać się z krawędzią bitmapy — wtedy oko widzi nierówność mimo poprawnej geometrii.
+ */
+async function rasterForPdfPage(imagePath, tw, th) {
+  return sharp(imagePath)
+    .resize(tw, th, {
+      fit: 'contain',
+      position: 'centre',
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
+    })
+    .png()
+    .toBuffer();
+}
 
 class PDFGenerator {
   /**
@@ -12,19 +30,28 @@ class PDFGenerator {
    * @param {string} outputPath - Path to save PDF
    */
   async createPosterPDF(imagePath, sizeKey, title, outputPath) {
-    return new Promise((resolve, reject) => {
+    const sizeConfig = config.posterSizes[sizeKey];
+    if (!sizeConfig) {
+      throw new Error(`Unknown size: ${sizeKey}`);
+    }
+
+    const [widthCm, heightCm] = sizeConfig.cm;
+    const [tw, th] = sizeConfig.px;
+    const widthPt = widthCm * 28.35;
+    const heightPt = heightCm * 28.35;
+
+    const outputDir = path.dirname(outputPath);
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    let imageBuffer = null;
+    if (fs.existsSync(imagePath)) {
+      imageBuffer = await rasterForPdfPage(imagePath, tw, th);
+    }
+
+    await new Promise((resolve, reject) => {
       try {
-        const sizeConfig = config.posterSizes[sizeKey];
-        if (!sizeConfig) {
-          return reject(new Error(`Unknown size: ${sizeKey}`));
-        }
-
-        const [widthCm, heightCm] = sizeConfig.cm;
-        // Convert cm to points (1 cm = 28.35 points)
-        const widthPt = widthCm * 28.35;
-        const heightPt = heightCm * 28.35;
-
-        // Create PDF with specified dimensions
         const doc = new PDFDocument({
           size: [widthPt, heightPt],
           margin: 0,
@@ -33,28 +60,23 @@ class PDFGenerator {
           creator: 'Poster Generator',
         });
 
-        // Create output directory if it doesn't exist
-        const outputDir = path.dirname(outputPath);
-        if (!fs.existsSync(outputDir)) {
-          fs.mkdirSync(outputDir, { recursive: true });
-        }
-
         const writeStream = fs.createWriteStream(outputPath);
 
         doc.on('error', reject);
         writeStream.on('error', reject);
-        writeStream.on('finish', () => resolve(outputPath));
+        writeStream.on('finish', () => resolve());
 
         doc.pipe(writeStream);
 
-        // Add image to fill the entire page
-        if (fs.existsSync(imagePath)) {
-          doc.image(imagePath, 0, 0, {
+        doc.rect(0, 0, widthPt, heightPt).fill('#ffffff');
+
+        if (imageBuffer) {
+          // Bitmapa ma dokładnie proporcje strony (tw:th == widthPt:heightPt) — skala jednolita.
+          doc.image(imageBuffer, 0, 0, {
             width: widthPt,
             height: heightPt,
           });
         } else {
-          // Fallback: solid color background if image doesn't exist
           doc.fillColor('#ccc').rect(0, 0, widthPt, heightPt).fill();
           doc.fillColor('black').fontSize(12).text(title, 20, 20);
         }
@@ -64,6 +86,8 @@ class PDFGenerator {
         reject(error);
       }
     });
+
+    return outputPath;
   }
 
   /**

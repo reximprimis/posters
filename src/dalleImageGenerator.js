@@ -2,8 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const OpenAI = require('openai');
+const { buildFullDallePrompt, DALLE3_PROMPT_MAX, MAX_DALLE_OVERHEAD_CHARS } = require('./posterPromptLayers');
+const { applyMatFrameToPngFile } = require('./posterMatFrame');
 
 class DalleImageGenerator {
+  /** Max długość „środkowej” części (przed sanityzacją) — budżet pod prefix+suffix serwera. */
+  static get USER_PROMPT_MAX() {
+    return DALLE3_PROMPT_MAX - MAX_DALLE_OVERHEAD_CHARS;
+  }
+
   constructor() {
     this.client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -54,17 +61,25 @@ class DalleImageGenerator {
     try {
       console.log(`    → Generating image with DALL-E 3...`);
       const custom = options.customPrompt != null ? String(options.customPrompt).trim() : '';
-      const prompt = custom || this.buildImagePrompt(title, category, style);
+      const basePrompt = (custom || this.buildImagePrompt(title, category, style)).trim();
+      const prompt = buildFullDallePrompt(basePrompt, category, style);
       console.log(`    → Prompt: ${prompt.substring(0, 80)}...`);
 
-      // Call DALL-E 3 API
+      // vivid: często mniej „foto-mockupów wnętrza”; natural zostaw przez DALLE_IMAGE_STYLE=natural
+      const dalleStyle =
+        String(process.env.DALLE_IMAGE_STYLE || 'vivid').trim().toLowerCase() === 'natural' ? 'natural' : 'vivid';
+
+      const sizeRaw = String(process.env.DALLE_IMAGE_SIZE || '1024x1792').trim().toLowerCase();
+      const allowedSizes = new Set(['1024x1024', '1024x1792', '1792x1024']);
+      const dalleSize = allowedSizes.has(sizeRaw) ? sizeRaw : '1024x1792';
+
       const response = await this.client.images.generate({
         model: 'dall-e-3',
         prompt: prompt,
         n: 1,
-        size: '1024x1024',
+        size: dalleSize,
         quality: 'hd',
-        style: 'vivid',
+        style: dalleStyle,
       });
 
       if (!response.data || response.data.length === 0) {
@@ -75,7 +90,13 @@ class DalleImageGenerator {
       console.log(`    → Downloaded from DALL-E`);
 
       // Download image from URL
-      return await this.downloadImage(imageUrl, outputPath);
+      await this.downloadImage(imageUrl, outputPath);
+      const matStyle = options.matStyle;
+      if (matStyle === 'uniform' || matStyle === 'gallery') {
+        console.log(`    → Passe-partout (${matStyle})…`);
+        await applyMatFrameToPngFile(outputPath, { style: matStyle });
+      }
+      return outputPath;
     } catch (error) {
       console.error(`    ✗ Failed: ${error.message}`);
       throw error;

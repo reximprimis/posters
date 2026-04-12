@@ -2,14 +2,15 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Plakaty — panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #121110;
+      color-scheme: dark;
+      --bg: #141312;
       --bg-elevated: #1c1b19;
       --bg-card: #232220;
       --border: rgba(232, 228, 220, 0.12);
@@ -22,6 +23,74 @@
       --font-display: "Fraunces", Georgia, serif;
       --font-body: "Newsreader", Georgia, serif;
       --shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+      --figure-bg: #0d0c0b;
+      --modal-scrim: rgba(8, 7, 6, 0.82);
+      --modal-visual-bg: #0a0908;
+      --pill-bg: rgba(0, 0, 0, 0.2);
+      --prompt-bg: rgba(0, 0, 0, 0.25);
+      --size-pill-bg: rgba(0, 0, 0, 0.35);
+      --btn-primary-text: #f0ebe3;
+      --chip-active-text: #f5f1ea;
+      --modal-link-text: #f5f1ea;
+      /* Studio Claude — noc (spójne z ciemnym panelem) */
+      --studio-bg: #1e1d1b;
+      --studio-border: rgba(232, 228, 220, 0.14);
+      --studio-border-strong: rgba(232, 228, 220, 0.24);
+      --studio-text: #f2efe8;
+      --studio-muted: #9a958c;
+      --studio-accent: #d9784c;
+      --studio-accent-hover: #ea9468;
+      --studio-accent-soft: rgba(196, 92, 38, 0.22);
+      --studio-surface: #262522;
+      --studio-paper: #2c2a27;
+      --studio-preview-visual: #141312;
+      --studio-card-shadow: 0 14px 48px rgba(0, 0, 0, 0.42);
+      --studio-model-active-fg: #f0c4a8;
+      --poster-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+      --studio-status-ok: #8fbc9d;
+      --studio-status-err: #f0a090;
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f2ec;
+      --bg-elevated: #e8e4dc;
+      --bg-card: #fffcf7;
+      --border: rgba(30, 26, 22, 0.12);
+      --text: #1c1915;
+      --text-muted: #5c564e;
+      --accent: #b54a1e;
+      --accent-soft: rgba(181, 74, 30, 0.14);
+      --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      --shadow: 0 20px 40px rgba(30, 26, 22, 0.08);
+      --figure-bg: #e5e1d9;
+      --modal-scrim: rgba(22, 20, 17, 0.48);
+      --modal-visual-bg: #ded9d0;
+      --pill-bg: rgba(255, 255, 255, 0.65);
+      --prompt-bg: rgba(30, 26, 22, 0.06);
+      --size-pill-bg: rgba(30, 26, 22, 0.09);
+      --btn-primary-text: #fffaf5;
+      --chip-active-text: #2a241c;
+      --modal-link-text: #fffaf5;
+      /* Studio Claude — dzień (papier + terrakota) */
+      --studio-bg: #faf9f6;
+      --studio-border: #e8e4dc;
+      --studio-border-strong: #d4cfc4;
+      --studio-text: #1c1917;
+      --studio-muted: #6b6560;
+      --studio-accent: #c45c26;
+      --studio-accent-hover: #a84f21;
+      --studio-accent-soft: rgba(196, 92, 38, 0.12);
+      --studio-surface: #f3f1eb;
+      --studio-paper: #fffefb;
+      --studio-preview-visual: #ebe8e0;
+      --studio-card-shadow:
+        0 1px 2px rgba(28, 25, 20, 0.04),
+        0 14px 48px rgba(28, 25, 20, 0.07);
+      --studio-model-active-fg: #8b3d1f;
+      --poster-shadow: 0 8px 28px rgba(30, 26, 22, 0.09);
+      --studio-status-ok: #3f6b52;
+      --studio-status-err: #b42318;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -29,6 +98,7 @@
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: var(--font-body);
       font-size: 1.05rem;
       color: var(--text);
@@ -38,23 +108,236 @@
     }
 
     .shell {
-      max-width: 1440px;
+      max-width: none;
+      width: 100%;
       margin: 0 auto;
-      padding: clamp(1.25rem, 3vw, 2.5rem);
+      padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2.5rem);
+    }
+
+    .shell.shell--library {
+      max-width: none;
+    }
+
+    .app-main {
+      min-width: 0;
+    }
+
+    .library-browse {
+      margin-top: clamp(1.5rem, 3vw, 2.25rem);
+      padding-top: clamp(1.25rem, 2.5vw, 1.85rem);
+      border-top: 1px solid var(--border);
+    }
+
+    .library-browse-header {
+      margin-bottom: clamp(1rem, 2vw, 1.35rem);
+      max-width: 62ch;
+    }
+
+    .library-browse-eyebrow {
+      margin: 0 0 0.35rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .library-browse-title {
+      margin: 0 0 0.4rem;
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .library-browse-lead {
+      margin: 0;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .library-browse-surface {
+      display: grid;
+      grid-template-columns: minmax(0, 19.75rem) minmax(0, 1fr);
+      grid-template-areas: 'browse-side browse-main';
+      align-items: stretch;
+      border-radius: calc(var(--radius) + 4px);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: var(--poster-shadow);
+      overflow: hidden;
+      min-height: min(420px, 55dvh);
+    }
+
+    .library-browse-sidebar {
+      grid-area: browse-side;
+      position: sticky;
+      top: clamp(0.75rem, 2vw, 1.25rem);
+      align-self: stretch;
+      min-height: 0;
+      max-height: calc(100dvh - clamp(1.5rem, 3vw, 2.5rem));
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-width: 0;
+      /* Góra zsynchronizowana z paddingiem prawej kolumny (wyszukiwarka bliżej krawędzi karty) */
+      padding: clamp(0.45rem, 1.1vw, 0.7rem) clamp(0.85rem, 1.5vw, 1.1rem) clamp(0.85rem, 1.5vw, 1.1rem);
+      border-right: 1px solid var(--border);
+      background: var(--bg-elevated);
+      overflow-y: auto;
+    }
+
+    .library-browse-main {
+      grid-area: browse-main;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .library-browse-main-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      /* Ciaśniejszy padding u góry — wyrównanie z pierwszym rzędem (pole szukaj) w sidebarze */
+      padding: clamp(0.45rem, 1.1vw, 0.7rem) clamp(0.85rem, 2vw, 1.35rem) clamp(1rem, 2vw, 1.35rem);
+    }
+
+    .library-browse-main-inner .filter-results-meta {
+      margin: 0 0 0.55rem;
+      flex-shrink: 0;
+    }
+
+    .library-browse-main-inner .library-frame-toolbar {
+      margin-top: 0.3rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .library-browse-grid {
+      flex: 1;
+      min-height: 0;
+      margin-top: 0;
+    }
+
+    @media (max-width: 900px) {
+      .library-browse-surface {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          'browse-main'
+          'browse-side';
+        min-height: 0;
+      }
+
+      .library-browse-sidebar {
+        position: static;
+        max-height: none;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+      }
+
+      .filter-category-listbox--sidebar {
+        max-height: min(36vh, 240px);
+      }
+
+      .library-search-wrap {
+        margin-bottom: 0.35rem;
+      }
     }
 
     header.masthead {
-      display: grid;
-      gap: 1.5rem;
       margin-bottom: 2rem;
       padding-bottom: 2rem;
       border-bottom: 1px solid var(--border);
     }
 
-    @media (min-width: 768px) {
-      header.masthead {
-        grid-template-columns: 1fr auto;
-        align-items: end;
+    /* Jedna belka: lewa marka | środek logo | prawa akcje (jak w referencji) */
+    .masthead-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(0.65rem, 2.2vw, 1.75rem);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .masthead-brand {
+      justify-self: start;
+      align-self: center;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .masthead-center {
+      justify-self: center;
+      align-self: center;
+      line-height: 0;
+    }
+
+    .masthead-actions-wrap {
+      justify-self: end;
+      align-self: center;
+      min-width: 0;
+    }
+
+    .masthead-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: auto;
+      max-width: min(300px, 34vw);
+      line-height: 0;
+    }
+
+    .masthead-row .brand-logo-img {
+      height: clamp(104px, 15vw, 176px);
+      width: auto;
+      max-width: min(300px, 34vw);
+    }
+
+    @media (max-width: 900px) {
+      .masthead-row {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 1.25rem;
+      }
+
+      .masthead-brand {
+        justify-self: center;
+        text-align: center;
+        order: 1;
+      }
+
+      .masthead-center {
+        order: 2;
+      }
+
+      .masthead-actions-wrap {
+        justify-self: stretch;
+        order: 3;
+        width: 100%;
+      }
+
+      .masthead-actions-wrap .header-actions {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .masthead-logo {
+        max-width: min(360px, 78vw);
+      }
+
+      .masthead-row .brand-logo-img {
+        height: clamp(128px, 36vw, 220px);
+        max-width: min(360px, 78vw);
+      }
+
+      .brand p {
+        max-width: 42ch;
+        margin-inline: auto;
       }
     }
 
@@ -62,6 +345,42 @@
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      flex-shrink: 0;
+      line-height: 0;
+    }
+
+    .brand-logo-img {
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      margin-inline: auto;
+    }
+
+    .brand-logo-img.brand-logo--light {
+      display: none;
+    }
+
+    html[data-theme="light"] .brand-logo-img.brand-logo--dark {
+      display: none;
+    }
+
+    html[data-theme="light"] .brand-logo-img.brand-logo--light {
+      display: block;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
     }
 
     .brand h1 {
@@ -87,6 +406,49 @@
       align-items: center;
     }
 
+    .masthead-actions-wrap .header-actions {
+      justify-content: flex-end;
+      width: auto;
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.75rem 0.45rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-card);
+      border-color: var(--border);
+    }
+
+    .theme-toggle:active { transform: scale(0.98); }
+
+    .theme-toggle .theme-toggle-icon {
+      width: 1.35rem;
+      height: 1.35rem;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .theme-toggle .theme-toggle-label {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .theme-toggle .theme-toggle-label { display: none; }
+      .theme-toggle { padding: 0.5rem; }
+    }
+
     .btn {
       font-family: var(--font-body);
       font-size: 0.95rem;
@@ -109,12 +471,21 @@
     .btn-primary {
       background: var(--accent-soft);
       border-color: rgba(196, 92, 38, 0.45);
-      color: #f0ebe3;
+      color: var(--btn-primary-text);
+    }
+
+    html[data-theme="light"] .btn-primary {
+      border-color: rgba(181, 74, 30, 0.42);
     }
 
     .btn-primary:hover {
       background: rgba(196, 92, 38, 0.35);
       border-color: rgba(196, 92, 38, 0.6);
+    }
+
+    html[data-theme="light"] .btn-primary:hover {
+      background: rgba(181, 74, 30, 0.28);
+      border-color: rgba(181, 74, 30, 0.55);
     }
 
     .meta-pill {
@@ -123,7 +494,7 @@
       padding: 0.4rem 0.85rem;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.2);
+      background: var(--pill-bg);
     }
 
     .stats-row {
@@ -172,26 +543,483 @@
       letter-spacing: 0.02em;
     }
 
-    .toolbar {
+    .library-filters {
+      flex: 1 1 auto;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
     }
 
-    @media (min-width: 640px) {
-      .toolbar {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-      }
+    .library-filters-primary {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .library-search-wrap {
+      width: 100%;
+      max-width: none;
+      flex: 0 0 auto;
+      /* Odstęp pod polem szukaj — maks. ok. 1 cm */
+      margin-bottom: clamp(0.3rem, 1.2vw, 1cm);
+    }
+
+    .library-search-wrap .search-input {
+      font-size: 0.92rem;
+      padding: 0.55rem 0.85rem 0.55rem 2.5rem;
+      background-position: 0.7rem 50%;
+    }
+
+    .filter-status-wrap {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+
+    .filter-status-seg {
+      display: flex;
+      flex-direction: column;
+      gap: 0.32rem;
+    }
+
+    .filter-status-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.48rem 0.6rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition:
+        background 0.12s,
+        border-color 0.12s,
+        color 0.12s;
+    }
+
+    .filter-status-btn:hover {
+      border-color: rgba(196, 92, 38, 0.35);
+      color: var(--text);
+    }
+
+    .filter-status-btn[aria-pressed='true'] {
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+      color: var(--chip-active-text);
+    }
+
+    html[data-theme='light'] .filter-status-btn[aria-pressed='true'] {
+      color: var(--chip-active-text);
+    }
+
+    .filter-category-toolbar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: nowrap;
+      margin-bottom: 0.4rem;
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+
+    .filter-category-toolbar .filter-category-heading--sidebar {
+      margin-bottom: 0;
+      flex: 0 0 auto;
+    }
+
+    .filter-category-search--toolbar {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.8rem;
+      padding: 0.42rem 0.55rem;
+    }
+
+    .filter-category-wrap--sidebar {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-width: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+    }
+
+    .filter-style-wrap--sidebar {
+      flex: 0 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+      margin-top: 0.28rem;
+    }
+
+    .filter-category-heading--sidebar-only {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .library-category-draft {
+      margin: 0;
+      padding: 0.45rem 0.5rem;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      flex: 0 0 auto;
+    }
+
+    .library-category-draft--after-list {
+      margin-top: 0.15rem;
+    }
+
+    .library-category-draft-name {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .library-category-draft-meta {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      margin-top: 0.12rem;
+    }
+
+    .filter-category--sidebar {
+      position: static;
+      flex: 0 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-category-panel--sidebar {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 0.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .filter-category-panel--list-only {
+      gap: 0;
+      padding: 0.4rem 0.45rem 0.45rem;
+      flex: 0 1 auto;
+    }
+
+    .library-filters-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: auto;
+      flex-shrink: 0;
+      padding-top: 0.65rem;
+    }
+
+    .btn-filter-apply--block {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .library-filters-actions .btn-filter-clear {
+      align-self: flex-start;
+      padding-left: 0;
+    }
+
+    .filter-pending-hint--sidebar {
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .btn-filter-apply {
+      min-width: 8rem;
+    }
+
+    .btn-filter-apply.is-pending {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+    }
+
+    .btn-filter-clear {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0.4rem 0.35rem;
+    }
+
+    .btn-filter-clear:hover {
+      color: var(--text);
+    }
+
+    .filter-pending-hint {
+      margin: 0.55rem 0 0;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: var(--studio-accent);
     }
 
     .search-wrap {
+      flex: 1 1 200px;
+      min-width: min(100%, 220px);
+      max-width: 440px;
+      position: relative;
+    }
+
+    /* Sidebar biblioteki: to samo .search-wrap nie może mieć flex-grow (inaczej rośnie pionowo i robi „dziurę” nad Kategorią) */
+    .library-filters-primary > .search-wrap.library-search-wrap {
+      flex: 0 0 auto;
+      flex-grow: 0;
+      max-width: none;
+    }
+
+    .library-filters-primary > .filter-category-wrap.filter-category-wrap--sidebar {
+      flex: 0 1 auto;
+      flex-grow: 0;
+      min-width: 0;
+      max-width: none;
+    }
+
+    .filter-category-wrap {
+      flex: 1 1 220px;
+      min-width: min(100%, 220px);
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .filter-category-heading {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .filter-category-heading--sidebar {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .filter-category {
+      position: relative;
+    }
+
+    .filter-category-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding: 0.6rem 0.85rem 0.6rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font-family: var(--font-body);
+      cursor: pointer;
+      text-align: left;
+      transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
+    }
+
+    .filter-category-trigger:hover {
+      border-color: rgba(196, 92, 38, 0.35);
+    }
+
+    .filter-category-trigger[aria-expanded='true'] {
+      border-color: rgba(196, 92, 38, 0.55);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    .filter-category-trigger:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .filter-category-trigger-main {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.12rem;
+      min-width: 0;
+    }
+
+    .filter-category-trigger-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .filter-category-trigger-count {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .filter-category-trigger-chevron {
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .filter-category-trigger[aria-expanded='true'] .filter-category-trigger-chevron {
+      transform: rotate(-180deg);
+    }
+
+    .filter-category-listbox--sidebar {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-height: min(28vh, 200px);
+      overflow-y: auto;
+      padding-right: 0.2rem;
+      padding-top: 0;
+    }
+
+    .filter-category--sidebar .filter-category-option {
+      padding: 0.48rem 0.55rem;
+    }
+
+    .filter-category--sidebar .filter-category-option-name {
+      font-family: var(--font-display);
+      font-size: 0.93rem;
+      font-weight: 600;
+      white-space: normal;
+      line-height: 1.25;
+    }
+
+    .filter-category-search {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+    }
+
+    .filter-category-search:focus {
+      outline: none;
+      border-color: rgba(196, 92, 38, 0.5);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+
+    .filter-category-search::placeholder {
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    .filter-category-listbox {
+      list-style: none;
+      margin: 0;
+      padding: 0.15rem 0 0;
+      overflow-y: auto;
       flex: 1;
-      min-width: min(100%, 280px);
-      max-width: 420px;
+      min-height: 0;
+    }
+
+    .filter-category-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.55rem 0.65rem;
+      margin: 2px 0;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .filter-category-option:hover {
+      background: var(--bg-card);
+    }
+
+    .filter-category-option:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    .filter-category-option[aria-selected='true'] {
+      background: var(--accent-soft);
+      color: var(--chip-active-text);
+    }
+
+    html[data-theme='light'] .filter-category-option[aria-selected='true'] {
+      color: var(--chip-active-text);
+    }
+
+    .filter-category-option-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .filter-category-option-count {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+      color: var(--text-muted);
+    }
+
+    .filter-category-option[aria-selected='true'] .filter-category-option-count {
+      background: color-mix(in srgb, var(--accent) 35%, transparent);
+      color: var(--chip-active-text);
+    }
+
+    .filter-category-option.is-filter-hidden {
+      display: none;
+    }
+
+    .filter-results-meta {
+      margin: 0.65rem 0 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.45;
     }
 
     .search-wrap label {
@@ -219,6 +1047,10 @@
       background-position: 0.85rem 50%;
     }
 
+    html[data-theme="light"] .search-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%235c564e' stroke-width='1.5'%3E%3Ccircle cx='8' cy='8' r='5.5'/%3E%3Cpath d='M12.5 12.5L17 17'/%3E%3C/svg%3E");
+    }
+
     .search-input::placeholder { color: var(--text-muted); opacity: 0.8; }
     .search-input:focus {
       outline: 2px solid var(--accent);
@@ -226,39 +1058,17 @@
       border-color: rgba(196, 92, 38, 0.5);
     }
 
-    .chips {
+    .grid-wrap { margin-top: 0.25rem; }
+
+    .library-frame-toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
       align-items: center;
+      gap: 0.75rem;
+      margin: 0.5rem 0 0.75rem;
     }
-
-    .chips span {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-right: 0.25rem;
-    }
-
-    .chip {
-      font-family: var(--font-body);
-      font-size: 0.88rem;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      padding: 0.4rem 0.85rem;
-      border-radius: 999px;
-      transition: all 0.2s;
-    }
-
-    .chip:hover { color: var(--text); border-color: rgba(232, 228, 220, 0.25); }
-    .chip[aria-pressed="true"] {
-      background: var(--accent-soft);
-      border-color: rgba(196, 92, 38, 0.5);
-      color: #f5f1ea;
-    }
-
-    .grid-wrap { margin-top: 0.5rem; }
+    .library-frame-feedback { font-size: 0.875rem; color: var(--text-muted); }
+    .size-pill--framed { border-color: rgba(196, 92, 38, 0.45); color: var(--accent); }
 
     .poster-grid {
       display: grid;
@@ -279,7 +1089,7 @@
       font: inherit;
       display: block;
       width: 100%;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      box-shadow: var(--poster-shadow);
       opacity: 0;
       animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
@@ -290,10 +1100,49 @@
     }
 
     .poster-card figure {
+      position: relative;
       margin: 0;
-      aspect-ratio: 3 / 4;
-      background: #0d0c0b;
+      /* 70×100 cm i podobne portrety — szerokość : wysokość = 7 : 10 */
+      aspect-ratio: 7 / 10;
+      background: var(--figure-bg);
       overflow: hidden;
+    }
+
+    .poster-status-badge {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      z-index: 2;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: var(--font-body);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      line-height: 1.2;
+      pointer-events: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .poster-status-badge--new {
+      background: linear-gradient(135deg, #c45c26, #a84a1c);
+      color: #fffaf5;
+    }
+
+    .poster-status-badge--approved {
+      background: linear-gradient(135deg, #3d7a4f, #2d5c3c);
+      color: #f4faf6;
+    }
+
+    html[data-theme='light'] .poster-status-badge--new {
+      background: linear-gradient(135deg, #b54a1e, #943c18);
+      color: #fffaf5;
+    }
+
+    html[data-theme='light'] .poster-status-badge--approved {
+      background: linear-gradient(135deg, #2f6b45, #255538);
+      color: #f4faf6;
     }
 
     .poster-card img {
@@ -305,6 +1154,216 @@
     }
 
     .poster-card:hover img { transform: scale(1.04); }
+
+    .poster-card--marked-remove {
+      outline: 2px solid rgba(196, 92, 38, 0.85);
+      outline-offset: 2px;
+    }
+
+    .poster-card-basket-btn {
+      position: absolute;
+      right: 0.45rem;
+      bottom: 0.45rem;
+      z-index: 4;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--font-body);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.35rem 0.55rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(20, 18, 16, 0.82);
+      color: #f5f0e8;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .poster-card-basket-btn:hover {
+      background: rgba(196, 92, 38, 0.92);
+      border-color: rgba(196, 92, 38, 0.6);
+      color: #fffaf5;
+    }
+
+    .poster-card-basket-btn.is-in-basket {
+      background: rgba(61, 122, 79, 0.92);
+      border-color: rgba(61, 122, 79, 0.55);
+      color: #f4faf6;
+    }
+
+    html[data-theme='light'] .poster-card-basket-btn {
+      background: rgba(255, 252, 247, 0.92);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    html[data-theme='light'] .poster-card-basket-btn:hover {
+      background: rgba(196, 92, 38, 0.95);
+      color: #fffaf5;
+    }
+
+    html[data-theme='light'] .poster-card-basket-btn.is-in-basket {
+      background: rgba(47, 107, 69, 0.92);
+      color: #f4faf6;
+    }
+
+    .library-remove-basket {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 900;
+      padding: 0.75rem clamp(1rem, 3vw, 1.75rem) calc(0.85rem + env(safe-area-inset-bottom, 0));
+      background: linear-gradient(to top, rgba(14, 12, 10, 0.97), rgba(14, 12, 10, 0.88));
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    html[data-theme='light'] .library-remove-basket {
+      background: linear-gradient(to top, rgba(255, 252, 247, 0.98), rgba(255, 252, 247, 0.94));
+      box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .library-remove-basket-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+    }
+
+    .library-remove-basket-label {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .library-remove-basket-label span {
+      color: var(--accent);
+    }
+
+    .library-basket-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      flex: 1 1 200px;
+      min-width: 0;
+    }
+
+    .library-basket-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.35rem 0.25rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      font-size: 0.78rem;
+      max-width: 100%;
+    }
+
+    .library-basket-chip-title {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 10rem;
+    }
+
+    .library-basket-chip-meta {
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+
+    .library-basket-chip-remove {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.35rem;
+      border-radius: 4px;
+    }
+
+    .library-basket-chip-remove:hover {
+      color: #e8a598;
+      background: rgba(232, 165, 152, 0.12);
+    }
+
+    .library-remove-basket-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    .btn-danger {
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(180, 74, 60, 0.55);
+      background: linear-gradient(135deg, #a8483c, #8a3a32);
+      color: #fff8f6;
+      cursor: pointer;
+    }
+
+    .btn-danger:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn-basket-secondary {
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .btn-basket-secondary:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    .modal-basket-tools {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-add-remove-basket-btn {
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .modal-add-remove-basket-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .modal-basket-feedback {
+      margin: 0.5rem 0 0;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
 
     .poster-body {
       padding: 1rem 1.1rem 1.15rem;
@@ -340,7 +1399,7 @@
       letter-spacing: 0.06em;
       padding: 0.25rem 0.5rem;
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.35);
+      background: var(--size-pill-bg);
       color: var(--text-muted);
       border: 1px solid var(--border);
       pointer-events: none;
@@ -361,7 +1420,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(8, 7, 6, 0.82);
+      background: var(--modal-scrim);
       backdrop-filter: blur(6px);
       z-index: 1000;
       display: flex;
@@ -390,13 +1449,72 @@
       grid-template-columns: 1fr;
     }
 
+    /* Modal szczegółów plakatu: treść po lewej, obraz po prawej, wyrównanie do góry */
+    .modal-poster {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      align-items: start;
+    }
+
     @media (min-width: 720px) {
-      .modal { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+      .modal-poster {
+        grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        overflow: auto;
+      }
+
+      .modal-poster .modal-close {
+        grid-column: 1 / -1;
+        grid-row: 1;
+      }
+
+      .modal-poster .modal-detail {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .modal-poster .modal-visual {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: start;
+        position: sticky;
+        top: 0;
+      }
     }
 
     .modal-visual {
-      background: #0a0908;
+      background: var(--modal-visual-bg);
       min-height: 240px;
+    }
+
+    .modal-poster .modal-visual {
+      padding: 0;
+    }
+
+    button.modal-visual.modal-visual--interactive {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      text-align: center;
+      display: block;
+      width: 100%;
+      cursor: zoom-in;
+    }
+
+    .modal-visual--interactive:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .modal-visual--interactive:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    .modal-visual--interactive img {
+      vertical-align: middle;
+      pointer-events: none;
     }
 
     .modal-visual img {
@@ -407,11 +1525,533 @@
       max-height: min(70vh, 640px);
     }
 
+    /* Po ogólnych regułach: szczegóły plakatu — ramka 7:10 jak 70×100 cm */
+    .modal-poster button.modal-visual.modal-visual--interactive {
+      box-sizing: border-box;
+      width: min(100%, calc(0.7 * min(78vh, 720px)));
+      aspect-ratio: 7 / 10;
+      max-height: min(78vh, 720px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-inline: auto;
+      overflow: hidden;
+    }
+
+    .modal-poster .modal-visual img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
     .modal-detail {
       padding: 1.5rem 1.6rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
+    }
+
+    .modal-poster .modal-detail {
+      padding-top: 0;
+    }
+
+    @media (min-width: 720px) {
+      .modal-poster .modal-close {
+        margin-bottom: 0.25rem;
+      }
+    }
+
+    /* Modal szczegółów: pełna szerokość, ~5 cm od góry i dołu (na niskich ekranach max % wysokości), wyraźna „rama” okna */
+    #modal.modal-backdrop {
+      --modal-poster-inset-y: min(5cm, 18dvh);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      padding-top: max(env(safe-area-inset-top, 0px), var(--modal-poster-inset-y));
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--modal-poster-inset-y));
+      align-items: stretch;
+      justify-content: stretch;
+      box-sizing: border-box;
+    }
+
+    #modal.modal-backdrop .modal.modal-poster {
+      width: 100%;
+      max-width: none;
+      max-height: 100%;
+      border-radius: calc(var(--radius) + 10px);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      flex: 1 1 auto;
+      min-height: 0;
+      align-self: stretch;
+    }
+
+    #modal.modal-backdrop .modal-poster .modal-prompt {
+      max-height: none;
+      overflow-y: visible;
+    }
+
+    @media (max-width: 719px) {
+      #modal.modal-backdrop .modal.modal-poster {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-close {
+        order: 0;
+        position: relative;
+        top: auto;
+        align-self: flex-end;
+        margin: 0.45rem 0.45rem 0 auto;
+        flex-shrink: 0;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column {
+        order: 1;
+        flex: 0 0 auto;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.65rem 0.75rem 0.35rem;
+        background: var(--modal-visual-bg);
+        border-bottom: 1px solid var(--border);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        width: min(100%, calc(0.7 * min(52dvh, 420px)));
+        max-width: 100%;
+        aspect-ratio: 7 / 10;
+        height: auto;
+        max-height: min(52dvh, 70vw);
+        margin: 0 auto;
+        border-radius: 2px;
+        border: 10px solid color-mix(in srgb, var(--bg-card) 50%, #1a1816);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+          0 16px 40px rgba(0, 0, 0, 0.45);
+        background: #070605;
+        overflow: hidden;
+      }
+
+      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        border-color: color-mix(in srgb, var(--border) 45%, #c8c3bc);
+        background: #faf9f7;
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+          0 12px 32px rgba(30, 26, 22, 0.1);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-detail {
+        order: 2;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-top: 0.5rem;
+      }
+    }
+
+    @media (min-width: 720px) {
+      #modal.modal-backdrop .modal.modal-poster {
+        display: grid;
+        /* Tekst ~2/3, podgląd ~1/3 */
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        overflow: hidden;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-close {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        position: relative;
+        top: auto;
+        align-self: flex-end;
+        margin: 0.5rem 0.85rem 0 auto;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-detail {
+        grid-column: 1;
+        grid-row: 2;
+        overflow-y: auto;
+        min-height: 0;
+        align-self: stretch;
+        max-height: none;
+        padding-top: 0.15rem;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: stretch;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        padding: clamp(0.65rem, 1.8vw, 1.35rem) clamp(0.45rem, 1.2vw, 1rem);
+        background: linear-gradient(168deg, var(--modal-visual-bg) 0%, #10100e 50%, #0a0908 100%);
+        border-left: 1px solid var(--border);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumbs {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        flex-shrink: 0;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.28);
+        cursor: pointer;
+        width: 46px;
+        aspect-ratio: 7 / 10;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+
+      html[data-theme='light']
+        #modal.modal-backdrop
+        .modal-poster
+        .modal-poster-preview-column
+        .modal-preview-thumb {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb.is-active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        pointer-events: none;
+      }
+
+      /* Okno podglądu jak wydruk 7:10 (np. 70×100 cm), nie kwadrat na całą komórkę */
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        flex-shrink: 0;
+        width: min(100%, calc(0.7 * min(80dvh, 920px)));
+        max-width: 100%;
+        aspect-ratio: 7 / 10;
+        height: auto;
+        max-height: min(80dvh, 100%);
+        margin: 0 auto;
+        border-radius: 2px;
+        border: clamp(9px, 1.1vw, 14px) solid color-mix(in srgb, var(--bg-card) 52%, #1c1a18);
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.055),
+          0 26px 60px rgba(0, 0, 0, 0.52);
+        background: #060504;
+        overflow: hidden;
+      }
+
+      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        border-color: color-mix(in srgb, var(--border) 42%, #c5c0b8);
+        background: #faf9f6;
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+          0 16px 42px rgba(30, 26, 22, 0.11);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-visual img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      /* Wersja z ramką: ten sam plik co na dysku (np. 9:16) — bez sztucznego 7:10 i pasków z boku */
+      #modal.modal-backdrop
+        .modal-poster
+        .modal-poster-preview-column
+        button.modal-visual.modal-visual--interactive.modal-visual--source-aspect {
+        width: fit-content;
+        max-width: 100%;
+        aspect-ratio: auto;
+        height: auto;
+        max-height: none;
+      }
+
+      #modal.modal-backdrop
+        .modal-poster
+        .modal-poster-preview-column
+        button.modal-visual.modal-visual--interactive.modal-visual--source-aspect
+        img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: min(80dvh, 920px);
+        object-fit: contain;
+      }
+    }
+
+    /* Kafelki w lewej kolumnie modala szczegółów */
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem 0.95rem;
+      padding: 0.25rem 1.1rem 1.15rem 1.35rem;
+      align-content: start;
+    }
+
+    #modal.modal-backdrop .modal-tile {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--bg-card) 90%, var(--bg-elevated));
+      padding: 0.95rem 1.05rem;
+      min-width: 0;
+    }
+
+    #modal.modal-backdrop .modal-tile--span-2 {
+      grid-column: 1 / -1;
+    }
+
+    #modal.modal-backdrop .modal-tile-label {
+      margin: 0 0 0.55rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: var(--text-muted);
+    }
+
+    #modal.modal-backdrop .modal-tile--hero .modal-hero-title-row {
+      margin: 0;
+    }
+
+    #modal.modal-backdrop .modal-tile .modal-hero-taxonomy {
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    #modal.modal-backdrop .modal-tile .modal-listing-block {
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    #modal.modal-backdrop .modal-tile .modal-print-approval {
+      margin: 0;
+      padding: 0.65rem 0.7rem;
+      border: none;
+      background: transparent;
+    }
+
+    #modal.modal-backdrop .modal-tile--prompt #modalPromptBlock {
+      margin: 0;
+    }
+
+    #modal.modal-backdrop .modal-tile--prompt .modal-prompt-head .section-label {
+      margin-top: 0;
+    }
+
+    #modal.modal-backdrop .modal-tile--files .section-label:first-of-type {
+      margin-top: 0.15rem;
+    }
+
+    #modal.modal-backdrop .modal-tile-files-pdf {
+      margin-top: 0.85rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (min-width: 720px) and (max-width: 960px) {
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled {
+        grid-template-columns: 1fr;
+      }
+
+      #modal.modal-backdrop .modal-tile--span-2 {
+        grid-column: 1;
+      }
+    }
+
+    @media (max-width: 719px) {
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        padding: 0.35rem 0.85rem 1rem;
+      }
+
+      #modal.modal-backdrop .modal-tile--span-2 {
+        grid-column: unset;
+      }
+    }
+
+    /* Duży, czytelny X — tylko modal szczegółów plakatu */
+    #modal.modal-backdrop #modalClose.modal-close {
+      width: clamp(3rem, 10vw, 4.25rem);
+      height: clamp(3rem, 10vw, 4.25rem);
+      border-radius: 50%;
+      border-width: 2px;
+      font-size: clamp(1.85rem, 5.5vw, 2.75rem);
+      font-weight: 300;
+      line-height: 1;
+      margin: 0.5rem 0.65rem 0 auto;
+    }
+
+    #modal.modal-backdrop #modalClose.modal-close:hover {
+      background: var(--bg-card);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+      color: var(--text);
+    }
+
+    #modal.modal-backdrop #modalClose.modal-close:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 719px) {
+      #modal.modal-backdrop {
+        --modal-poster-inset-y: min(5cm, 10dvh);
+      }
+
+      #modal.modal-backdrop #modalClose.modal-close {
+        width: clamp(2.75rem, 14vw, 3.5rem);
+        height: clamp(2.75rem, 14vw, 3.5rem);
+        font-size: clamp(1.65rem, 8vw, 2.25rem);
+        margin: 0.35rem 0.4rem 0 auto;
+      }
+    }
+
+    .modal-prompt-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 0 0 0.5rem;
+    }
+
+    .modal-prompt-head-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .modal-prompt-head .section-label {
+      margin: 0;
+    }
+
+    .modal-prompt-llm {
+      margin: 0.35rem 0 0;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--sp-muted, var(--text-muted, #8a8580));
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .modal-copy-prompt {
+      flex-shrink: 0;
+      align-self: flex-start;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .modal-copy-prompt:hover {
+      background: var(--bg-elevated);
+      border-color: rgba(196, 92, 38, 0.45);
+    }
+
+    .modal-copy-prompt:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .modal-copy-prompt svg {
+      display: block;
+    }
+
+    .modal-copy-feedback {
+      font-size: 0.72rem;
+      color: var(--studio-status-ok);
+      margin: 0.35rem 0 0;
+      min-height: 1.1em;
+    }
+
+    /* Lightbox podglądu z karty plakatu (nad modalem plakatu, pod studiem) */
+    .modal-lightbox-backdrop {
+      z-index: 1050;
+      align-items: center;
+      justify-content: center;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    }
+
+    .modal-lightbox-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: none;
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.5rem);
+      padding: clamp(0.5rem, 2vw, 1rem);
+      box-sizing: border-box;
+    }
+
+    .modal-lightbox-inner img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 0;
+    }
+
+    .modal-lightbox-close {
+      flex-shrink: 0;
+      padding: 0.55rem 1.15rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .modal-lightbox-close:hover {
+      background: var(--bg-card);
+    }
+
+    .modal-lightbox-close:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .modal-detail h2 {
@@ -425,6 +2065,171 @@
       color: var(--text-muted);
       font-size: 0.95rem;
       margin: 0;
+    }
+
+    .modal-hero-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .modal-hero-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .modal-hero-title-row h2 {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .modal-hero-taxonomy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+    }
+
+    .modal-meta-copy-row {
+      display: grid;
+      grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.5rem 0.65rem;
+    }
+
+    .modal-meta-key {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .modal-meta-val {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .modal-copy-prompt--compact {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+    }
+
+    .modal-copy-prompt--compact svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .modal-copy-combo-line {
+      margin: 0.15rem 0 0;
+      padding: 0.35rem 0;
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .modal-copy-combo-line:hover {
+      color: var(--text);
+    }
+
+    .modal-copy-combo-line:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .modal-listing-block {
+      margin: 0.5rem 0 0;
+      padding: 0.85rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+    }
+
+    .modal-listing-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.65rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .modal-listing-head .section-label {
+      margin: 0;
+    }
+
+    .modal-listing-text {
+      margin: 0;
+      font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: color-mix(in srgb, var(--text) 92%, var(--text-muted));
+      letter-spacing: 0.01em;
+    }
+
+    .modal-generate-listing-btn {
+      margin-top: 0.65rem;
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-size: 0.88rem;
+    }
+
+    .modal-listing-feedback {
+      margin: 0.45rem 0 0;
+      font-size: 0.8rem;
+      color: var(--studio-status-ok);
+      min-height: 1.15em;
+    }
+
+    .modal-print-approval {
+      margin: 1rem 0 0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+    }
+
+    .modal-print-approval-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .modal-print-approval-label input {
+      margin: 0.2rem 0 0;
+      width: 1.1rem;
+      height: 1.1rem;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .modal-approval-feedback {
+      margin: 0.5rem 0 0 1.75rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      min-height: 1.25em;
     }
 
     .modal-actions {
@@ -443,7 +2248,7 @@
       font-family: var(--font-body);
       text-decoration: none;
       background: var(--accent-soft);
-      color: #f5f1ea;
+      color: var(--modal-link-text);
       border: 1px solid rgba(196, 92, 38, 0.45);
       transition: background 0.2s;
     }
@@ -472,6 +2277,218 @@
 
     .modal-close:hover { background: var(--bg-elevated); }
 
+    /* Podgląd studia — te same tokeny co studio (dzień/noc z html) */
+    #studioPreviewModal.modal-backdrop {
+      z-index: 1100;
+      --sp-accent: var(--studio-accent);
+      --sp-accent-hover: var(--studio-accent-hover);
+      --sp-paper: var(--studio-paper);
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    .modal.studio-preview-dialog {
+      position: relative;
+      max-width: min(540px, 100%);
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #studioPreviewModal.modal-backdrop .modal.studio-preview-dialog {
+      max-width: none;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+      align-self: stretch;
+      height: auto;
+      max-height: none;
+      border-radius: 0;
+      border: none;
+      overflow: hidden;
+    }
+
+    .studio-preview-visual {
+      background: var(--modal-visual-bg);
+      padding: 1rem 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    #studioPreviewModal .studio-preview-visual {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: clamp(0.5rem, 2vw, 1.25rem) clamp(0.5rem, 2vw, 1.25rem) 0;
+    }
+
+    .poster-aspect-frame {
+      width: min(100%, calc(0.7 * min(72vh, 680px)));
+      aspect-ratio: 7 / 10;
+      max-height: min(72vh, 680px);
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--modal-visual-bg) 88%, #000);
+    }
+
+    .poster-aspect-frame img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 0;
+    }
+
+    #studioPreviewModal .poster-aspect-frame {
+      width: min(100%, calc(0.7 * min(80dvh, 960px)));
+      max-height: min(80dvh, 960px);
+    }
+
+    #studioPreviewModal .studio-preview-footer {
+      flex-shrink: 0;
+    }
+
+    .studio-preview-variant-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.35rem;
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
+    .studio-preview-tab {
+      font-size: 0.75rem;
+      font-family: inherit;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--modal-visual-bg) 70%, transparent);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .studio-preview-tab:hover {
+      color: var(--text);
+      border-color: var(--border-strong, var(--border));
+    }
+
+    .studio-preview-tab.is-active {
+      background: var(--studio-accent-soft);
+      border-color: color-mix(in srgb, var(--studio-accent) 45%, transparent);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .studio-preview-tab:focus-visible {
+      outline: 2px solid var(--studio-accent);
+      outline-offset: 2px;
+    }
+
+    .studio-preview-panels {
+      width: 100%;
+    }
+
+    .studio-preview-panel {
+      width: 100%;
+    }
+
+    .studio-mockup-scene {
+      position: relative;
+      width: 100%;
+      min-height: clamp(260px, 50vw, 400px);
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(168deg, #2c2d35 0%, #1e1f24 42%, #121318 100%);
+    }
+
+    html[data-theme='light'] .studio-mockup-scene {
+      background: linear-gradient(168deg, #ddd9d0 0%, #cec9bf 45%, #bbb5a9 100%);
+    }
+
+    .studio-mockup-frame-outer {
+      position: absolute;
+      left: 50%;
+      top: 46%;
+      transform: translate(-50%, -50%) rotate(-1.5deg);
+      width: min(46%, 200px);
+      filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.5));
+    }
+
+    html[data-theme='light'] .studio-mockup-frame-outer {
+      filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.22));
+    }
+
+    .studio-mockup-frame-inner {
+      border: 11px solid #3d2f22;
+      border-radius: 3px;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 0 0 1px #1a1410;
+      background: #fff;
+      padding: 5px;
+    }
+
+    .studio-mockup-frame-inner img {
+      display: block;
+      width: 100%;
+      max-height: min(36vh, 300px);
+      height: auto;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+
+    .modal-lightbox-inner .poster-aspect-frame {
+      width: min(100%, calc(0.7 * min(88dvh, 1400px)));
+      max-height: min(88dvh, 1400px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .modal-lightbox-inner .poster-aspect-frame.poster-aspect-frame--natural {
+      width: auto;
+      max-width: min(96vw, 1400px);
+      aspect-ratio: auto;
+      height: auto;
+      max-height: min(88dvh, 1400px);
+    }
+
+    .modal-lightbox-inner .poster-aspect-frame.poster-aspect-frame--natural img {
+      max-width: min(96vw, 1400px);
+      max-height: min(88dvh, 1400px);
+      width: auto;
+      height: auto;
+    }
+
+    .studio-preview-footer {
+      padding: 1.25rem 1.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .studio-preview-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      line-height: 1.2;
+    }
+
+    .studio-preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 0.25rem;
+    }
+
     .section-label {
       font-size: 0.75rem;
       text-transform: uppercase;
@@ -492,109 +2509,715 @@
       max-height: 200px;
       overflow-y: auto;
       padding: 0.85rem 1rem;
-      background: rgba(0, 0, 0, 0.25);
+      background: var(--prompt-bg);
       border-radius: 10px;
       border: 1px solid var(--border);
     }
 
-    .studio {
-      margin-bottom: 2rem;
-      padding: 1.5rem 1.6rem;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
-    .studio-title {
+    /*
+     * Studio — Claude-inspired (getdesign.md/claude, warm terracotta + editorial).
+     * Spójne z DESIGN_MD_SLUG=claude w .env — niebieski SaaS zastąpiony ciepłą paletą Anthropic-like.
+     */
+    .studio-pro {
+      --sp-bg: var(--studio-bg);
+      --sp-border: var(--studio-border);
+      --sp-border-strong: var(--studio-border-strong);
+      --sp-text: var(--studio-text);
+      --sp-muted: var(--studio-muted);
+      --sp-accent: var(--studio-accent);
+      --sp-accent-hover: var(--studio-accent-hover);
+      --sp-accent-soft: var(--studio-accent-soft);
+      --sp-surface: var(--studio-surface);
+      --sp-paper: var(--studio-paper);
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin-top: 0.25rem;
+      margin-bottom: 2rem;
+      padding: clamp(1.75rem, 4vw, 2.75rem);
+      background: var(--sp-bg);
+      border: 1px solid var(--sp-border);
+      border-radius: 16px;
+      box-shadow: var(--studio-card-shadow);
+      color: var(--sp-text);
+    }
+
+    .studio-pro-inner {
+      max-width: min(1200px, 100%);
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .studio-pro-eyebrow {
       margin: 0 0 0.5rem;
-      font-family: var(--font-display);
-      font-size: 1.35rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--sp-muted);
+    }
+
+    .studio-pro-hero {
+      margin: 0 0 0.5rem;
+      font-family: "Source Serif 4", "Newsreader", Georgia, serif;
+      font-size: clamp(1.5rem, 3.2vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--sp-text);
+    }
+
+    .studio-pro-sub {
+      margin: 0 auto 1.35rem;
+      max-width: 38rem;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: var(--sp-muted);
+    }
+
+    .studio-pro-llm-wrap {
+      margin: 0 auto 1.15rem;
+      max-width: 28rem;
+      text-align: left;
+    }
+
+    .studio-pro-models {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .studio-pro-mode {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0 0 1.35rem;
+    }
+
+    .studio-pro-mode-btn {
+      font-size: 0.8125rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--sp-border);
+      background: var(--sp-surface);
+      color: var(--sp-muted);
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s,
+        transform 0.12s;
+    }
+
+    .studio-pro-mode-btn:hover {
+      border-color: var(--sp-border-strong);
+      color: var(--sp-text);
+    }
+
+    .studio-pro-mode-btn:active {
+      transform: scale(0.98);
+    }
+
+    .studio-pro-mode-btn.is-active {
+      background: var(--sp-accent-soft);
+      border-color: color-mix(in srgb, var(--sp-accent) 45%, transparent);
+      color: var(--studio-model-active-fg);
       font-weight: 600;
     }
 
-    .studio-lead {
-      margin: 0 0 1.25rem;
-      color: var(--text-muted);
-      font-size: 0.98rem;
-      max-width: 62ch;
+    .studio-pro-mode-btn:focus-visible {
+      outline: 2px solid var(--sp-accent);
+      outline-offset: 2px;
     }
 
-    .studio-grid {
+    .studio-layout-wrap {
+      margin: 0 0 1.35rem;
+      text-align: center;
+    }
+
+    .studio-layout-label {
+      display: block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--sp-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .studio-layout-seg {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .studio-layout-btn {
+      font-size: 0.8125rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--sp-border);
+      background: var(--sp-surface);
+      color: var(--sp-muted);
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s,
+        transform 0.12s;
+    }
+
+    .studio-layout-btn:hover {
+      border-color: var(--sp-border-strong);
+      color: var(--sp-text);
+    }
+
+    .studio-layout-btn:active {
+      transform: scale(0.98);
+    }
+
+    .studio-layout-btn.is-active {
+      background: var(--sp-accent-soft);
+      border-color: color-mix(in srgb, var(--sp-accent) 45%, transparent);
+      color: var(--studio-model-active-fg);
+      font-weight: 600;
+    }
+
+    .studio-layout-btn:focus-visible {
+      outline: 2px solid var(--sp-accent);
+      outline-offset: 2px;
+    }
+
+    .studio-layout-hint {
+      max-width: 36rem;
+      margin: 0.65rem auto 0;
+      text-align: center;
+    }
+
+    .studio-pro-panel {
+      min-width: 0;
+    }
+
+    .studio-auto-layout {
+      display: grid;
+      gap: 1.35rem;
+      align-items: start;
+      text-align: left;
+    }
+
+    @media (min-width: 768px) {
+      .studio-auto-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1.5rem;
+      }
+    }
+
+    .studio-auto-form {
+      padding: clamp(1.15rem, 3vw, 1.5rem);
+      background: var(--sp-surface);
+      border: 1px solid var(--sp-border);
+      border-radius: 14px;
+    }
+
+    .studio-auto-form .studio-auto-lead {
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: var(--sp-text);
+    }
+
+    .studio-auto-form .studio-auto-lead code {
+      font-size: 0.84em;
+      padding: 0.12em 0.35em;
+      border-radius: 6px;
+      background: var(--sp-paper);
+      border: 1px solid var(--sp-border);
+    }
+
+    .studio-auto-form .studio-auto-hint {
+      margin: 1rem 0 0;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: var(--sp-muted);
+    }
+
+    .studio-auto-form .studio-auto-hint code {
+      font-size: 0.9em;
+    }
+
+    .studio-auto-side {
+      padding: clamp(1.15rem, 3vw, 1.5rem);
+      background: var(--sp-paper);
+      border: 1px solid var(--sp-border);
+      border-radius: 14px;
+      position: sticky;
+      top: 1rem;
+    }
+
+    .studio-auto-cmd-label {
+      margin: 0 0 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sp-muted);
+    }
+
+    .studio-auto-command {
+      margin: 0 0 0.85rem;
+      padding: 0.85rem 1rem;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+      color: var(--sp-text);
+      background: var(--sp-surface);
+      border: 1px solid var(--sp-border);
+      border-radius: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .studio-auto-npm-hint {
+      margin: 0.85rem 0 0;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      color: var(--sp-muted);
+    }
+
+    .studio-auto-npm-hint code {
+      font-size: 0.9em;
+    }
+
+    .studio-auto-copy-feedback {
+      margin: 0.5rem 0 0;
+      font-size: 0.75rem;
+      min-height: 1.2em;
+      color: var(--studio-status-ok);
+    }
+
+    .studio-auto-run-btn {
+      width: 100%;
+      justify-content: center;
+      margin: 0 0 0.65rem;
+    }
+
+    .studio-auto-progress {
+      margin: 0 0 0.85rem;
+    }
+
+    .studio-auto-progress-glow {
+      height: 3px;
+      margin-bottom: 0.4rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, var(--sp-accent), transparent);
+      opacity: 0.55;
+      animation: studio-auto-pulse-glow 2.4s ease-in-out infinite;
+    }
+
+    @keyframes studio-auto-pulse-glow {
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scaleX(0.92);
+      }
+      50% {
+        opacity: 0.9;
+        transform: scaleX(1);
+      }
+    }
+
+    .studio-auto-progress-track {
+      position: relative;
+      height: 11px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--sp-surface) 88%, var(--sp-border));
+      border: 1px solid var(--sp-border);
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .studio-auto-progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 38%;
+      border-radius: inherit;
+      background: linear-gradient(
+        100deg,
+        var(--sp-accent) 0%,
+        var(--sp-accent-hover) 35%,
+        #f0c4a8 55%,
+        var(--sp-accent-hover) 80%,
+        var(--sp-accent) 100%
+      );
+      background-size: 220% 100%;
+      animation: studio-auto-sweep 2.1s ease-in-out infinite;
+      box-shadow: 0 0 16px color-mix(in srgb, var(--sp-accent) 50%, transparent);
+    }
+
+    @keyframes studio-auto-sweep {
+      0% {
+        transform: translateX(-105%);
+      }
+      100% {
+        transform: translateX(320%);
+      }
+    }
+
+    .studio-auto-progress.is-complete .studio-auto-progress-glow {
+      animation: none;
+      opacity: 0.75;
+      background: linear-gradient(90deg, transparent, var(--studio-status-ok), transparent);
+    }
+
+    .studio-auto-progress.is-complete .studio-auto-progress-fill {
+      animation: none;
+      width: 100% !important;
+      transform: translateX(0) !important;
+      transition:
+        width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.45s ease,
+        filter 0.45s ease;
+      box-shadow: 0 0 22px color-mix(in srgb, var(--studio-status-ok) 40%, transparent);
+      background: linear-gradient(90deg, var(--sp-accent), var(--studio-status-ok));
+      filter: saturate(1.05);
+    }
+
+    .studio-auto-progress-meta {
+      margin: 0.55rem 0 0;
+      font-size: 0.75rem;
+      color: var(--sp-muted);
+      line-height: 1.45;
+    }
+
+    .studio-auto-run-status {
+      margin: 0 0 1rem;
+      text-align: left;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      min-height: 1.35em;
+    }
+
+    .studio-auto-cmd-label--secondary {
+      margin-top: 0.35rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--sp-border);
+    }
+
+    .studio-pro-model-pill {
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--sp-border);
+      background: var(--sp-surface);
+      color: var(--sp-muted);
+    }
+
+    .studio-pro-model-pill.is-active {
+      background: var(--sp-accent-soft);
+      border-color: color-mix(in srgb, var(--sp-accent) 45%, transparent);
+      color: var(--studio-model-active-fg);
+      font-weight: 600;
+    }
+
+    .studio-pro-meta-grid {
       display: grid;
       gap: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
     }
 
-    @media (min-width: 720px) {
-      .studio-grid {
+    @media (min-width: 640px) {
+      .studio-pro-meta-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
-    .studio-field label {
+    .studio-pro-field label {
       display: block;
-      font-size: 0.78rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.06em;
+      color: var(--sp-muted);
     }
 
-    .studio-field input,
-    .studio-field select,
-    .studio-field textarea {
+    .studio-pro-field input,
+    .studio-pro-field select {
       width: 100%;
-      font-family: var(--font-body);
-      font-size: 1rem;
-      padding: 0.55rem 0.75rem;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid var(--sp-border);
       border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text);
+      font-family: inherit;
+      font-size: 0.875rem;
+      background: var(--sp-paper);
+      color: var(--sp-text);
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
-    .studio-field textarea {
-      resize: vertical;
-      min-height: 140px;
-      line-height: 1.5;
+    .studio-pro-field input:focus,
+    .studio-pro-field select:focus {
+      outline: none;
+      border-color: var(--sp-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--sp-accent) 28%, transparent);
     }
 
-    .studio-field input:focus,
-    .studio-field select:focus,
-    .studio-field textarea:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-      border-color: rgba(196, 92, 38, 0.5);
+    .studio-pro .field-hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.75rem;
+      color: var(--sp-muted);
+      line-height: 1.35;
     }
 
-    .field-hint {
-      margin: 0.4rem 0 0;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    .studio-field-full {
+    .studio-pro-composer {
       margin-bottom: 1rem;
+      text-align: left;
     }
 
-    .studio-actions {
+    .studio-pro-composer-inner {
+      border: 1px solid var(--sp-border);
+      border-radius: 16px;
+      padding: 0.5rem 1rem 0.65rem;
+      background: var(--sp-paper);
+      box-shadow: 0 1px 2px rgba(28, 25, 20, 0.04);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .studio-pro-composer-inner:focus-within {
+      border-color: var(--sp-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--sp-accent) 24%, transparent);
+    }
+
+    .studio-pro-prompt {
+      display: block;
+      width: 100%;
+      min-height: 140px;
+      padding: 0.5rem 0;
+      border: none;
+      border-radius: 0;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: var(--sp-text);
+      background: transparent;
+    }
+
+    .studio-pro-prompt::placeholder {
+      color: var(--sp-muted);
+      opacity: 0.85;
+    }
+
+    .studio-pro-prompt:focus {
+      outline: none;
+    }
+
+    .studio-pro-quick {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.15rem;
+    }
+
+    .studio-pro-chip {
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--sp-border);
+      background: var(--sp-paper);
+      color: var(--sp-text);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .studio-pro-chip:hover:not(.studio-pro-chip--clear) {
+      border-color: color-mix(in srgb, var(--sp-accent) 38%, var(--sp-border));
+      background: var(--sp-surface);
+    }
+
+    /* „Wyczyść” — czerwień premium (gradient + inset highlight, bez taniego neonu) */
+    .studio-pro-chip--clear {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #fff8f7;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+      border: 1px solid color-mix(in srgb, #7a121f 88%, #2a0a0e);
+      background: linear-gradient(
+        168deg,
+        #e85a5a 0%,
+        #c42d3a 42%,
+        #9a1f2e 72%,
+        #7c1524 100%
+      );
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.14) inset,
+        0 6px 18px rgba(120, 20, 35, 0.38);
+      transition: border-color 0.18s, box-shadow 0.18s, filter 0.18s, transform 0.12s;
+    }
+
+    .studio-pro-chip--clear:hover {
+      border-color: color-mix(in srgb, #ff6b6b 35%, #5c1018);
+      filter: brightness(1.06);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.18) inset,
+        0 8px 22px rgba(140, 25, 45, 0.45);
+    }
+
+    .studio-pro-chip--clear:active {
+      transform: scale(0.98);
+      filter: brightness(0.96);
+    }
+
+    .studio-pro-chip--clear:focus-visible {
+      outline: 2px solid color-mix(in srgb, #ff8a8a 65%, var(--sp-accent));
+      outline-offset: 2px;
+    }
+
+    .studio-pro-chip--clear:disabled {
+      opacity: 0.48;
+      filter: grayscale(0.15);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .studio-pro-send-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .studio-pro-send {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      padding: 0.7rem 1.35rem;
+      border: none;
+      border-radius: 999px;
+      background: var(--sp-accent);
+      color: #fffaf8;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+    }
+
+    .studio-pro-send:hover {
+      background: var(--sp-accent-hover);
+    }
+
+    .studio-pro-send:active {
+      transform: scale(0.98);
+    }
+
+    .studio-pro-send:disabled,
+    .studio-pro-chip:disabled:not(.studio-pro-chip--clear) {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .studio-pro-send svg {
+      flex-shrink: 0;
+    }
+
+    .studio-pro-status {
+      margin: 0;
+      font-size: 0.8125rem;
+      text-align: center;
+      color: var(--sp-muted);
+      min-height: 1.35em;
+    }
+
+    .studio-pro-status.is-ok {
+      color: var(--studio-status-ok);
+    }
+
+    .studio-pro-status.is-error {
+      color: var(--studio-status-err);
+    }
+
+    /* Modal podglądu studia — te same tokeny co .studio-pro */
+    #studioPreviewModal .modal.studio-preview-dialog {
+      background: var(--studio-bg);
+      border-color: var(--studio-border);
+      color: var(--studio-text);
+    }
+
+    #studioPreviewModal .studio-preview-visual {
+      background: var(--studio-preview-visual);
+    }
+
+    #studioPreviewModal .poster-aspect-frame {
+      background: color-mix(in srgb, var(--studio-preview-visual) 82%, #000);
+    }
+
+    #studioPreviewModal .studio-preview-title {
+      font-family: "Source Serif 4", "Newsreader", Georgia, serif;
+      color: var(--studio-text);
+    }
+
+    #studioPreviewModal .modal-meta {
+      color: var(--studio-muted);
+    }
+
+    #studioPreviewModal .modal-close {
+      border-color: var(--studio-border);
+      background: var(--studio-surface);
+      color: var(--studio-text);
+    }
+
+    #studioPreviewModal .modal-close:hover {
+      background: var(--studio-paper);
+    }
+
+    #studioPreviewModal .studio-preview-actions .studio-pro-send {
+      background: var(--sp-accent);
+    }
+
+    #studioPreviewModal .studio-preview-actions .studio-pro-send:hover {
+      background: var(--sp-accent-hover);
+    }
+
+    #studioPreviewModal .studio-preview-actions .studio-pro-chip {
+      background: var(--sp-paper);
+      border-color: var(--studio-border);
+      color: var(--studio-text);
+    }
+
+    #studioPreviewModal .studio-preview-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 0.65rem;
-      margin-bottom: 0.75rem;
+      align-items: center;
     }
-
-    .studio-status {
-      margin: 0;
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      min-height: 1.4em;
-    }
-
-    .studio-status.is-error { color: #e8a598; }
-    .studio-status.is-ok { color: #9cbd9c; }
 
     .btn:disabled {
       opacity: 0.45;
@@ -604,84 +3227,435 @@
   </style>
 </head>
 <body>
-  <div class="shell">
+  <div class="shell shell--library">
+    <div class="app-main">
     <header class="masthead">
-      <div class="brand">
-        <h1>Plakaty</h1>
-        <p>Panel lokalny — podgląd wygenerowanych plakatów i szybki dostęp do PDF.</p>
-      </div>
-      <div class="header-actions">
-        <span class="meta-pill" id="updatedAt" aria-live="polite">—</span>
-        <button type="button" class="btn btn-primary" id="refreshBtn">Odśwież dane</button>
+      <div class="masthead-row">
+        <div class="masthead-brand">
+          <div class="brand">
+            <div class="brand-copy">
+              <h1>Plakaty</h1>
+              <p>Panel lokalny — podgląd wygenerowanych plakatów i szybki dostęp do PDF.</p>
+            </div>
+          </div>
+        </div>
+        <div class="masthead-center">
+          <div class="masthead-logo" aria-hidden="true">
+            <div class="brand-logo-wrap">
+              <img class="brand-logo-img brand-logo--dark" src="/logo_tr.png" alt="" width="960" height="320" decoding="async" />
+              <img class="brand-logo-img brand-logo--light" src="/logo.png" alt="" width="960" height="320" decoding="async" />
+            </div>
+          </div>
+        </div>
+        <div class="masthead-actions-wrap">
+          <div class="header-actions">
+            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Włącz tryb dzienny">
+              <svg class="theme-toggle-icon" id="themeToggleGlyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+              <span class="theme-toggle-label" id="themeToggleText">Dzień</span>
+            </button>
+            <span class="meta-pill" id="updatedAt" aria-live="polite">—</span>
+            <button type="button" class="btn btn-primary" id="refreshBtn">Odśwież dane</button>
+          </div>
+        </div>
       </div>
     </header>
 
-    <section class="studio" id="studio" aria-labelledby="studio-heading">
-      <h2 id="studio-heading" class="studio-title">Studio generowania</h2>
-      <p class="studio-lead">
-        Kategoria i styl → <strong>Ułóż prompt</strong> (Claude proponuje opis) → edytujesz tekst w polu poniżej →
-        <strong>Generuj obraz</strong> wysyła ten prompt do DALL-E i zapisuje plakat w bibliotece.
-      </p>
-      <div class="studio-grid">
-        <div class="studio-field">
-          <label for="studioCategory">Kategoria</label>
-          <select id="studioCategory"></select>
-          <p class="field-hint" id="studioCategoryHint"></p>
+    <section class="studio-pro" id="studio" aria-labelledby="studio-heading">
+      <div class="studio-pro-inner">
+        <p class="studio-pro-eyebrow">Studio generowania</p>
+        <h2 id="studio-heading" class="studio-pro-hero">Twórz plakaty z pomocą AI</h2>
+        <p class="studio-pro-sub" id="studioSub">
+          OpenAI układa prompt (gdy jest <code>OPENAI_API_KEY</code>) → DALL-E generuje podgląd → po akceptacji zapis w bibliotece jako
+          <strong>PNG pełna strona</strong> (bez PDF). Wersję z passe-partout dodasz w Bibliotece — przycisk pod siatką lub w szczegółach plakatu.
+        </p>
+        <div class="studio-pro-mode" role="group" aria-label="Tryb studia">
+          <button type="button" class="studio-pro-mode-btn is-active" id="studioModeManual" aria-pressed="true">
+            Manualny
+          </button>
+          <button type="button" class="studio-pro-mode-btn" id="studioModeAuto" aria-pressed="false">
+            Automatyczny
+          </button>
         </div>
-        <div class="studio-field">
-          <label for="studioTitle">Tytuł plakatu</label>
-          <input type="text" id="studioTitle" placeholder="np. Letni ogród" autocomplete="off" />
+        <div id="studioPanelManual" class="studio-pro-panel">
+          <div class="studio-pro-models" aria-hidden="true">
+            <span class="studio-pro-model-pill is-active">DALL-E 3</span>
+          </div>
+          <div class="studio-pro-meta-grid">
+            <div class="studio-pro-field">
+              <label for="studioCategory">Kategoria</label>
+              <select id="studioCategory"></select>
+              <p class="field-hint" id="studioCategoryHint"></p>
+            </div>
+            <div class="studio-pro-field">
+              <label for="studioTitle">Tytuł plakatu</label>
+              <input type="text" id="studioTitle" placeholder="np. Letni ogród" autocomplete="off" />
+            </div>
+            <div class="studio-pro-field">
+              <label for="studioStyle">Styl</label>
+              <select id="studioStyle"></select>
+            </div>
+          </div>
+          <div class="studio-pro-composer">
+            <label class="visually-hidden" for="studioPrompt">Prompt do DALL-E</label>
+            <div class="studio-pro-composer-inner">
+              <textarea
+                id="studioPrompt"
+                class="studio-pro-prompt"
+                rows="6"
+                placeholder="Opisz plakat (najlepiej po angielsku) albo kliknij „Ułóż prompt”…"
+              ></textarea>
+            </div>
+          </div>
+          <div class="studio-pro-quick">
+            <button type="button" class="studio-pro-chip" id="btnDraftPrompt">Ułóż prompt</button>
+            <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnClearStudio">
+              Wyczyść
+            </button>
+          </div>
+          <div class="studio-pro-send-row">
+            <button type="button" class="studio-pro-send" id="btnGeneratePoster">
+              <span>Generuj podgląd</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          <p class="studio-pro-status" id="studioStatus" role="status" aria-live="polite"></p>
         </div>
-        <div class="studio-field">
-          <label for="studioStyle">Styl</label>
-          <select id="studioStyle"></select>
+        <div id="studioPanelAuto" class="studio-pro-panel" hidden>
+          <div class="studio-auto-layout">
+            <div class="studio-auto-form">
+              <p class="studio-auto-lead">
+                Masowa generacja przez serwer: jak <code>node index.js generate</code>, ale tylko <strong>PNG do biblioteki</strong> (bez PDF).
+                Pełna ścieżka z PDF: uruchom <code>index.js</code> z terminala — tam nadal powstają 6× PDF.
+              </p>
+              <div class="studio-pro-field">
+                <label for="studioAutoScope">Zakres</label>
+                <select id="studioAutoScope">
+                  <option value="__all__">Wszystkie kategorie</option>
+                </select>
+                <p class="field-hint">„Wszystkie” uruchamia <code>generate-all</code>; pojedyncza nazwa — <code>generate</code>.</p>
+              </div>
+              <div class="studio-pro-field">
+                <label for="studioAutoStyle">Styl</label>
+                <select id="studioAutoStyle">
+                  <option value="">Wszystkie style (liczba = na każdy styl osobno)</option>
+                </select>
+                <p class="field-hint">Bez wyboru stylu = pełna lista stylów z konfiguracji. Znaczenie pola „Liczba” zależy od trybu — patrz podpowiedź pod liczbą.</p>
+              </div>
+              <div class="studio-pro-field">
+                <label for="studioAutoCount" id="studioAutoCountLabel">Liczba plakatów</label>
+                <input
+                  type="number"
+                  id="studioAutoCount"
+                  min="1"
+                  max="50"
+                  value="1"
+                  step="1"
+                  inputmode="numeric"
+                  autocomplete="off"
+                />
+                <p class="field-hint" id="studioAutoCountHint"></p>
+              </div>
+              <p class="studio-auto-hint">
+                <strong>Wykonaj teraz</strong> (pole po prawej) robi to samo co CLI: od razu PNG + 6 PDF + wpis w bibliotece — bez okna podglądu. Alternatywnie wklej polecenie w terminal w katalogu z <code>index.js</code>.
+              </p>
+            </div>
+            <div class="studio-auto-side">
+              <p class="studio-auto-cmd-label">Uruchomienie z przeglądarki</p>
+              <button type="button" class="studio-pro-send studio-auto-run-btn" id="btnRunStudioAutoBatch">
+                <span>Wykonaj teraz</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+              <div class="studio-auto-progress" id="studioAutoProgress" hidden>
+                <div class="studio-auto-progress-glow" aria-hidden="true"></div>
+                <div class="studio-auto-progress-track">
+                  <div class="studio-auto-progress-fill" id="studioAutoProgressFill"></div>
+                </div>
+                <p class="studio-auto-progress-meta" id="studioAutoProgressMeta" aria-live="polite"></p>
+              </div>
+              <p class="studio-pro-status studio-auto-run-status" id="studioAutoRunStatus" role="status" aria-live="polite"></p>
+              <p class="studio-auto-cmd-label studio-auto-cmd-label--secondary">Polecenie do terminala</p>
+              <pre class="studio-auto-command" id="studioAutoCommand"></pre>
+              <button type="button" class="studio-pro-chip" id="btnCopyStudioAutoCommand">Kopiuj polecenie</button>
+              <p class="studio-auto-copy-feedback" id="studioAutoCopyFeedback" aria-live="polite"></p>
+              <p class="studio-auto-npm-hint" id="studioAutoNpmHint"></p>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="studio-field studio-field-full">
-        <label for="studioPrompt">Prompt do DALL-E (edytuj przed generowaniem obrazu)</label>
-        <textarea id="studioPrompt" rows="7" placeholder="Kliknij „Ułóż prompt”, albo wklej własny tekst…"></textarea>
-      </div>
-      <div class="studio-actions">
-        <button type="button" class="btn btn-primary" id="btnDraftPrompt">Ułóż prompt (Claude)</button>
-        <button type="button" class="btn btn-primary" id="btnGeneratePoster">Generuj obraz (DALL-E)</button>
-      </div>
-      <p class="studio-status" id="studioStatus" role="status" aria-live="polite"></p>
     </section>
 
     <section class="stats-row" id="statsRow" aria-label="Statystyki"></section>
 
-    <div class="toolbar">
-      <div class="search-wrap">
-        <label for="search">Szukaj po tytule</label>
-        <input type="search" id="search" class="search-input" placeholder="Tytuł, kategoria lub fragment promptu…" autocomplete="off" />
+    <section class="library-browse" id="libraryBrowse" aria-labelledby="libraryBrowseHeading">
+      <header class="library-browse-header">
+        <p class="library-browse-eyebrow">Przegląd</p>
+        <h2 id="libraryBrowseHeading" class="library-browse-title">Biblioteka wygenerowanych plakatów</h2>
+        <p class="library-browse-lead">
+          Filtry po lewej (szukaj, kategoria, styl, status) i siatka po prawej — siatka odświeża się dopiero po „Zastosuj filtry”. Jedno pole szukaj obejmuje też kategorię i styl.
+        </p>
+      </header>
+      <div class="library-browse-surface">
+        <aside class="library-browse-sidebar" aria-label="Panel filtrów i kategorii">
+          <div class="library-filters" id="libraryFilterBatch">
+        <div class="library-filters-primary">
+        <h3 class="visually-hidden">Filtry biblioteki</h3>
+        <div class="search-wrap library-search-wrap">
+          <label for="search">Szukaj</label>
+          <input type="search" id="search" class="search-input" placeholder="Tytuł, kategoria, styl, prompt…" autocomplete="off" />
+        </div>
+        <div class="filter-category-wrap filter-category-wrap--sidebar">
+          <span class="filter-category-heading filter-category-heading--sidebar filter-category-heading--sidebar-only" id="categoryFilterHeading">Kategoria</span>
+          <div class="filter-category filter-category--sidebar" id="filterCategoryRoot">
+            <div class="filter-category-panel--sidebar filter-category-panel--list-only">
+              <ul
+                class="filter-category-listbox filter-category-listbox--sidebar"
+                id="categoryFilterListbox"
+                role="listbox"
+                aria-label="Kategorie plakatów"
+              ></ul>
+            </div>
+          </div>
+          <p class="library-category-draft library-category-draft--after-list" aria-live="polite">
+            <span class="library-category-draft-name" id="categoryFilterTriggerLabel">Wszystkie kategorie</span>
+            <span class="library-category-draft-meta" id="categoryFilterTriggerCount">—</span>
+          </p>
+        </div>
+        <div class="filter-style-wrap filter-style-wrap--sidebar">
+          <span class="filter-category-heading filter-category-heading--sidebar filter-category-heading--sidebar-only">Styl</span>
+          <div class="filter-category filter-category--sidebar">
+            <div class="filter-category-panel--sidebar filter-category-panel--list-only">
+              <ul
+                class="filter-category-listbox filter-category-listbox--sidebar"
+                id="libraryStyleFilterListbox"
+                role="listbox"
+                aria-label="Styl plakatu"
+              ></ul>
+            </div>
+          </div>
+        </div>
+        <div class="filter-status-wrap">
+          <span class="filter-category-heading filter-category-heading--sidebar">Status wydruku</span>
+          <div class="filter-status-seg" id="statusFilterGroup" role="group" aria-label="Status wydruku">
+            <button type="button" class="filter-status-btn" data-status="all" aria-pressed="true">Wszystkie</button>
+            <button type="button" class="filter-status-btn" data-status="new" aria-pressed="false">Nowy (niewybrany do druku)</button>
+            <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Zatwierdzony (gotowy do druku)</button>
+          </div>
+        </div>
+        </div>
+        <div class="library-filters-actions">
+          <button type="button" class="btn btn-primary btn-filter-apply btn-filter-apply--block" id="filterApplyBtn">Zastosuj filtry</button>
+          <button type="button" class="btn-filter-clear" id="filterClearBtn">Wyczyść</button>
+        </div>
+        <p class="filter-pending-hint filter-pending-hint--sidebar" id="filterPendingHint" hidden aria-live="polite"></p>
+          </div>
+        </aside>
+        <div class="library-browse-main">
+          <div class="library-browse-main-inner">
+            <p class="filter-results-meta" id="filterResultsMeta" aria-live="polite"></p>
+            <div class="library-frame-toolbar">
+              <button type="button" class="btn btn-secondary" id="libraryFrameFilteredBtn">
+                Wersja z ramką — widoczna siatka
+              </button>
+              <span class="library-frame-feedback" id="libraryFrameFeedback" role="status" aria-live="polite"></span>
+            </div>
+            <div class="grid-wrap library-browse-grid">
+              <div id="posterGrid" class="poster-grid" role="list"></div>
+              <p id="emptyState" class="empty" hidden>Brak plakatów spełniających filtry.</p>
+              <p id="errorState" class="error" hidden></p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="chips" id="categoryChips" role="group" aria-label="Kategorie"></div>
+    </section>
     </div>
 
-    <div class="grid-wrap">
-      <div id="posterGrid" class="poster-grid" role="list"></div>
-      <p id="emptyState" class="empty" hidden>Brak plakatów spełniających filtry.</p>
-      <p id="errorState" class="error" hidden></p>
+  <div class="modal-backdrop" id="studioPreviewModal" role="dialog" aria-modal="true" aria-labelledby="studioPreviewHeading" hidden>
+    <div class="modal studio-preview-dialog" role="document">
+      <button type="button" class="modal-close" id="studioPreviewClose" aria-label="Zamknij i odrzuć podgląd">×</button>
+      <div class="studio-preview-visual">
+        <div class="poster-aspect-frame">
+          <img id="studioPreviewImgFull" src="" alt="Podgląd grafiki (pełna strona)" />
+        </div>
+      </div>
+      <div class="studio-preview-footer">
+        <h2 id="studioPreviewHeading" class="studio-preview-title">Podgląd studia</h2>
+        <p class="modal-meta" id="studioPreviewHint">
+          Zapis: <strong>tylko PNG</strong> (pełna strona). W bibliotece możesz dodać drugi plik z równym passe-partout (<code>_ramka.png</code>).
+        </p>
+        <div class="studio-preview-actions">
+          <button type="button" class="studio-pro-send" id="studioPreviewAccept">Dodaj do biblioteki</button>
+          <button type="button" class="studio-pro-chip" id="studioPreviewReject">Odrzuć podgląd</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
-    <div class="modal" role="document">
+    <div class="modal modal-poster" role="document">
       <button type="button" class="modal-close" id="modalClose" aria-label="Zamknij">×</button>
-      <div class="modal-visual">
-        <img id="modalImg" src="" alt="" />
+      <div class="modal-detail modal-detail--tiled">
+        <div class="modal-tile modal-tile--span-2 modal-tile--hero">
+          <div class="modal-hero-title-row">
+            <h2 id="modalTitle"></h2>
+            <button type="button" class="modal-copy-prompt" id="modalCopyTitle" aria-label="Copy poster title" title="Copy title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--meta">
+          <p class="modal-tile-label">Category &amp; style</p>
+          <div class="modal-hero-taxonomy" role="group" aria-label="Category and art style">
+            <div class="modal-meta-copy-row">
+              <span class="modal-meta-key">Category</span>
+              <span class="modal-meta-val" id="modalCategoryValue"></span>
+              <button type="button" class="modal-copy-prompt modal-copy-prompt--compact" id="modalCopyCategory" aria-label="Copy category" title="Copy category">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+            <div class="modal-meta-copy-row">
+              <span class="modal-meta-key">Style</span>
+              <span class="modal-meta-val" id="modalStyleValue"></span>
+              <button type="button" class="modal-copy-prompt modal-copy-prompt--compact" id="modalCopyStyle" aria-label="Copy style" title="Copy style">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+            <button type="button" class="modal-copy-combo-line" id="modalCopyMetaLine">Copy line: style · category</button>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--listing">
+          <div class="modal-listing-block" id="modalListingBlock">
+            <div class="modal-listing-head">
+              <p class="section-label">Shop listing</p>
+              <button type="button" class="modal-copy-prompt modal-copy-prompt--compact" id="modalCopyListing" aria-label="Copy shop listing text" title="Copy listing">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+            <p class="modal-listing-text" id="modalListingText"></p>
+            <p class="field-hint" id="modalListingEmptyHint" hidden>
+              No listing text yet. New saves from the studio auto-generate English copy (GPT) from your image prompt. Older items: use the button below (requires OPENAI_API_KEY).
+            </p>
+            <button type="button" class="btn btn-secondary modal-generate-listing-btn" id="modalGenerateListingBtn" hidden>Generate listing (GPT)</button>
+            <p class="modal-listing-feedback" id="modalListingFeedback" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--span-2 modal-tile--approval">
+          <div class="modal-print-approval" id="modalPrintApprovalBlock">
+            <label class="modal-print-approval-label" for="modalApprovedPrint">
+              <input type="checkbox" id="modalApprovedPrint" />
+              <span>Zatwierdzony do druku (gotowy do wydruku) — tylko z tego widoku możesz zmienić status.</span>
+            </label>
+            <p class="modal-approval-feedback" id="modalApprovalFeedback" role="status" aria-live="polite"></p>
+            <div class="modal-basket-tools">
+              <button type="button" class="modal-add-remove-basket-btn" id="modalAddToRemoveBasket">
+                Dodaj do koszyka usunięć
+              </button>
+              <p class="modal-basket-feedback" id="modalBasketFeedback" role="status" aria-live="polite" hidden></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--prompt">
+          <div id="modalPromptBlock">
+            <div class="modal-prompt-head">
+              <div class="modal-prompt-head-text">
+                <p class="section-label">Prompt użyty przy generowaniu</p>
+                <p class="modal-prompt-llm" id="modalPromptLlm" hidden></p>
+              </div>
+              <button type="button" class="modal-copy-prompt" id="modalCopyPrompt" aria-label="Kopiuj prompt do schowka" title="Kopiuj prompt">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+            <p class="modal-prompt" id="modalPrompt"></p>
+            <p class="modal-copy-feedback" id="modalCopyFeedback" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--files">
+          <div id="modalFramedSection">
+            <p class="section-label">Wersja z ramką (PNG)</p>
+            <div class="modal-actions" id="modalFramedRow"></div>
+          </div>
+          <div class="modal-tile-files-pdf">
+            <p class="section-label">PDF (CLI / starsze wpisy)</p>
+            <div class="modal-actions" id="modalPdfs"></div>
+            <p class="field-hint" id="modalPdfsEmptyHint" hidden>Brak PDF — nowe wpisy ze studia mają tylko PNG.</p>
+          </div>
+        </div>
       </div>
-      <div class="modal-detail">
-        <h2 id="modalTitle"></h2>
-        <p class="modal-meta" id="modalMeta"></p>
-        <div id="modalPromptBlock">
-          <p class="section-label">Prompt użyty przy generowaniu</p>
-          <p class="modal-prompt" id="modalPrompt"></p>
-        </div>
-        <div>
-          <p class="section-label">Pobierz PDF</p>
-          <div class="modal-actions" id="modalPdfs"></div>
-        </div>
+      <div class="modal-poster-preview-column">
+      <button
+        type="button"
+        class="modal-visual modal-visual--interactive"
+        id="modalVisualOpenLightbox"
+        aria-label="Powiększ podgląd plakatu"
+      >
+        <img id="modalImg" src="" alt="" />
+      </button>
+      <div class="modal-preview-thumbs" id="modalPreviewThumbs" hidden>
+        <button
+          type="button"
+          class="modal-preview-thumb is-active"
+          id="modalPreviewThumbFull"
+          data-variant="full"
+          aria-pressed="true"
+          aria-label="Podgląd pełnej strony"
+          title="Pełna strona"
+        >
+          <img id="modalPreviewThumbFullImg" src="" alt="" />
+        </button>
+        <button
+          type="button"
+          class="modal-preview-thumb"
+          id="modalPreviewThumbFramed"
+          data-variant="framed"
+          aria-pressed="false"
+          aria-label="Podgląd z ramką"
+          title="Z ramką"
+        >
+          <img id="modalPreviewThumbFramedImg" src="" alt="" />
+        </button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop modal-lightbox-backdrop" id="modalLightbox" role="dialog" aria-modal="true" aria-labelledby="modalLightboxHeading" hidden>
+    <h2 id="modalLightboxHeading" class="visually-hidden">Powiększony podgląd plakatu</h2>
+    <div class="modal-lightbox-inner" role="document">
+      <div class="poster-aspect-frame" id="modalLightboxFrame">
+        <img id="modalLightboxImg" src="" alt="" />
+      </div>
+      <button type="button" class="modal-lightbox-close" id="modalLightboxClose">Zamknij podgląd</button>
+    </div>
+  </div>
+
+  <div class="library-remove-basket" id="libraryRemoveBasket" hidden>
+    <div class="library-remove-basket-inner">
+      <p class="library-remove-basket-label">Koszyk usunięć: <span id="libraryBasketCount">0</span></p>
+      <ul class="library-basket-list" id="libraryBasketList" aria-label="Plakaty oznaczone do usunięcia"></ul>
+      <div class="library-remove-basket-actions">
+        <button type="button" class="btn-basket-secondary" id="libraryBasketClear">Wyczyść koszyk</button>
+        <button type="button" class="btn-danger" id="libraryBasketConfirm">Usuń z biblioteki</button>
       </div>
     </div>
   </div>
@@ -689,10 +3663,58 @@
   <script>
     (function () {
       const SIZE_ORDER = ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'];
+      const THEME_KEY = 'plakaty-theme';
+
+      const SUN_SVG =
+        '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
+      const MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+      function getStoredTheme() {
+        try {
+          const v = localStorage.getItem(THEME_KEY);
+          if (v === 'light' || v === 'dark') return v;
+        } catch (_) {}
+        return 'dark';
+      }
+
+      function applyTheme(theme) {
+        const root = document.documentElement;
+        if (theme === 'light') {
+          root.setAttribute('data-theme', 'light');
+        } else {
+          root.removeAttribute('data-theme');
+        }
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch (_) {}
+        const btn = document.getElementById('themeToggle');
+        const glyph = document.getElementById('themeToggleGlyph');
+        const label = document.getElementById('themeToggleText');
+        if (glyph) {
+          glyph.innerHTML = theme === 'light' ? MOON_SVG : SUN_SVG;
+        }
+        if (label) {
+          label.textContent = theme === 'light' ? 'Noc' : 'Dzień';
+        }
+        if (btn) {
+          btn.setAttribute('aria-label', theme === 'light' ? 'Włącz tryb nocny' : 'Włącz tryb dzienny');
+          btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+        }
+      }
 
       const els = {
         statsRow: document.getElementById('statsRow'),
-        categoryChips: document.getElementById('categoryChips'),
+        categoryFilterListbox: document.getElementById('categoryFilterListbox'),
+        libraryStyleFilterListbox: document.getElementById('libraryStyleFilterListbox'),
+        categoryFilterTriggerLabel: document.getElementById('categoryFilterTriggerLabel'),
+        categoryFilterTriggerCount: document.getElementById('categoryFilterTriggerCount'),
+        filterResultsMeta: document.getElementById('filterResultsMeta'),
+        filterApplyBtn: document.getElementById('filterApplyBtn'),
+        filterClearBtn: document.getElementById('filterClearBtn'),
+        filterPendingHint: document.getElementById('filterPendingHint'),
+        statusFilterGroup: document.getElementById('statusFilterGroup'),
+        modalApprovedPrint: document.getElementById('modalApprovedPrint'),
+        modalApprovalFeedback: document.getElementById('modalApprovalFeedback'),
         posterGrid: document.getElementById('posterGrid'),
         search: document.getElementById('search'),
         refreshBtn: document.getElementById('refreshBtn'),
@@ -702,26 +3724,218 @@
         modal: document.getElementById('modal'),
         modalClose: document.getElementById('modalClose'),
         modalImg: document.getElementById('modalImg'),
+        modalPreviewThumbs: document.getElementById('modalPreviewThumbs'),
+        modalPreviewThumbFull: document.getElementById('modalPreviewThumbFull'),
+        modalPreviewThumbFramed: document.getElementById('modalPreviewThumbFramed'),
+        modalPreviewThumbFullImg: document.getElementById('modalPreviewThumbFullImg'),
+        modalPreviewThumbFramedImg: document.getElementById('modalPreviewThumbFramedImg'),
         modalTitle: document.getElementById('modalTitle'),
-        modalMeta: document.getElementById('modalMeta'),
+        modalCategoryValue: document.getElementById('modalCategoryValue'),
+        modalStyleValue: document.getElementById('modalStyleValue'),
+        modalCopyTitle: document.getElementById('modalCopyTitle'),
+        modalCopyCategory: document.getElementById('modalCopyCategory'),
+        modalCopyStyle: document.getElementById('modalCopyStyle'),
+        modalCopyMetaLine: document.getElementById('modalCopyMetaLine'),
+        modalListingText: document.getElementById('modalListingText'),
+        modalListingEmptyHint: document.getElementById('modalListingEmptyHint'),
+        modalGenerateListingBtn: document.getElementById('modalGenerateListingBtn'),
+        modalCopyListing: document.getElementById('modalCopyListing'),
+        modalListingFeedback: document.getElementById('modalListingFeedback'),
         modalPrompt: document.getElementById('modalPrompt'),
+        modalPromptLlm: document.getElementById('modalPromptLlm'),
         modalPromptBlock: document.getElementById('modalPromptBlock'),
+        modalCopyPrompt: document.getElementById('modalCopyPrompt'),
+        modalCopyFeedback: document.getElementById('modalCopyFeedback'),
+        modalVisualOpenLightbox: document.getElementById('modalVisualOpenLightbox'),
         modalPdfs: document.getElementById('modalPdfs'),
+        modalPdfsEmptyHint: document.getElementById('modalPdfsEmptyHint'),
+        modalFramedRow: document.getElementById('modalFramedRow'),
+        modalLightbox: document.getElementById('modalLightbox'),
+        modalLightboxFrame: document.getElementById('modalLightboxFrame'),
+        modalLightboxImg: document.getElementById('modalLightboxImg'),
+        modalLightboxClose: document.getElementById('modalLightboxClose'),
         studioCategory: document.getElementById('studioCategory'),
         studioCategoryHint: document.getElementById('studioCategoryHint'),
         studioTitle: document.getElementById('studioTitle'),
         studioStyle: document.getElementById('studioStyle'),
         studioPrompt: document.getElementById('studioPrompt'),
         btnDraftPrompt: document.getElementById('btnDraftPrompt'),
+        btnClearStudio: document.getElementById('btnClearStudio'),
         btnGeneratePoster: document.getElementById('btnGeneratePoster'),
         studioStatus: document.getElementById('studioStatus'),
+        studioPreviewModal: document.getElementById('studioPreviewModal'),
+        studioPreviewImgFull: document.getElementById('studioPreviewImgFull'),
+        studioPreviewAccept: document.getElementById('studioPreviewAccept'),
+        studioPreviewReject: document.getElementById('studioPreviewReject'),
+        studioPreviewClose: document.getElementById('studioPreviewClose'),
+        studioModeManual: document.getElementById('studioModeManual'),
+        studioModeAuto: document.getElementById('studioModeAuto'),
+        studioPanelManual: document.getElementById('studioPanelManual'),
+        studioPanelAuto: document.getElementById('studioPanelAuto'),
+        studioSub: document.getElementById('studioSub'),
+        studioAutoScope: document.getElementById('studioAutoScope'),
+        studioAutoStyle: document.getElementById('studioAutoStyle'),
+        studioAutoCount: document.getElementById('studioAutoCount'),
+        studioAutoCommand: document.getElementById('studioAutoCommand'),
+        studioAutoNpmHint: document.getElementById('studioAutoNpmHint'),
+        studioAutoCopyFeedback: document.getElementById('studioAutoCopyFeedback'),
+        btnCopyStudioAutoCommand: document.getElementById('btnCopyStudioAutoCommand'),
+        btnRunStudioAutoBatch: document.getElementById('btnRunStudioAutoBatch'),
+        studioAutoRunStatus: document.getElementById('studioAutoRunStatus'),
+        studioAutoProgress: document.getElementById('studioAutoProgress'),
+        studioAutoProgressFill: document.getElementById('studioAutoProgressFill'),
+        studioAutoProgressMeta: document.getElementById('studioAutoProgressMeta'),
+        libraryRemoveBasket: document.getElementById('libraryRemoveBasket'),
+        libraryBasketCount: document.getElementById('libraryBasketCount'),
+        libraryBasketList: document.getElementById('libraryBasketList'),
+        libraryBasketClear: document.getElementById('libraryBasketClear'),
+        libraryBasketConfirm: document.getElementById('libraryBasketConfirm'),
+        modalAddToRemoveBasket: document.getElementById('modalAddToRemoveBasket'),
+        modalBasketFeedback: document.getElementById('modalBasketFeedback'),
+        libraryFrameFilteredBtn: document.getElementById('libraryFrameFilteredBtn'),
+        libraryFrameFeedback: document.getElementById('libraryFrameFeedback'),
       };
+
+      const STUDIO_AUTO_FLASH_KEY = 'plakatyStudioAutoFlash';
+      let studioAutoProgressInterval = null;
+
+      const STUDIO_MODE_KEY = 'plakatyStudioMode';
+      const STUDIO_HEADING_MANUAL = 'Twórz plakaty z pomocą AI';
+      const STUDIO_HEADING_AUTO = 'Generowanie automatyczne';
+      const STUDIO_SUB_MANUAL_HTML =
+        'OpenAI układa prompt (gdy jest klucz) → DALL-E → podgląd → zapis <strong>tylko PNG</strong>. Ramkę (_ramka.png) dodasz w Bibliotece.';
+
+      function getStoredStudioMode() {
+        try {
+          const v = localStorage.getItem(STUDIO_MODE_KEY);
+          if (v === 'auto' || v === 'manual') return v;
+        } catch (_) {}
+        return 'manual';
+      }
+
+      function setStudioMode(mode) {
+        const manual = mode === 'manual';
+        els.studioModeManual.classList.toggle('is-active', manual);
+        els.studioModeManual.setAttribute('aria-pressed', manual ? 'true' : 'false');
+        els.studioModeAuto.classList.toggle('is-active', !manual);
+        els.studioModeAuto.setAttribute('aria-pressed', manual ? 'false' : 'true');
+        els.studioPanelManual.hidden = !manual;
+        els.studioPanelAuto.hidden = manual;
+        const h = document.getElementById('studio-heading');
+        if (h) h.textContent = manual ? STUDIO_HEADING_MANUAL : STUDIO_HEADING_AUTO;
+        if (els.studioSub) {
+          if (manual) els.studioSub.innerHTML = STUDIO_SUB_MANUAL_HTML;
+          else {
+            els.studioSub.textContent =
+              'Zakres, styl, liczba jak wyżej. „Wykonaj teraz” = PNG do biblioteki (bez PDF). PDF: terminal + node index.js.';
+          }
+        }
+        try {
+          localStorage.setItem(STUDIO_MODE_KEY, manual ? 'manual' : 'auto');
+        } catch (_) {}
+        if (!manual) updateStudioAutoCommand();
+      }
+
+      let activeStudioPreviewId = null;
+      /** Aktualnie otwarty plakat w modalu (referencja z flatItems). */
+      let modalPosterItem = null;
+      /** 'full' | 'framed' — gdy jest imagePathFramed. */
+      let modalPreviewVariant = 'full';
 
       let rawCategories = {};
       let flatItems = [];
       let activeCategory = 'all';
+      /** Zastosowane kryteria (siatka + wiersz metadanych). */
       let searchQuery = '';
+      /** Szkic w UI zanim użytkownik kliknie „Zastosuj filtry”. */
+      let draftCategory = 'all';
+      /** Filtr statusu: all | new | approved */
+      let activeStatusFilter = 'all';
+      let draftStatusFilter = 'all';
+      /** Filtr stylu: all | dokładna nazwa z artStyle */
+      let activeStyleFilter = 'all';
+      let draftStyleFilter = 'all';
+      /** Style z /api/generation-config (kolejność listy filtra) */
+      let configArtStylesList = [];
       let categoryHints = {};
+      /** Liczniki plakatów wg kategorii z API + __all */
+      let categoryCountMap = { __all: 0 };
+
+      /** Klucz: imagePath z API (np. /Botanika/plik.png) → meta do paska koszyka. */
+      const removeBasket = new Map();
+
+      function removeBasketKeyFromItem(item) {
+        return item && item.imagePath ? String(item.imagePath) : '';
+      }
+
+      function renderRemoveBasketDock() {
+        const n = removeBasket.size;
+        if (els.libraryRemoveBasket) els.libraryRemoveBasket.hidden = n === 0;
+        if (els.libraryBasketCount) els.libraryBasketCount.textContent = String(n);
+        if (!els.libraryBasketList) return;
+        els.libraryBasketList.innerHTML = '';
+        for (const [pathKey, meta] of removeBasket.entries()) {
+          const li = document.createElement('li');
+          li.className = 'library-basket-chip';
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.className = 'library-basket-chip-remove';
+          rm.setAttribute('aria-label', 'Usuń z koszyka');
+          rm.textContent = '×';
+          rm.addEventListener('click', () => {
+            removeBasket.delete(pathKey);
+            renderRemoveBasketDock();
+            renderGrid();
+          });
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'library-basket-chip-title';
+          titleSpan.textContent = meta.title || '—';
+          const catSpan = document.createElement('span');
+          catSpan.className = 'library-basket-chip-meta';
+          catSpan.textContent = meta.category || '';
+          li.appendChild(titleSpan);
+          li.appendChild(catSpan);
+          li.appendChild(rm);
+          els.libraryBasketList.appendChild(li);
+        }
+      }
+
+      function syncRemoveBasketWithLibrary() {
+        const valid = new Set(flatItems.map((x) => x.imagePath).filter(Boolean));
+        for (const k of [...removeBasket.keys()]) {
+          if (!valid.has(k)) removeBasket.delete(k);
+        }
+        renderRemoveBasketDock();
+      }
+
+      function toggleRemoveBasketItem(item) {
+        const k = removeBasketKeyFromItem(item);
+        if (!k) return;
+        if (removeBasket.has(k)) removeBasket.delete(k);
+        else removeBasket.set(k, { title: item.title, category: item.category });
+        renderRemoveBasketDock();
+        renderGrid();
+      }
+
+      function addCurrentModalToRemoveBasket() {
+        if (!modalPosterItem) return;
+        const k = removeBasketKeyFromItem(modalPosterItem);
+        if (!k) return;
+        if (removeBasket.has(k)) {
+          if (els.modalBasketFeedback) {
+            els.modalBasketFeedback.hidden = false;
+            els.modalBasketFeedback.textContent = 'Ten plakat jest już w koszyku usunięć.';
+          }
+          return;
+        }
+        removeBasket.set(k, { title: modalPosterItem.title, category: modalPosterItem.category });
+        renderRemoveBasketDock();
+        renderGrid();
+        if (els.modalBasketFeedback) {
+          els.modalBasketFeedback.hidden = false;
+          els.modalBasketFeedback.textContent = 'Dodano do koszyka. Na dole strony kliknij „Usuń z biblioteki”.';
+        }
+      }
 
       function sortPdfLinks(links) {
         if (!links || !links.length) return [];
@@ -740,13 +3954,18 @@
         for (const cat of Object.keys(postersByCat)) {
           for (const p of postersByCat[cat]) {
             list.push({
+              id: p.id || null,
               category: cat,
               title: p.title,
               style: p.style,
               imagePath: p.imagePath,
+              imagePathFramed: p.imagePathFramed || '',
               pdfLinks: sortPdfLinks(p.pdfLinks || legacyPdfsToLinks(p.pdfs)),
               createdAt: p.createdAt || null,
               prompt: p.prompt || '',
+              promptLlmLabel: (p.promptLlmLabel || '').trim(),
+              shopDescription: typeof p.shopDescription === 'string' ? p.shopDescription : '',
+              approvedForPrint: p.approvedForPrint === true,
             });
           }
         }
@@ -787,18 +4006,208 @@
           .join('');
       }
 
-      function renderChips(categories) {
+      function plCountPosters(n) {
+        const x = Number(n) || 0;
+        if (x === 1) return '1 plakat';
+        const r10 = x % 10;
+        const r100 = x % 100;
+        if (r10 >= 2 && r10 <= 4 && (r100 < 10 || r100 >= 20)) return x + ' plakaty';
+        return x + ' plakatów';
+      }
+
+      function buildCategoryCountMap(postersByCat) {
+        const m = { __all: 0 };
+        for (const [cat, arr] of Object.entries(postersByCat || {})) {
+          const len = Array.isArray(arr) ? arr.length : 0;
+          m[cat] = len;
+          m.__all += len;
+        }
+        return m;
+      }
+
+      function syncCategoryFilterTrigger() {
+        const counts = categoryCountMap;
+        const label = draftCategory === 'all' ? 'Wszystkie kategorie' : draftCategory;
+        els.categoryFilterTriggerLabel.textContent = label;
+        const n = draftCategory === 'all' ? counts.__all || 0 : counts[draftCategory] || 0;
+        if (draftCategory === 'all') {
+          els.categoryFilterTriggerCount.textContent =
+            (counts.__all || 0) === 0 ? 'Brak plakatów w bibliotece' : `${plCountPosters(n)} w bibliotece`;
+        } else {
+          els.categoryFilterTriggerCount.textContent = `${plCountPosters(n)} w tej kategorii`;
+        }
+      }
+
+      function syncCategoryFilterSelection() {
+        els.categoryFilterListbox.querySelectorAll('.filter-category-option').forEach((btn) => {
+          const cat = btn.getAttribute('data-cat');
+          const sel =
+            (cat === 'all' && draftCategory === 'all') || (cat !== 'all' && cat === draftCategory);
+          btn.setAttribute('aria-selected', sel ? 'true' : 'false');
+        });
+      }
+
+      function syncStatusFilterButtons() {
+        if (!els.statusFilterGroup) return;
+        els.statusFilterGroup.querySelectorAll('.filter-status-btn').forEach((btn) => {
+          const on = btn.getAttribute('data-status') === draftStatusFilter;
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.classList.toggle('is-active', on);
+        });
+      }
+
+      function setDraftStatusFilter(s) {
+        draftStatusFilter = s === 'new' || s === 'approved' ? s : 'all';
+        syncStatusFilterButtons();
+        updatePendingHint();
+      }
+
+      function libraryFiltersDirty() {
+        const q = els.search ? els.search.value : '';
+        return (
+          q !== searchQuery ||
+          draftCategory !== activeCategory ||
+          draftStatusFilter !== activeStatusFilter ||
+          draftStyleFilter !== activeStyleFilter
+        );
+      }
+
+      function updatePendingHint() {
+        if (!els.filterPendingHint || !els.filterApplyBtn) return;
+        const dirty = libraryFiltersDirty();
+        els.filterPendingHint.hidden = !dirty;
+        els.filterPendingHint.textContent = dirty
+          ? 'Masz niezastosowane kryteria — kliknij „Zastosuj filtry”, aby odświeżyć siatkę.'
+          : '';
+        els.filterApplyBtn.classList.toggle('is-pending', dirty);
+      }
+
+      function applyLibraryFilters() {
+        searchQuery = els.search ? els.search.value : '';
+        activeCategory = draftCategory;
+        activeStatusFilter = draftStatusFilter;
+        activeStyleFilter = draftStyleFilter;
+        updatePendingHint();
+        renderGrid();
+      }
+
+      function clearLibraryFilters() {
+        draftCategory = 'all';
+        activeCategory = 'all';
+        draftStatusFilter = 'all';
+        activeStatusFilter = 'all';
+        draftStyleFilter = 'all';
+        activeStyleFilter = 'all';
+        searchQuery = '';
+        if (els.search) els.search.value = '';
+        syncCategoryFilterTrigger();
+        syncCategoryFilterSelection();
+        syncStyleFilterSelection();
+        syncStatusFilterButtons();
+        updatePendingHint();
+        renderGrid();
+      }
+
+      function renderCategoryFilterList(categories) {
         const sorted = [...categories].sort((a, b) => a.localeCompare(b, 'pl'));
-        const parts = ['<span>Kategoria</span>'];
+        const counts = categoryCountMap;
+        const total = counts.__all || 0;
+        const parts = [];
         parts.push(
-          `<button type="button" class="chip" data-cat="all" aria-pressed="true">Wszystkie</button>`
+          `<li role="presentation"><button type="button" role="option" class="filter-category-option" data-cat="all" aria-selected="false"><span class="filter-category-option-name">Wszystkie kategorie</span><span class="filter-category-option-count">${total}</span></button></li>`
         );
         for (const c of sorted) {
+          const n = counts[c] || 0;
           parts.push(
-            `<button type="button" class="chip" data-cat="${escapeAttr(c)}" aria-pressed="false">${escapeHtml(c)}</button>`
+            `<li role="presentation"><button type="button" role="option" class="filter-category-option" data-cat="${escapeAttr(c)}" aria-selected="false"><span class="filter-category-option-name">${escapeHtml(
+              c
+            )}</span><span class="filter-category-option-count">${n}</span></button></li>`
           );
         }
-        els.categoryChips.innerHTML = parts.join('');
+        els.categoryFilterListbox.innerHTML = parts.join('');
+        syncCategoryFilterTrigger();
+        syncCategoryFilterSelection();
+      }
+
+      function buildStyleCountMap(items) {
+        const m = { __all: items.length };
+        for (const it of items) {
+          const s = (it.style && String(it.style).trim()) || '—';
+          m[s] = (m[s] || 0) + 1;
+        }
+        return m;
+      }
+
+      function syncStyleFilterSelection() {
+        if (!els.libraryStyleFilterListbox) return;
+        els.libraryStyleFilterListbox.querySelectorAll('.filter-style-option').forEach((btn) => {
+          const st = btn.getAttribute('data-style');
+          const sel =
+            (st === 'all' && draftStyleFilter === 'all') || (st !== 'all' && st === draftStyleFilter);
+          btn.setAttribute('aria-selected', sel ? 'true' : 'false');
+        });
+      }
+
+      function renderLibraryStyleFilterList() {
+        if (!els.libraryStyleFilterListbox) return;
+        const counts = buildStyleCountMap(flatItems);
+        const total = counts.__all || 0;
+        const seen = new Set();
+        const ordered = [];
+        for (const s of configArtStylesList) {
+          if (s && !seen.has(s)) {
+            seen.add(s);
+            ordered.push(s);
+          }
+        }
+        for (const it of flatItems) {
+          const s = it.style && String(it.style).trim();
+          if (s && !seen.has(s)) {
+            seen.add(s);
+            ordered.push(s);
+          }
+        }
+        ordered.sort((a, b) => a.localeCompare(b, 'pl'));
+        const parts = [
+          `<li role="presentation"><button type="button" role="option" class="filter-category-option filter-style-option" data-style="all" aria-selected="false"><span class="filter-category-option-name">Wszystkie style</span><span class="filter-category-option-count">${total}</span></button></li>`,
+        ];
+        for (const s of ordered) {
+          const n = counts[s] || 0;
+          parts.push(
+            `<li role="presentation"><button type="button" role="option" class="filter-category-option filter-style-option" data-style="${escapeAttr(
+              s
+            )}" aria-selected="false"><span class="filter-category-option-name">${escapeHtml(
+              s
+            )}</span><span class="filter-category-option-count">${n}</span></button></li>`
+          );
+        }
+        els.libraryStyleFilterListbox.innerHTML = parts.join('');
+        syncStyleFilterSelection();
+      }
+
+      function setDraftStyle(st) {
+        draftStyleFilter = st === 'all' || !st ? 'all' : st;
+        syncStyleFilterSelection();
+        updatePendingHint();
+      }
+
+      function setDraftCategory(cat) {
+        draftCategory = cat;
+        syncCategoryFilterTrigger();
+        syncCategoryFilterSelection();
+        updatePendingHint();
+      }
+
+      function updateFilterResultsMeta() {
+        const filteredLen = flatItems.filter(matchesFilters).length;
+        const total = flatItems.length;
+        let msg = `Widocznych na siatce: ${filteredLen} z ${total} plakatów`;
+        if (activeCategory !== 'all') msg += ` · kategoria: ${activeCategory}`;
+        if (activeStatusFilter === 'new') msg += ' · tylko: nowe (niewybrane do druku)';
+        if (activeStatusFilter === 'approved') msg += ' · tylko: zatwierdzone do druku';
+        if (activeStyleFilter !== 'all') msg += ` · styl: ${activeStyleFilter}`;
+        if (searchQuery.trim()) msg += ' · wyszukiwanie tekstowe';
+        els.filterResultsMeta.textContent = total === 0 && filteredLen === 0 ? '' : msg;
       }
 
       function escapeHtml(str) {
@@ -813,14 +4222,159 @@
         return escapeHtml(str).replace(/'/g, '&#39;');
       }
 
+      function clampAutoPosterCount(raw) {
+        let n = parseInt(String(raw), 10);
+        if (Number.isNaN(n)) n = 1;
+        return Math.min(50, Math.max(1, n));
+      }
+
+      function shellQuoteCliArg(s) {
+        const t = String(s);
+        if (!/[\s"'\\]/.test(t)) return t;
+        return '"' + t.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+      }
+
+      function buildAutoCliCommand() {
+        const n = clampAutoPosterCount(els.studioAutoCount.value);
+        const scope = els.studioAutoScope.value;
+        const styleVal = els.studioAutoStyle && els.studioAutoStyle.value ? els.studioAutoStyle.value.trim() : '';
+        const styleSuffix = styleVal ? ` --style ${shellQuoteCliArg(styleVal)}` : '';
+        if (scope === '__all__') {
+          const npmAlt = n === 5 && !styleVal ? 'npm run generate-all' : '';
+          return { line: `node index.js generate-all ${n}${styleSuffix}`, npmAlt };
+        }
+        const q = shellQuoteCliArg(scope);
+        const npmAlt = n === 5 && scope === 'Botanika' && !styleVal ? 'npm run generate-botanika' : '';
+        return { line: `node index.js generate ${q} ${n}${styleSuffix}`, npmAlt };
+      }
+
+      function updateStudioAutoCountLabels() {
+        const lbl = document.getElementById('studioAutoCountLabel');
+        const hint = document.getElementById('studioAutoCountHint');
+        const fixed = els.studioAutoStyle && els.studioAutoStyle.value.trim();
+        if (lbl) {
+          lbl.textContent = fixed
+            ? 'Liczba plakatów (łącznie, wybrany styl)'
+            : 'Liczba plakatów na każdy styl';
+        }
+        if (hint) {
+          hint.innerHTML = fixed
+            ? 'Dokładnie tyle plakatów w <strong>wybranym</strong> stylu — np. Botanika + line art + <strong>1</strong> = jeden plakat. Max 50. Przy „Wszystkie kategorie” — tyle samo w każdej kategorii.'
+            : 'Tyle plakatów wygeneruje się <strong>dla każdego</strong> stylu osobno (np. <strong>1</strong> i 8 stylów → 8 plakatów w jednej kategorii). Max 50 na styl. Przy „Wszystkie kategorie” koszt = kategorie × style × liczba.';
+        }
+      }
+
+      function updateStudioAutoCommand() {
+        if (!els.studioAutoCommand || !els.studioAutoCount) return;
+        const n = clampAutoPosterCount(els.studioAutoCount.value);
+        els.studioAutoCount.value = String(n);
+        updateStudioAutoCountLabels();
+        const { line, npmAlt } = buildAutoCliCommand();
+        els.studioAutoCommand.textContent = line;
+        if (els.studioAutoNpmHint) {
+          if (npmAlt) {
+            els.studioAutoNpmHint.innerHTML =
+              'Odpowiednik z <code>package.json</code> (przy liczbie 5, bez <code>--style</code>): <code>' +
+              escapeHtml(npmAlt) +
+              '</code>';
+          } else {
+            els.studioAutoNpmHint.innerHTML =
+              'Skrypty <code>npm run generate-all</code> / <code>generate-botanika</code> mają stałą liczbę <strong>5</strong> i <strong>nie</strong> przekazują stylu — przy wybranym stylu użyj polecenia z pola powyżej.';
+          }
+        }
+      }
+
+      function fillStudioAutoScopeSelect(categories) {
+        if (!els.studioAutoScope) return;
+        const cats = Array.isArray(categories) ? categories : [];
+        const sorted = [...cats].sort((a, b) => String(a).localeCompare(String(b), 'pl'));
+        els.studioAutoScope.innerHTML =
+          '<option value="__all__">Wszystkie kategorie</option>' +
+          sorted.map((c) => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('');
+        updateStudioAutoCommand();
+      }
+
+      function fillStudioAutoStyleSelect(artStyles) {
+        if (!els.studioAutoStyle) return;
+        const styles = Array.isArray(artStyles) ? artStyles : [];
+        const cur = els.studioAutoStyle.value;
+        els.studioAutoStyle.innerHTML =
+          '<option value="">Wszystkie style (liczba = na każdy styl osobno)</option>' +
+          styles.map((s) => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
+        if (cur && [...els.studioAutoStyle.options].some((o) => o.value === cur)) {
+          els.studioAutoStyle.value = cur;
+        }
+        updateStudioAutoCommand();
+      }
+
+      function setStudioAutoRunStatus(text, kind) {
+        if (!els.studioAutoRunStatus) return;
+        els.studioAutoRunStatus.textContent = text || '';
+        els.studioAutoRunStatus.classList.remove('is-error', 'is-ok');
+        if (kind === 'error') els.studioAutoRunStatus.classList.add('is-error');
+        if (kind === 'ok') els.studioAutoRunStatus.classList.add('is-ok');
+      }
+
+      function setStudioAutoBatchUiBusy(busy) {
+        const d = !!busy;
+        if (els.studioAutoScope) els.studioAutoScope.disabled = d;
+        if (els.studioAutoStyle) els.studioAutoStyle.disabled = d;
+        if (els.studioAutoCount) els.studioAutoCount.disabled = d;
+        if (els.btnRunStudioAutoBatch) els.btnRunStudioAutoBatch.disabled = d;
+        if (els.btnCopyStudioAutoCommand) els.btnCopyStudioAutoCommand.disabled = d;
+      }
+
+      function clearStudioAutoProgressInterval() {
+        if (studioAutoProgressInterval != null) {
+          window.clearInterval(studioAutoProgressInterval);
+          studioAutoProgressInterval = null;
+        }
+      }
+
+      function startStudioAutoProgressUi() {
+        clearStudioAutoProgressInterval();
+        if (!els.studioAutoProgress || !els.studioAutoProgressMeta) return;
+        els.studioAutoProgress.hidden = false;
+        els.studioAutoProgress.classList.remove('is-complete');
+        const t0 = Date.now();
+        const tick = () => {
+          const sec = Math.floor((Date.now() - t0) / 1000);
+          const m = Math.floor(sec / 60);
+          const s = sec % 60;
+          const timeStr = m > 0 ? `${m} min ${s} s` : `${s} s`;
+          els.studioAutoProgressMeta.textContent =
+            `Synchronizacja z API (DALL-E / LLM) — praca w toku… upłynęło ${timeStr} (czas zależy od liczby plakatów i API).`;
+        };
+        tick();
+        studioAutoProgressInterval = window.setInterval(tick, 400);
+      }
+
+      function stopStudioAutoProgressUi(success) {
+        clearStudioAutoProgressInterval();
+        if (!els.studioAutoProgress || !els.studioAutoProgressMeta) return;
+        if (success) {
+          els.studioAutoProgress.classList.add('is-complete');
+          els.studioAutoProgressMeta.textContent = 'Gotowe — PNG w bibliotece (bez PDF). Odświeżanie strony…';
+        } else {
+          els.studioAutoProgress.hidden = true;
+          els.studioAutoProgress.classList.remove('is-complete');
+          els.studioAutoProgressMeta.textContent = '';
+        }
+      }
+
       function matchesFilters(item) {
         if (activeCategory !== 'all' && item.category !== activeCategory) return false;
+        if (activeStyleFilter !== 'all' && (item.style || '') !== activeStyleFilter) return false;
+        if (activeStatusFilter === 'new' && item.approvedForPrint) return false;
+        if (activeStatusFilter === 'approved' && !item.approvedForPrint) return false;
         if (!searchQuery.trim()) return true;
         const q = searchQuery.trim().toLowerCase();
         const inPrompt = (item.prompt || '').toLowerCase().includes(q);
+        const st = (item.style || '').toLowerCase();
         return (
           item.title.toLowerCase().includes(q) ||
           item.category.toLowerCase().includes(q) ||
+          st.includes(q) ||
           inPrompt
         );
       }
@@ -837,12 +4391,18 @@
           btn.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
           btn.setAttribute('role', 'listitem');
           const pdfs = item.pdfLinks || [];
+          const hasFramed = !!(item.imagePathFramed && String(item.imagePathFramed).trim());
+          const appr = !!item.approvedForPrint;
+          const badgeClass = appr ? 'poster-status-badge--approved' : 'poster-status-badge--new';
+          const badgeText = appr ? 'Zatwierdzony' : 'Nowy';
+          const framedPill = hasFramed ? '<span class="size-pill size-pill--framed">Ramka</span>' : '';
           btn.innerHTML = `
-            <figure><img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" /></figure>
+            <figure><img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" /><span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span></figure>
             <div class="poster-body">
               <h3 class="poster-title">${escapeHtml(item.title)}</h3>
               <p class="poster-style">${escapeHtml(item.style)} · ${escapeHtml(item.category)}</p>
               <div class="poster-sizes">
+                ${framedPill}
                 ${pdfs.map((l) => `<span class="size-pill">${escapeHtml(l.label)}</span>`).join('')}
               </div>
             </div>
@@ -854,24 +4414,173 @@
               openModal(item);
             }
           });
+          const fig = btn.querySelector('figure');
+          if (fig) {
+            const inBasket = removeBasket.has(removeBasketKeyFromItem(item));
+            if (inBasket) btn.classList.add('poster-card--marked-remove');
+            const bq = document.createElement('button');
+            bq.type = 'button';
+            bq.className = 'poster-card-basket-btn' + (inBasket ? ' is-in-basket' : '');
+            bq.textContent = inBasket ? 'W koszyku' : 'Do koszyka';
+            bq.setAttribute(
+              'aria-label',
+              inBasket ? 'Usuń z koszyka usunięć' : 'Dodaj do koszyka usunięć'
+            );
+            bq.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleRemoveBasketItem(item);
+            });
+            bq.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+            });
+            fig.appendChild(bq);
+          }
           els.posterGrid.appendChild(btn);
         });
+        updateFilterResultsMeta();
+      }
+
+      function closePosterLightbox() {
+        if (!els.modalLightbox || els.modalLightbox.hidden) return;
+        els.modalLightbox.classList.remove('is-open');
+        els.modalLightbox.hidden = true;
+        els.modalLightboxImg.removeAttribute('src');
+        els.modalLightboxImg.alt = '';
+        if (els.modalLightboxFrame) els.modalLightboxFrame.classList.remove('poster-aspect-frame--natural');
+      }
+
+      async function copyTextWithOptionalFeedback(text, feedbackEl, okMsg) {
+        const t = String(text || '').trim();
+        if (!t) return;
+        if (feedbackEl) feedbackEl.textContent = '';
+        try {
+          await navigator.clipboard.writeText(t);
+          if (feedbackEl) feedbackEl.textContent = okMsg || 'Skopiowano.';
+        } catch (_) {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = t;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (feedbackEl) feedbackEl.textContent = okMsg || 'Skopiowano.';
+          } catch (e2) {
+            if (feedbackEl) feedbackEl.textContent = 'Copy manually from the field.';
+          }
+        }
+      }
+
+      function setModalPreviewVariant(variant) {
+        if (!modalPosterItem) return;
+        const fr = modalPosterItem.imagePathFramed && String(modalPosterItem.imagePathFramed).trim();
+        const full = modalPosterItem.imagePath || '';
+        const v = variant === 'framed' && fr ? 'framed' : 'full';
+        const src = v === 'framed' ? fr : full;
+        if (!src) return;
+        els.modalImg.src = src;
+        modalPreviewVariant = v;
+        if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
+          els.modalPreviewThumbFull.classList.toggle('is-active', v === 'full');
+          els.modalPreviewThumbFramed.classList.toggle('is-active', v === 'framed');
+          els.modalPreviewThumbFull.setAttribute('aria-pressed', v === 'full' ? 'true' : 'false');
+          els.modalPreviewThumbFramed.setAttribute('aria-pressed', v === 'framed' ? 'true' : 'false');
+        }
+        if (els.modalVisualOpenLightbox) {
+          els.modalVisualOpenLightbox.classList.toggle('modal-visual--source-aspect', v === 'framed');
+        }
+      }
+
+      function syncModalPosterPreview(item, preferredVariant) {
+        const fr = item.imagePathFramed && String(item.imagePathFramed).trim();
+        const title = item.title || '';
+        els.modalImg.alt = title;
+        if (fr && els.modalPreviewThumbs) {
+          els.modalPreviewThumbs.hidden = false;
+          if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.src = item.imagePath || '';
+          if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.src = fr;
+          const want = preferredVariant === 'framed' ? 'framed' : 'full';
+          setModalPreviewVariant(want);
+        } else {
+          if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
+          if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.removeAttribute('src');
+          if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.removeAttribute('src');
+          els.modalImg.src = item.imagePath || '';
+          modalPreviewVariant = 'full';
+          if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
+            els.modalPreviewThumbFull.classList.add('is-active');
+            els.modalPreviewThumbFramed.classList.remove('is-active');
+            els.modalPreviewThumbFull.setAttribute('aria-pressed', 'true');
+            els.modalPreviewThumbFramed.setAttribute('aria-pressed', 'false');
+          }
+          if (els.modalVisualOpenLightbox) els.modalVisualOpenLightbox.classList.remove('modal-visual--source-aspect');
+        }
+      }
+
+      function openPosterLightbox() {
+        const src = els.modalImg.getAttribute('src');
+        if (!src) return;
+        els.modalLightboxImg.src = src;
+        els.modalLightboxImg.alt = els.modalImg.alt || '';
+        if (els.modalLightboxFrame) {
+          els.modalLightboxFrame.classList.toggle('poster-aspect-frame--natural', modalPreviewVariant === 'framed');
+        }
+        els.modalLightbox.hidden = false;
+        requestAnimationFrame(() => els.modalLightbox.classList.add('is-open'));
+        els.modalLightboxClose.focus();
       }
 
       function openModal(item) {
+        closePosterLightbox();
+        modalPosterItem = item;
+        if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
+        if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = '';
+        if (els.modalBasketFeedback) {
+          els.modalBasketFeedback.hidden = true;
+          els.modalBasketFeedback.textContent = '';
+        }
         els.modal.hidden = false;
         els.modal.classList.add('is-open');
-        els.modalImg.src = item.imagePath;
-        els.modalImg.alt = item.title;
+        syncModalPosterPreview(item, 'full');
         els.modalTitle.textContent = item.title;
-        els.modalMeta.textContent = `${item.style} · ${item.category}`;
+        if (els.modalCategoryValue) els.modalCategoryValue.textContent = item.category || '—';
+        if (els.modalStyleValue) els.modalStyleValue.textContent = item.style || '—';
+        const listing = (item.shopDescription || '').trim();
+        if (els.modalListingText) els.modalListingText.textContent = listing;
+        if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = !!listing;
+        if (els.modalGenerateListingBtn) {
+          const canGen = !!(item.id || item.imagePath);
+          els.modalGenerateListingBtn.hidden = !!listing || !canGen;
+        }
+        if (els.modalCopyListing) els.modalCopyListing.disabled = !listing;
+        if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+        if (els.modalApprovedPrint) {
+          els.modalApprovedPrint.checked = !!item.approvedForPrint;
+          els.modalApprovedPrint.disabled = false;
+        }
         const pr = (item.prompt || '').trim();
+        const llmLbl = (item.promptLlmLabel || '').trim();
+        if (els.modalPromptLlm) {
+          if (pr && llmLbl) {
+            els.modalPromptLlm.hidden = false;
+            els.modalPromptLlm.textContent = 'Prompt ułożył: ' + llmLbl;
+          } else {
+            els.modalPromptLlm.hidden = true;
+            els.modalPromptLlm.textContent = '';
+          }
+        }
         if (pr) {
           els.modalPromptBlock.hidden = false;
           els.modalPrompt.textContent = pr;
+          if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = false;
         } else {
           els.modalPromptBlock.hidden = true;
           els.modalPrompt.textContent = '';
+          if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = true;
         }
         const pdfs = item.pdfLinks || [];
         els.modalPdfs.innerHTML = pdfs
@@ -880,24 +4589,55 @@
               `<a href="${escapeAttr(l.href)}" download target="_blank" rel="noopener">PDF ${escapeHtml(l.label)}</a>`
           )
           .join('');
+        if (els.modalPdfsEmptyHint) {
+          const hideEmpty = pdfs.length > 0;
+          els.modalPdfsEmptyHint.hidden = hideEmpty;
+        }
+        if (els.modalFramedRow) {
+          const fr = item.imagePathFramed && String(item.imagePathFramed).trim();
+          if (fr) {
+            els.modalFramedRow.innerHTML = `<a href="${escapeAttr(fr)}" download target="_blank" rel="noopener">Pobierz PNG z ramką</a>`;
+          } else if (item.id) {
+            els.modalFramedRow.innerHTML = `<button type="button" class="studio-pro-chip" id="modalGenerateFramedBtn">Wygeneruj wersję z ramką</button>`;
+          } else {
+            els.modalFramedRow.innerHTML = '<span class="field-hint">Brak id wpisu — użyj przycisku pod siatką.</span>';
+          }
+        }
         document.body.style.overflow = 'hidden';
         els.modalClose.focus();
       }
 
       function closeModal() {
+        closePosterLightbox();
+        modalPosterItem = null;
         els.modal.classList.remove('is-open');
         els.modal.hidden = true;
         document.body.style.overflow = '';
         els.modalImg.src = '';
-      }
-
-      function setChipState(cat) {
-        activeCategory = cat;
-        els.categoryChips.querySelectorAll('.chip').forEach((chip) => {
-          const pressed = chip.getAttribute('data-cat') === cat;
-          chip.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-        });
-        renderGrid();
+        modalPreviewVariant = 'full';
+        if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
+        if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.removeAttribute('src');
+        if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.removeAttribute('src');
+        if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
+          els.modalPreviewThumbFull.classList.add('is-active');
+          els.modalPreviewThumbFramed.classList.remove('is-active');
+          els.modalPreviewThumbFull.setAttribute('aria-pressed', 'true');
+          els.modalPreviewThumbFramed.setAttribute('aria-pressed', 'false');
+        }
+        if (els.modalVisualOpenLightbox) els.modalVisualOpenLightbox.classList.remove('modal-visual--source-aspect');
+        if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
+        if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = '';
+        if (els.modalPromptLlm) {
+          els.modalPromptLlm.hidden = true;
+          els.modalPromptLlm.textContent = '';
+        }
+        if (els.modalFramedRow) els.modalFramedRow.innerHTML = '';
+        if (els.modalPdfsEmptyHint) els.modalPdfsEmptyHint.hidden = true;
+        if (els.modalListingText) els.modalListingText.textContent = '';
+        if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = true;
+        if (els.modalGenerateListingBtn) els.modalGenerateListingBtn.hidden = true;
+        if (els.modalCopyListing) els.modalCopyListing.disabled = true;
+        if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
       }
 
       async function load() {
@@ -910,8 +4650,18 @@
           flatItems = flattenPosters(rawCategories);
           renderStats(data.stats || { totalPosters: 0, totalPdfs: 0, categories: 0 });
           const cats = Object.keys(rawCategories);
-          renderChips(cats);
-          setChipState(activeCategory === 'all' || cats.includes(activeCategory) ? activeCategory : 'all');
+          if (activeCategory !== 'all' && !cats.includes(activeCategory)) activeCategory = 'all';
+          draftCategory = activeCategory;
+          draftStatusFilter = activeStatusFilter;
+          draftStyleFilter = activeStyleFilter;
+          if (els.search) els.search.value = searchQuery;
+          categoryCountMap = buildCategoryCountMap(rawCategories);
+          renderCategoryFilterList(cats);
+          renderLibraryStyleFilterList();
+          syncStatusFilterButtons();
+          updatePendingHint();
+          renderGrid();
+          syncRemoveBasketWithLibrary();
           els.updatedAt.textContent =
             'Zaktualizowano: ' +
             new Intl.DateTimeFormat('pl-PL', {
@@ -923,29 +4673,428 @@
           els.errorState.hidden = false;
           els.statsRow.innerHTML = '';
           els.posterGrid.innerHTML = '';
-          els.categoryChips.innerHTML = '';
+          els.categoryFilterListbox.innerHTML = '';
+          categoryCountMap = { __all: 0 };
+          activeCategory = 'all';
+          draftCategory = 'all';
+          activeStatusFilter = 'all';
+          draftStatusFilter = 'all';
+          activeStyleFilter = 'all';
+          draftStyleFilter = 'all';
+          searchQuery = '';
+          if (els.search) els.search.value = '';
+          els.categoryFilterTriggerLabel.textContent = '—';
+          els.categoryFilterTriggerCount.textContent = '';
+          if (els.filterResultsMeta) els.filterResultsMeta.textContent = '';
+          if (els.libraryStyleFilterListbox) els.libraryStyleFilterListbox.innerHTML = '';
+          syncStatusFilterButtons();
+          updatePendingHint();
         }
       }
 
+      if (els.libraryBasketClear) {
+        els.libraryBasketClear.addEventListener('click', () => {
+          if (removeBasket.size === 0) return;
+          removeBasket.clear();
+          renderRemoveBasketDock();
+          renderGrid();
+        });
+      }
+
+      if (els.libraryBasketConfirm) {
+        els.libraryBasketConfirm.addEventListener('click', async () => {
+          if (removeBasket.size === 0) return;
+          const n = removeBasket.size;
+          const msg = `Na pewno usunąć z biblioteki (${plCountPosters(n)})? Znikną wpisy w bibliotece oraz powiązane pliki PNG i PDF w folderze posters/.`;
+          if (!window.confirm(msg)) return;
+          const items = [...removeBasket.keys()].map((imagePath) => ({ imagePath }));
+          try {
+            const res = await fetch('/api/posters/remove', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            removeBasket.clear();
+            renderRemoveBasketDock();
+            await load();
+          } catch (err) {
+            window.alert(err.message || 'Nie udało się usunąć plakatów.');
+          }
+        });
+      }
+
+      if (els.modalAddToRemoveBasket) {
+        els.modalAddToRemoveBasket.addEventListener('click', () => addCurrentModalToRemoveBasket());
+      }
+
       els.refreshBtn.addEventListener('click', load);
+
+      if (els.libraryFrameFilteredBtn) {
+        els.libraryFrameFilteredBtn.addEventListener('click', async () => {
+          const ids = flatItems.filter(matchesFilters).map((x) => x.id).filter(Boolean);
+          if (ids.length === 0) {
+            if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = 'Brak widocznych plakatów (sprawdź filtry).';
+            return;
+          }
+          if (
+            !window.confirm(
+              'Wygenerować plik *_ramka.png (równy passe-partout) dla ' + ids.length + ' widocznych plakatów?'
+            )
+          ) {
+            return;
+          }
+          if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = 'Przetwarzanie…';
+          els.libraryFrameFilteredBtn.disabled = true;
+          try {
+            const res = await fetch('/api/library/frame-variant', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ posterIds: ids }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            if (els.libraryFrameFeedback) {
+              els.libraryFrameFeedback.textContent =
+                'OK: ' + (data.okCount != null ? data.okCount : 0) + ', błędy: ' + (data.failCount != null ? data.failCount : 0);
+            }
+            await load();
+          } catch (err) {
+            if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = err.message || 'Błąd';
+          } finally {
+            els.libraryFrameFilteredBtn.disabled = false;
+          }
+        });
+      }
+
       els.search.addEventListener('input', () => {
-        searchQuery = els.search.value;
-        renderGrid();
+        updatePendingHint();
+      });
+      els.search.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyLibraryFilters();
+        }
+      });
+      if (els.filterApplyBtn) els.filterApplyBtn.addEventListener('click', applyLibraryFilters);
+      if (els.filterClearBtn) els.filterClearBtn.addEventListener('click', clearLibraryFilters);
+
+      if (els.statusFilterGroup) {
+        els.statusFilterGroup.addEventListener('click', (e) => {
+          const btn = e.target.closest('.filter-status-btn');
+          if (!btn || !els.statusFilterGroup.contains(btn)) return;
+          const st = btn.getAttribute('data-status');
+          if (st) setDraftStatusFilter(st);
+        });
+      }
+
+      if (els.modalApprovedPrint) {
+        els.modalApprovedPrint.addEventListener('change', async () => {
+          if (!modalPosterItem) return;
+          const want = els.modalApprovedPrint.checked;
+          const prev = !!modalPosterItem.approvedForPrint;
+          els.modalApprovedPrint.disabled = true;
+          if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = 'Zapisywanie…';
+          try {
+            const body = { approvedForPrint: want };
+            if (modalPosterItem.id) body.id = modalPosterItem.id;
+            else body.imagePath = modalPosterItem.imagePath;
+            const res = await fetch('/api/posters/approval', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            modalPosterItem.approvedForPrint = want;
+            if (els.modalApprovalFeedback) {
+              els.modalApprovalFeedback.textContent = want
+                ? 'Zapisano: zatwierdzony do druku.'
+                : 'Cofnięto zatwierdzenie do druku.';
+            }
+            renderGrid();
+          } catch (err) {
+            modalPosterItem.approvedForPrint = prev;
+            els.modalApprovedPrint.checked = prev;
+            if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = err.message || 'Błąd zapisu';
+          } finally {
+            els.modalApprovedPrint.disabled = false;
+            window.setTimeout(() => {
+              if (els.modalApprovalFeedback && els.modal && !els.modal.hidden) els.modalApprovalFeedback.textContent = '';
+            }, 2800);
+          }
+        });
+      }
+
+      els.categoryFilterListbox.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-category-option');
+        if (!btn || !els.categoryFilterListbox.contains(btn)) return;
+        const cat = btn.getAttribute('data-cat');
+        if (cat === 'all') setDraftCategory('all');
+        else if (cat) setDraftCategory(cat);
       });
 
-      els.categoryChips.addEventListener('click', (e) => {
-        const t = e.target.closest('.chip');
-        if (!t || !els.categoryChips.contains(t)) return;
-        const cat = t.getAttribute('data-cat');
-        if (cat) setChipState(cat);
-      });
+      if (els.libraryStyleFilterListbox) {
+        els.libraryStyleFilterListbox.addEventListener('click', (e) => {
+          const btn = e.target.closest('.filter-style-option');
+          if (!btn || !els.libraryStyleFilterListbox.contains(btn)) return;
+          const st = btn.getAttribute('data-style');
+          if (st === 'all') setDraftStyle('all');
+          else if (st) setDraftStyle(st);
+        });
+      }
 
       els.modalClose.addEventListener('click', closeModal);
-      els.modal.addEventListener('click', (e) => {
+      els.modal.addEventListener('click', async (e) => {
+        const frameBtn = e.target.closest('#modalGenerateFramedBtn');
+        if (frameBtn && modalPosterItem && modalPosterItem.id) {
+          e.preventDefault();
+          e.stopPropagation();
+          frameBtn.disabled = true;
+          const idKeep = modalPosterItem.id;
+          try {
+            const res = await fetch('/api/library/frame-variant', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ posterIds: [idKeep] }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            await load();
+            const next = flatItems.find((x) => x.id === idKeep);
+            if (next) openModal(next);
+          } catch (err) {
+            window.alert(err.message || 'Błąd generowania ramki');
+            frameBtn.disabled = false;
+          }
+          return;
+        }
         if (e.target === els.modal) closeModal();
       });
+
+      els.modalVisualOpenLightbox.addEventListener('click', () => openPosterLightbox());
+
+      if (els.modalPreviewThumbs) {
+        els.modalPreviewThumbs.addEventListener('click', (e) => {
+          const btn = e.target.closest('.modal-preview-thumb');
+          if (!btn || !els.modalPreviewThumbs.contains(btn)) return;
+          const v = btn.getAttribute('data-variant');
+          if (v === 'full' || v === 'framed') setModalPreviewVariant(v);
+        });
+      }
+
+      els.modalLightboxClose.addEventListener('click', () => closePosterLightbox());
+      els.modalLightbox.addEventListener('click', (e) => {
+        if (e.target === els.modalLightbox) closePosterLightbox();
+      });
+
+      els.modalCopyPrompt.addEventListener('click', async () => {
+        const text = (els.modalPrompt.textContent || '').trim();
+        if (!text) return;
+        await copyTextWithOptionalFeedback(text, els.modalCopyFeedback, 'Copied to clipboard.');
+        window.setTimeout(() => {
+          if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
+        }, 2200);
+      });
+
+      if (els.modalCopyTitle) {
+        els.modalCopyTitle.addEventListener('click', async () => {
+          const text = (els.modalTitle.textContent || '').trim();
+          await copyTextWithOptionalFeedback(text, els.modalListingFeedback, 'Title copied.');
+          window.setTimeout(() => {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+          }, 2000);
+        });
+      }
+
+      if (els.modalCopyCategory) {
+        els.modalCopyCategory.addEventListener('click', async () => {
+          const text = (els.modalCategoryValue.textContent || '').trim();
+          if (text === '—') return;
+          await copyTextWithOptionalFeedback(text, els.modalListingFeedback, 'Category copied.');
+          window.setTimeout(() => {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+          }, 2000);
+        });
+      }
+
+      if (els.modalCopyStyle) {
+        els.modalCopyStyle.addEventListener('click', async () => {
+          const text = (els.modalStyleValue.textContent || '').trim();
+          if (text === '—') return;
+          await copyTextWithOptionalFeedback(text, els.modalListingFeedback, 'Style copied.');
+          window.setTimeout(() => {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+          }, 2000);
+        });
+      }
+
+      if (els.modalCopyMetaLine) {
+        els.modalCopyMetaLine.addEventListener('click', async () => {
+          if (!modalPosterItem) return;
+          const line = `${modalPosterItem.style} · ${modalPosterItem.category}`;
+          await copyTextWithOptionalFeedback(line, els.modalListingFeedback, 'Metadata line copied.');
+          window.setTimeout(() => {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+          }, 2000);
+        });
+      }
+
+      if (els.modalCopyListing) {
+        els.modalCopyListing.addEventListener('click', async () => {
+          const text = (els.modalListingText.textContent || '').trim();
+          await copyTextWithOptionalFeedback(text, els.modalListingFeedback, 'Listing copied.');
+          window.setTimeout(() => {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+          }, 2000);
+        });
+      }
+
+      if (els.modalGenerateListingBtn) {
+        els.modalGenerateListingBtn.addEventListener('click', async () => {
+          if (!modalPosterItem) return;
+          els.modalGenerateListingBtn.disabled = true;
+          if (els.modalListingFeedback) els.modalListingFeedback.textContent = 'Generating listing…';
+          try {
+            const body = {};
+            if (modalPosterItem.id) body.id = modalPosterItem.id;
+            else body.imagePath = modalPosterItem.imagePath;
+            const res = await fetch('/api/posters/listing-description', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            const desc = (data.shopDescription || '').trim();
+            const idKeep = modalPosterItem.id;
+            const pathKeep = modalPosterItem.imagePath;
+            modalPosterItem.shopDescription = desc;
+            if (els.modalListingText) els.modalListingText.textContent = desc;
+            if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = true;
+            if (els.modalGenerateListingBtn) els.modalGenerateListingBtn.hidden = true;
+            if (els.modalCopyListing) els.modalCopyListing.disabled = !desc;
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = 'Saved listing to library.';
+            await load();
+            const next =
+              (idKeep && flatItems.find((x) => x.id === idKeep)) ||
+              (pathKeep && flatItems.find((x) => x.imagePath === pathKeep)) ||
+              null;
+            if (next) modalPosterItem = next;
+          } catch (err) {
+            if (els.modalListingFeedback) els.modalListingFeedback.textContent = err.message || 'Error';
+          } finally {
+            els.modalGenerateListingBtn.disabled = false;
+            window.setTimeout(() => {
+              if (els.modalListingFeedback && els.modal && !els.modal.hidden) els.modalListingFeedback.textContent = '';
+            }, 3200);
+          }
+        });
+      }
+
+      els.studioPreviewModal.addEventListener('click', (e) => {
+        if (e.target === els.studioPreviewModal) rejectStudioPreview();
+      });
+      els.studioPreviewClose.addEventListener('click', () => rejectStudioPreview());
+      els.studioPreviewReject.addEventListener('click', () => rejectStudioPreview());
+
+      els.studioPreviewAccept.addEventListener('click', async () => {
+        if (!activeStudioPreviewId) return;
+        const title = els.studioTitle.value.trim();
+        const category = els.studioCategory.value;
+        const style = els.studioStyle.value;
+        const imagePrompt = els.studioPrompt.value.trim();
+        if (!title || !imagePrompt) {
+          setStudioStatus('Uzupełnij tytuł i prompt przed zatwierdzeniem.', 'error');
+          return;
+        }
+        const previewId = activeStudioPreviewId;
+        setStudioStatus('Zapis do biblioteki (PNG)…');
+        els.studioPreviewAccept.disabled = true;
+        els.studioPreviewReject.disabled = true;
+        els.studioPreviewClose.disabled = true;
+        els.btnDraftPrompt.disabled = true;
+        els.btnGeneratePoster.disabled = true;
+        try {
+          const res = await fetch('/api/studio/commit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              previewId,
+              title,
+              category,
+              style,
+              imagePrompt,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          activeStudioPreviewId = null;
+          closeStudioPreviewModal();
+          setStudioStatus('Zapisano w bibliotece (PNG). Wersję z ramką dodasz w Bibliotece.', 'ok');
+          await load();
+        } catch (err) {
+          setStudioStatus(err.message || 'Błąd zapisu', 'error');
+        } finally {
+          els.studioPreviewAccept.disabled = false;
+          els.studioPreviewReject.disabled = false;
+          els.studioPreviewClose.disabled = false;
+          els.btnDraftPrompt.disabled = false;
+          els.btnGeneratePoster.disabled = false;
+        }
+      });
+      async function discardStudioPreviewRequest() {
+        if (!activeStudioPreviewId) return;
+        const id = activeStudioPreviewId;
+        activeStudioPreviewId = null;
+        try {
+          await fetch('/api/studio/discard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ previewId: id }),
+          });
+        } catch (_) {}
+      }
+
+      function closeStudioPreviewModal() {
+        els.studioPreviewModal.classList.remove('is-open');
+        els.studioPreviewModal.hidden = true;
+        if (els.studioPreviewImgFull) els.studioPreviewImgFull.removeAttribute('src');
+        document.body.style.overflow = '';
+      }
+
+      async function rejectStudioPreview() {
+        await discardStudioPreviewRequest();
+        closeStudioPreviewModal();
+      }
+
+      function openStudioPreviewModal(previewId, imageUrl) {
+        activeStudioPreviewId = previewId;
+        const ts = Date.now();
+        const sep = imageUrl.indexOf('?') >= 0 ? '&' : '?';
+        const fullSrc = imageUrl + sep + 't=' + ts;
+        if (els.studioPreviewImgFull) els.studioPreviewImgFull.src = fullSrc;
+        els.studioPreviewModal.hidden = false;
+        requestAnimationFrame(() => els.studioPreviewModal.classList.add('is-open'));
+        document.body.style.overflow = 'hidden';
+        els.studioPreviewAccept.focus();
+      }
+
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !els.modal.hidden) closeModal();
+        if (e.key === 'Escape') {
+          if (!els.studioPreviewModal.hidden && els.studioPreviewModal.classList.contains('is-open')) {
+            e.preventDefault();
+            rejectStudioPreview();
+            return;
+          }
+          if (!els.modalLightbox.hidden && els.modalLightbox.classList.contains('is-open')) {
+            e.preventDefault();
+            closePosterLightbox();
+            return;
+          }
+          if (!els.modal.hidden) closeModal();
+        }
       });
 
       function setStudioStatus(text, kind) {
@@ -973,12 +5122,88 @@
             .map((s) => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`)
             .join('');
           updateCategoryHint();
+          fillStudioAutoScopeSelect(data.categories || []);
+          fillStudioAutoStyleSelect(data.artStyles || []);
+          configArtStylesList = data.artStyles || [];
+          renderLibraryStyleFilterList();
         } catch (e) {
           setStudioStatus('Nie wczytano konfiguracji kategorii (endpoint /api/generation-config).', 'error');
         }
       }
 
       els.studioCategory.addEventListener('change', updateCategoryHint);
+
+      els.studioModeManual.addEventListener('click', () => setStudioMode('manual'));
+      els.studioModeAuto.addEventListener('click', () => setStudioMode('auto'));
+      els.studioAutoScope.addEventListener('change', updateStudioAutoCommand);
+      if (els.studioAutoStyle) els.studioAutoStyle.addEventListener('change', updateStudioAutoCommand);
+      els.studioAutoCount.addEventListener('input', updateStudioAutoCommand);
+      els.studioAutoCount.addEventListener('change', updateStudioAutoCommand);
+
+      els.btnRunStudioAutoBatch.addEventListener('click', async () => {
+        const n = clampAutoPosterCount(els.studioAutoCount.value);
+        const scope = els.studioAutoScope.value;
+        const all = scope === '__all__';
+        setStudioAutoBatchUiBusy(true);
+        setStudioAutoRunStatus('');
+        startStudioAutoProgressUi();
+        try {
+          const stylePick = els.studioAutoStyle && els.studioAutoStyle.value ? els.studioAutoStyle.value.trim() : '';
+          const res = await fetch('/api/studio/batch-generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              all,
+              ...(all ? {} : { category: scope }),
+              count: n,
+              ...(stylePick ? { artStyle: stylePick } : {}),
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          stopStudioAutoProgressUi(true);
+          await new Promise((r) => window.setTimeout(r, 620));
+          try {
+            sessionStorage.setItem(
+              STUDIO_AUTO_FLASH_KEY,
+              JSON.stringify({ msg: data.message || 'Zakończono.', kind: 'ok' })
+            );
+          } catch (_) {}
+          window.location.reload();
+        } catch (e) {
+          stopStudioAutoProgressUi(false);
+          setStudioAutoRunStatus(e.message || 'Błąd generowania wsadowego', 'error');
+        } finally {
+          setStudioAutoBatchUiBusy(false);
+        }
+      });
+
+      els.btnCopyStudioAutoCommand.addEventListener('click', async () => {
+        const text = (els.studioAutoCommand.textContent || '').trim();
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          els.studioAutoCopyFeedback.textContent = 'Skopiowano do schowka.';
+        } catch (_) {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            els.studioAutoCopyFeedback.textContent = 'Skopiowano do schowka.';
+          } catch (e2) {
+            els.studioAutoCopyFeedback.textContent = 'Zaznacz i skopiuj ręcznie z pola powyżej.';
+          }
+        }
+        window.setTimeout(() => {
+          els.studioAutoCopyFeedback.textContent = '';
+        }, 2800);
+      });
 
       els.btnDraftPrompt.addEventListener('click', async () => {
         const title = els.studioTitle.value.trim();
@@ -988,19 +5213,23 @@
           setStudioStatus('Podaj tytuł plakatu.', 'error');
           return;
         }
-        setStudioStatus('Łączenie z Claude…');
+        setStudioStatus('Łączenie z API…');
         els.btnDraftPrompt.disabled = true;
         els.btnGeneratePoster.disabled = true;
         try {
           const res = await fetch('/api/draft-image-prompt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, category, style }),
+            body: JSON.stringify({
+              title,
+              category,
+              style,
+            }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);
           els.studioPrompt.value = data.prompt || '';
-          setStudioStatus('Prompt wstawiony — możesz go edytować, potem „Generuj obraz”.', 'ok');
+          setStudioStatus('Prompt wstawiony — edytuj, potem „Generuj podgląd”.', 'ok');
         } catch (e) {
           setStudioStatus(e.message || 'Błąd przy układaniu promptu', 'error');
         } finally {
@@ -1008,6 +5237,17 @@
           els.btnGeneratePoster.disabled = false;
         }
       });
+
+      if (els.btnClearStudio) {
+        els.btnClearStudio.addEventListener('click', () => {
+          els.studioTitle.value = '';
+          els.studioPrompt.value = '';
+          setStudioStatus('');
+          try {
+            els.studioTitle.focus();
+          } catch (_) {}
+        });
+      }
 
       els.btnGeneratePoster.addEventListener('click', async () => {
         const title = els.studioTitle.value.trim();
@@ -1022,19 +5262,31 @@
           setStudioStatus('Wpisz lub wygeneruj prompt przed DALL-E.', 'error');
           return;
         }
-        setStudioStatus('Generowanie obrazu (DALL-E) i PDF — to może potrwać minutę…');
+        if (activeStudioPreviewId) {
+          const oldId = activeStudioPreviewId;
+          activeStudioPreviewId = null;
+          closeStudioPreviewModal();
+          try {
+            await fetch('/api/studio/discard', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ previewId: oldId }),
+            });
+          } catch (_) {}
+        }
+        setStudioStatus('Generowanie podglądu (DALL-E) — bez zapisu do biblioteki…');
         els.btnDraftPrompt.disabled = true;
         els.btnGeneratePoster.disabled = true;
         try {
-          const res = await fetch('/api/generate-poster', {
+          const res = await fetch('/api/studio/preview', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, category, style, imagePrompt }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);
-          setStudioStatus('Gotowe — plakat zapisany. Odświeżono listę.', 'ok');
-          await load();
+          setStudioStatus('Podgląd gotowy — zaakceptuj lub odrzuć w oknie.', 'ok');
+          openStudioPreviewModal(data.previewId, data.imageUrl);
         } catch (e) {
           setStudioStatus(e.message || 'Błąd generowania', 'error');
         } finally {
@@ -1043,7 +5295,25 @@
         }
       });
 
+      document.getElementById('themeToggle').addEventListener('click', function () {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        applyTheme(isLight ? 'dark' : 'light');
+      });
+
+      applyTheme(getStoredTheme());
+
+      setStudioMode(getStoredStudioMode());
+      updateStudioAutoCommand();
+      try {
+        const raw = sessionStorage.getItem(STUDIO_AUTO_FLASH_KEY);
+        if (raw) {
+          sessionStorage.removeItem(STUDIO_AUTO_FLASH_KEY);
+          const j = JSON.parse(raw);
+          if (j && j.msg) setStudioAutoRunStatus(String(j.msg), j.kind === 'error' ? 'error' : 'ok');
+        }
+      } catch (_) {}
       loadGenerationConfig();
+      syncStatusFilterButtons();
       load();
     })();
   </script>
