@@ -1,146 +1,152 @@
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.static('posters'));
+const INVENTORY_PATH = path.join(__dirname, 'posters_inventory.json');
+
+let batchGenerator = null;
+function getBatchGenerator() {
+  if (!batchGenerator) {
+    const PosterBatchGenerator = require('./src/posterGenerator');
+    batchGenerator = new PosterBatchGenerator();
+  }
+  return batchGenerator;
+}
+
 app.use(express.json());
 
-// Serve HTML preview page
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Poster Preview</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { margin-bottom: 20px; color: #333; }
-        .category-section { margin-bottom: 40px; }
-        .category-title { font-size: 24px; font-weight: bold; margin: 30px 0 15px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .poster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .poster-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .poster-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .poster-image { width: 100%; height: 300px; object-fit: cover; background: #f0f0f0; }
-        .poster-info { padding: 15px; }
-        .poster-title { font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
-        .poster-meta { font-size: 12px; color: #7f8c8d; margin-bottom: 10px; }
-        .poster-links { display: flex; gap: 5px; flex-wrap: wrap; }
-        .pdf-link { display: inline-block; padding: 5px 10px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; font-size: 11px; }
-        .pdf-link:hover { background: #2980b9; }
-        .stats { background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
-        .stat-item { text-align: center; }
-        .stat-number { font-size: 32px; font-weight: bold; color: #3498db; }
-        .stat-label { font-size: 12px; color: #7f8c8d; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>🎨 Poster Preview</h1>
-        <div id="stats" class="stats"></div>
-        <div id="categories"></div>
-      </div>
+function cleanPosterSubPath(filePath) {
+  if (!filePath) return '';
+  const normalized = filePath.replace(/\\/g, '/');
+  return normalized.replace(/^posters\//, '');
+}
 
-      <script>
-        async function loadPosters() {
-          try {
-            const response = await fetch('/api/posters');
-            const data = await response.json();
+function buildPdfLinks(poster) {
+  const raw = poster.pdfPaths;
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    const labels = ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'];
+    return raw.map((p, idx) => ({
+      label: labels[idx] || `f${idx + 1}`,
+      href: '/' + cleanPosterSubPath(p),
+    }));
+  }
+  return Object.entries(raw).map(([label, filePath]) => ({
+    label,
+    href: '/' + cleanPosterSubPath(filePath),
+  }));
+}
 
-            // Update stats
-            const stats = data.stats;
-            document.getElementById('stats').innerHTML = \`
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <div class="stat-number">\${stats.totalPosters}</div>
-                  <div class="stat-label">Total Posters</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">\${stats.totalPdfs}</div>
-                  <div class="stat-label">PDF Files</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">\${stats.categories}</div>
-                  <div class="stat-label">Categories</div>
-                </div>
-              </div>
-            \`;
-
-            // Display posters by category
-            const categoriesDiv = document.getElementById('categories');
-            const categories = Object.keys(data.posters).sort();
-
-            categoriesDiv.innerHTML = categories.map(category => {
-              const posters = data.posters[category];
-              return \`
-                <div class="category-section">
-                  <div class="category-title">\${category} (\${posters.length})</div>
-                  <div class="poster-grid">
-                    \${posters.map(poster => \`
-                      <div class="poster-card">
-                        <img src="\${poster.imagePath}" class="poster-image" alt="\${poster.title}">
-                        <div class="poster-info">
-                          <div class="poster-title">\${poster.title}</div>
-                          <div class="poster-meta">\${poster.style}</div>
-                          <div class="poster-links">
-                            \${poster.pdfs.map((pdf, idx) => \`
-                              <a href="\${pdf}" class="pdf-link">\${[
-                                '13x18', '21x30', '30x40', '40x50', '50x70', '70x100'
-                              ][idx]}</a>
-                            \`).join('')}
-                          </div>
-                        </div>
-                      </div>
-                    \`).join('')}
-                  </div>
-                </div>
-              \`;
-            }).join('');
-          } catch (error) {
-            document.getElementById('categories').innerHTML = '<p>Error loading posters</p>';
-          }
-        }
-
-        loadPosters();
-      </script>
-    </body>
-    </html>
-  `);
-});
-
-// API endpoint to get all posters
+// API — must be before static so /api/* is never shadowed by files
 app.get('/api/posters', (req, res) => {
-  const inventory = JSON.parse(fs.readFileSync('posters_inventory.json', 'utf-8'));
+  if (!fs.existsSync(INVENTORY_PATH)) {
+    return res.status(404).json({ error: 'missing_inventory', posters: {}, stats: { totalPosters: 0, totalPdfs: 0, categories: 0 } });
+  }
 
+  const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
   const posters = {};
+
+  const totalPdfs = inventory.posters.reduce((n, p) => {
+    if (!p.pdfPaths) return n;
+    if (Array.isArray(p.pdfPaths)) return n + p.pdfPaths.length;
+    return n + Object.keys(p.pdfPaths).length;
+  }, 0);
+
   const stats = {
     totalPosters: inventory.posters.length,
-    totalPdfs: inventory.posters.length * 6,
-    categories: new Set(inventory.posters.map(p => p.category)).size
+    totalPdfs,
+    categories: new Set(inventory.posters.map((p) => p.category)).size,
   };
 
-  // Group by category
   for (const poster of inventory.posters) {
     if (!posters[poster.category]) {
       posters[poster.category] = [];
     }
 
+    const webImagePath = poster.imagePath.replace(/\\/g, '/');
+    const cleanImagePath = cleanPosterSubPath(webImagePath);
+
+    const pdfLinks = buildPdfLinks(poster);
+    const legacyPdfs = pdfLinks.map((l) => l.href.replace(/^\//, ''));
+
     posters[poster.category].push({
       title: poster.title,
       style: poster.artStyle,
-      imagePath: `/${poster.imagePath}`,
-      pdfs: poster.pdfPaths || []
+      imagePath: '/' + cleanImagePath,
+      pdfLinks,
+      pdfs: legacyPdfs,
+      createdAt: poster.createdAt || null,
+      prompt: poster.prompt || '',
     });
   }
 
   res.json({ posters, stats });
 });
+
+app.get('/api/generation-config', (req, res) => {
+  res.json({
+    categories: Object.keys(config.categories),
+    categoryHints: config.categories,
+    artStyles: config.artStyles,
+  });
+});
+
+app.post('/api/draft-image-prompt', async (req, res) => {
+  try {
+    const { title, category, style } = req.body || {};
+    if (!title || !category || !style) {
+      return res.status(400).json({ error: 'Wymagane pola: title, category, style' });
+    }
+    if (!Object.prototype.hasOwnProperty.call(config.categories, category)) {
+      return res.status(400).json({ error: 'Nieznana kategoria' });
+    }
+    const ContentGenerator = require('./src/contentGenerator');
+    const cg = new ContentGenerator();
+    const promptText = await cg.generateImagePrompt(String(title).trim(), category, style);
+    res.json({ prompt: promptText });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Błąd serwera' });
+  }
+});
+
+app.post('/api/generate-poster', async (req, res) => {
+  try {
+    const { title, category, style, imagePrompt } = req.body || {};
+    const trimmedPrompt = imagePrompt != null ? String(imagePrompt).trim() : '';
+    if (!title || !category || !style || !trimmedPrompt) {
+      return res.status(400).json({
+        error: 'Wymagane pola: title, category, style, imagePrompt (niepusty)',
+      });
+    }
+    if (!Object.prototype.hasOwnProperty.call(config.categories, category)) {
+      return res.status(400).json({ error: 'Nieznana kategoria' });
+    }
+    if (!config.artStyles.includes(style)) {
+      return res.status(400).json({ error: 'Nieznany styl' });
+    }
+    if (trimmedPrompt.length > 3900) {
+      return res.status(400).json({ error: 'Prompt jest za długi (max ~3900 znaków dla DALL-E 3)' });
+    }
+    const gen = getBatchGenerator();
+    const result = await gen.generateOnePoster(category, String(title).trim(), style, trimmedPrompt);
+    const relImage = result.imagePath.replace(/\\/g, '/');
+    res.json({
+      ok: true,
+      id: result.id,
+      imagePath: '/' + cleanPosterSubPath(relImage),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Generowanie nie powiodło się' });
+  }
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'posters')));
 
 app.listen(PORT, () => {
   console.log(`\n✓ Preview server running at http://localhost:${PORT}`);

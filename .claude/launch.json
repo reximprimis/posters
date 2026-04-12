@@ -1,0 +1,30 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Poster Preview Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "Generate Botanika Posters",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "generate-botanika"],
+      "port": null
+    },
+    {
+      "name": "Generate All Categories",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "generate-all"],
+      "port": null
+    },
+    {
+      "name": "View Inventory Stats",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "stats"],
+      "port": null
+    }
+  ]
+}

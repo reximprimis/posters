@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ContentGenerator = require('./contentGenerator');
-const CanvaGenerator = require('./canvaGenerator');
+const DalleImageGenerator = require('./dalleImageGenerator');
 const PDFGenerator = require('./pdfGenerator');
 const config = require('../config');
 const { v4: uuidv4 } = require('uuid');
@@ -10,10 +10,10 @@ class PosterBatchGenerator {
   constructor() {
     this.contentGen = new ContentGenerator();
     try {
-      this.imageGen = new CanvaGenerator();
+      this.imageGen = new DalleImageGenerator();
     } catch (error) {
-      console.warn('⚠️  Canva not configured, falling back to placeholder images:', error.message);
-      this.imageGen = new CanvaGenerator(); // Still create instance for fallback functionality
+      console.warn('⚠️  DALL-E not configured:', error.message);
+      throw error;
     }
     this.pdfGen = new PDFGenerator();
     this.dbFile = 'posters_inventory.json';
@@ -53,6 +53,27 @@ class PosterBatchGenerator {
     return this.db.posters.filter((p) => p.category === category).length;
   }
 
+  /**
+   * Jeden plakat: obraz DALL-E z podanego promptu + PDF-y + wpis do inventory.
+   */
+  async generateOnePoster(category, title, style, imagePrompt) {
+    const categoryDir = path.join(config.outputDir, category);
+    if (!fs.existsSync(categoryDir)) {
+      fs.mkdirSync(categoryDir, { recursive: true });
+    }
+
+    const safeFileBase = title.replace(/\s+/g, '_');
+    const imagePath = path.join(categoryDir, `${safeFileBase}.png`);
+
+    await this.imageGen.generateImage(title, category, style, imagePath, {
+      customPrompt: imagePrompt,
+    });
+    const pdfPaths = await this.pdfGen.createMultisizePDF(imagePath, title, categoryDir);
+    const id = this.addPosterToDb(category, title, style, imagePath, pdfPaths, imagePrompt);
+
+    return { id, imagePath, pdfPaths };
+  }
+
   async generateCategory(category, count = 5) {
     console.log('\n' + '='.repeat(60));
     console.log(`Generating ${count} posters for: ${category}`);
@@ -80,10 +101,12 @@ class PosterBatchGenerator {
       const imagePrompt = await this.contentGen.generateImagePrompt(title, category, style);
       console.log(`  → Prompt: ${imagePrompt}`);
 
-      // Generate image
+      // Generate image (używa tego samego promptu co zapisany w bazie)
       console.log(`  → Generating image...`);
       const imagePath = path.join(categoryDir, `${title.replace(/\s+/g, '_')}.png`);
-      await this.imageGen.createAndExportDesign(title, category, style, imagePath);
+      await this.imageGen.generateImage(title, category, style, imagePath, {
+        customPrompt: imagePrompt,
+      });
 
       // Create PDFs for all sizes
       console.log(`  → Creating PDFs (6 sizes)...`);
