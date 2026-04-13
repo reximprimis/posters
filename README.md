@@ -2,6 +2,11 @@
 
 Automated system to generate print-ready posters in 16+ categories using AI.
 
+## Operational Docs
+
+- Frame + thumb + PDF workflow: `docs/FRAME_THUMB_PDF_FLOW.md`
+- Application versioning: `docs/VERSIONING.md`
+
 ## Quick Start
 
 ```bash

@@ -158,6 +158,59 @@
       line-height: 1.5;
     }
 
+    .library-reload-hero-wrap {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .library-reload-hero {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      min-width: min(430px, 90vw);
+      padding: 0.92rem 1.7rem;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--accent) 68%, #5f2a12);
+      background: linear-gradient(158deg, #ff944c 0%, #e17129 52%, #b24c16 100%);
+      color: #fff8f4;
+      font-family: inherit;
+      font-size: 1.03rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow:
+        0 0 0 1px rgba(255, 187, 136, 0.24) inset,
+        0 12px 34px rgba(196, 92, 38, 0.44),
+        0 0 40px rgba(221, 110, 40, 0.2);
+      transition: transform 0.12s ease, filter 0.18s ease, box-shadow 0.2s ease;
+    }
+
+    .library-reload-hero:hover {
+      filter: brightness(1.07);
+      transform: translateY(-1px) scale(1.01);
+      box-shadow:
+        0 0 0 1px rgba(255, 203, 162, 0.3) inset,
+        0 14px 40px rgba(196, 92, 38, 0.52),
+        0 0 52px rgba(236, 128, 60, 0.32);
+    }
+
+    .library-reload-hero:active {
+      transform: translateY(0) scale(0.995);
+      filter: brightness(0.98);
+    }
+
+    .library-reload-hero:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 75%, #ffd1b1);
+      outline-offset: 3px;
+    }
+
+    .library-reload-hero-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
     .library-browse-surface {
       display: grid;
       grid-template-columns: minmax(0, 19.75rem) minmax(0, 1fr);
@@ -495,6 +548,22 @@
       border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--pill-bg);
+    }
+
+    .version-pill {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #e9fff2;
+      padding: 0.38rem 0.78rem;
+      border-radius: 999px;
+      border: 1px solid rgba(74, 196, 127, 0.56);
+      background: linear-gradient(160deg, rgba(34, 130, 80, 0.92), rgba(22, 97, 60, 0.94));
+      box-shadow:
+        0 0 0 1px rgba(156, 255, 200, 0.14) inset,
+        0 0 18px rgba(64, 201, 127, 0.28);
+      white-space: nowrap;
     }
 
     .stats-row {
@@ -1160,89 +1229,167 @@
       outline-offset: 2px;
     }
 
-    .poster-card-basket-btn {
+    .poster-card--marked-approve {
+      outline: 2px solid rgba(61, 122, 79, 0.65);
+      outline-offset: 2px;
+    }
+
+    .poster-card-select {
       position: absolute;
+      top: 0.45rem;
       right: 0.45rem;
-      bottom: 0.45rem;
-      z-index: 4;
-      font-size: 0.72rem;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+      pointer-events: auto;
+    }
+
+    .poster-card-cb {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0.28rem 0.45rem 0.28rem 0.4rem;
+      border-radius: 10px;
+      font-size: 0.62rem;
       font-weight: 700;
       font-family: var(--font-body);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 0.35rem 0.55rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: rgba(20, 18, 16, 0.82);
-      color: #f5f0e8;
+      letter-spacing: 0.07em;
       cursor: pointer;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+      user-select: none;
+      border: 1px solid rgba(255, 250, 245, 0.14);
+      background: rgba(12, 10, 9, 0.82);
+      color: #ebe6de;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
     }
 
-    .poster-card-basket-btn:hover {
-      background: rgba(196, 92, 38, 0.92);
-      border-color: rgba(196, 92, 38, 0.6);
-      color: #fffaf5;
+    .poster-card-cb input {
+      width: 0.95rem;
+      height: 0.95rem;
+      margin: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
 
-    .poster-card-basket-btn.is-in-basket {
-      background: rgba(61, 122, 79, 0.92);
-      border-color: rgba(61, 122, 79, 0.55);
-      color: #f4faf6;
+    .poster-card-cb--approve {
+      border-color: rgba(111, 168, 130, 0.35);
     }
 
-    html[data-theme='light'] .poster-card-basket-btn {
-      background: rgba(255, 252, 247, 0.92);
+    .poster-card-cb--approve input {
+      accent-color: #3d7a4f;
+    }
+
+    html[data-theme='light'] .poster-card-cb {
+      background: rgba(255, 252, 247, 0.94);
       color: var(--text);
       border-color: var(--border);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     }
 
-    html[data-theme='light'] .poster-card-basket-btn:hover {
-      background: rgba(196, 92, 38, 0.95);
-      color: #fffaf5;
-    }
-
-    html[data-theme='light'] .poster-card-basket-btn.is-in-basket {
-      background: rgba(47, 107, 69, 0.92);
-      color: #f4faf6;
-    }
-
-    .library-remove-basket {
+    .library-selection-dock {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
       z-index: 900;
-      padding: 0.75rem clamp(1rem, 3vw, 1.75rem) calc(0.85rem + env(safe-area-inset-bottom, 0));
-      background: linear-gradient(to top, rgba(14, 12, 10, 0.97), rgba(14, 12, 10, 0.88));
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+      padding: 0.85rem clamp(1rem, 3vw, 1.75rem) calc(0.9rem + env(safe-area-inset-bottom, 0));
+      background: linear-gradient(
+        to top,
+        rgba(10, 9, 8, 0.98) 0%,
+        rgba(18, 16, 14, 0.94) 100%
+      );
+      border-top: 1px solid rgba(196, 92, 38, 0.22);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
     }
 
-    html[data-theme='light'] .library-remove-basket {
-      background: linear-gradient(to top, rgba(255, 252, 247, 0.98), rgba(255, 252, 247, 0.94));
-      box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.08);
+    .library-selection-dock::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(120px, 28%);
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.75;
     }
 
-    .library-remove-basket-inner {
+    html[data-theme='light'] .library-selection-dock {
+      background: linear-gradient(to top, rgba(255, 252, 247, 0.99), rgba(250, 247, 240, 0.96));
+      border-top-color: rgba(196, 92, 38, 0.2);
+      box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.07);
+    }
+
+    .library-selection-dock-inner {
       max-width: 1100px;
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 0.65rem 1rem;
+      align-items: flex-end;
+      gap: 0.85rem 1.25rem;
     }
 
-    .library-remove-basket-label {
-      margin: 0;
-      font-size: 0.9rem;
-      font-weight: 600;
+    .library-selection-dock-main {
+      flex: 1 1 240px;
+      min-width: 0;
+    }
+
+    .library-selection-eyebrow {
+      margin: 0 0 0.15rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .library-selection-title {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      font-weight: 700;
       color: var(--text);
+      letter-spacing: -0.02em;
     }
 
-    .library-remove-basket-label span {
+    .library-selection-stats {
+      margin: 0 0 0.5rem;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .library-selection-stats strong {
       color: var(--accent);
+      font-weight: 700;
+    }
+
+    .library-selection-stats strong.library-stat-approve {
+      color: #6fbc8c;
+    }
+
+    html[data-theme='light'] .library-selection-stats strong.library-stat-approve {
+      color: #2f6b45;
+    }
+
+    .library-selection-chip-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .library-chip-group-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
     }
 
     .library-basket-list {
@@ -1298,11 +1445,41 @@
       background: rgba(232, 165, 152, 0.12);
     }
 
-    .library-remove-basket-actions {
+    .library-basket-chip--approve {
+      border-color: rgba(61, 122, 79, 0.35);
+    }
+
+    .library-selection-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-left: auto;
+      align-items: center;
+    }
+
+    .btn-bulk-approve {
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(61, 122, 79, 0.45);
+      background: linear-gradient(135deg, #2d5c3c, #3d7a4f);
+      color: #f4faf6;
+      cursor: pointer;
+    }
+
+    .btn-bulk-approve:hover:not(:disabled) {
+      filter: brightness(1.07);
+    }
+
+    .btn-bulk-approve:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    html[data-theme='light'] .btn-bulk-approve {
+      background: linear-gradient(135deg, #2f6b45, #3d8558);
     }
 
     .btn-danger {
@@ -1370,6 +1547,8 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      position: relative;
+      padding-bottom: 2rem;
     }
 
     .poster-title {
@@ -1378,12 +1557,20 @@
       font-weight: 600;
       line-height: 1.25;
       margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: calc(1.25em * 2);
     }
 
     .poster-style {
       font-size: 0.85rem;
       color: var(--text-muted);
       margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .poster-sizes {
@@ -1403,6 +1590,32 @@
       color: var(--text-muted);
       border: 1px solid var(--border);
       pointer-events: none;
+    }
+    .size-pill-link {
+      text-decoration: none;
+      color: inherit;
+    }
+    .poster-open-folder-btn {
+      position: absolute;
+      right: 0.55rem;
+      bottom: 0.5rem;
+      width: 1.45rem;
+      height: 1.45rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.88rem;
+      line-height: 1;
+    }
+    .poster-open-folder-btn:hover {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
     }
 
     .empty, .error {
@@ -1577,9 +1790,11 @@
     }
 
     #modal.modal-backdrop .modal.modal-poster {
+      --modal-preview-rail-bg: color-mix(in srgb, var(--bg-card) 90%, var(--bg-elevated));
       width: 100%;
       max-width: none;
       max-height: 100%;
+      padding: clamp(0.35rem, 0.85vw, 0.7rem);
       border-radius: calc(var(--radius) + 10px);
       border: 1px solid var(--border);
       box-shadow: var(--shadow);
@@ -1614,35 +1829,82 @@
         flex: 0 0 auto;
         width: 100%;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.65rem 0.75rem 0.35rem;
-        background: var(--modal-visual-bg);
+        align-items: stretch;
+        justify-content: flex-start;
+        justify-content: safe center;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: calc(0.65rem + 5px) 0.75rem 0.5rem;
+        background:
+          radial-gradient(ellipse 100% 80% at 50% 38%, color-mix(in srgb, var(--bg-elevated) 35%, transparent) 0%, transparent 55%),
+          var(--modal-preview-rail-bg);
         border-bottom: 1px solid var(--border);
       }
 
-      #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
-        width: min(100%, calc(0.7 * min(52dvh, 420px)));
+      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column {
+        background:
+          radial-gradient(ellipse 100% 78% at 50% 36%, rgba(255, 255, 255, 0.5) 0%, transparent 52%),
+          var(--modal-preview-rail-bg);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        width: 100%;
         max-width: 100%;
+        flex: 0 0 auto;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-main {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumbs {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb {
+        width: 80px;
         aspect-ratio: 7 / 10;
+        border-radius: 8px;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        width: fit-content;
+        max-width: 100%;
+        aspect-ratio: auto;
         height: auto;
-        max-height: min(52dvh, 70vw);
+        max-height: none;
         margin: 0 auto;
-        border-radius: 2px;
-        border: 10px solid color-mix(in srgb, var(--bg-card) 50%, #1a1816);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-          0 16px 40px rgba(0, 0, 0, 0.45);
-        background: #070605;
-        overflow: hidden;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        overflow: visible;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-visual img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: min(46dvh, calc(100svh - 220px), 70vw);
+        object-fit: contain;
+        border-radius: 0;
       }
 
       html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
-        border-color: color-mix(in srgb, var(--border) 45%, #c8c3bc);
-        background: #faf9f7;
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.7),
-          0 12px 32px rgba(30, 26, 22, 0.1);
+        border: none;
+        background: transparent;
+        box-shadow: none;
       }
 
       #modal.modal-backdrop .modal-poster .modal-detail {
@@ -1690,35 +1952,88 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.55rem;
-        padding: clamp(0.65rem, 1.8vw, 1.35rem) clamp(0.45rem, 1.2vw, 1rem);
-        background: linear-gradient(168deg, var(--modal-visual-bg) 0%, #10100e 50%, #0a0908 100%);
+        align-items: stretch;
+        justify-content: flex-start;
+        justify-content: safe center;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: calc(clamp(0.65rem, 1.8vw, 1.35rem) + 6px) clamp(0.55rem, 1.4vw, 1.15rem)
+          clamp(0.65rem, 1.8vw, 1.35rem);
+        background:
+          radial-gradient(ellipse 95% 72% at 48% 36%, color-mix(in srgb, var(--bg-elevated) 38%, transparent) 0%, transparent 58%),
+          var(--modal-preview-rail-bg);
         border-left: 1px solid var(--border);
       }
 
-      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumbs {
+      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column {
+        background:
+          radial-gradient(ellipse 95% 70% at 48% 36%, rgba(255, 255, 255, 0.55) 0%, transparent 56%),
+          var(--modal-preview-rail-bg);
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-inner {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 0.45rem;
+        gap: clamp(0.75rem, 2.2vw, 1.35rem);
+        width: 100%;
+        max-width: 100%;
+        min-height: 0;
+        flex: 0 0 auto;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumbs {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
         flex-shrink: 0;
+        order: 2;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-preview-main {
+        flex: 0 1 auto;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        order: 1;
       }
 
       #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb {
         position: relative;
+        appearance: none;
         padding: 0;
         margin: 0;
         border: 2px solid transparent;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.28);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bg-card) 86%, rgba(0, 0, 0, 0.2));
         cursor: pointer;
-        width: 46px;
+        width: 92px;
         aspect-ratio: 7 / 10;
         overflow: hidden;
         box-sizing: border-box;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb-label {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        bottom: 4px;
+        border-radius: 6px;
+        padding: 2px 4px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.55);
+        text-align: center;
+        pointer-events: none;
       }
 
       html[data-theme='light']
@@ -1740,70 +2055,135 @@
       }
 
       #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-preview-thumb img {
+        box-sizing: border-box;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        padding: 5px;
+        border-radius: 6px;
+        background: color-mix(in srgb, var(--bg-elevated) 86%, rgba(0, 0, 0, 0.22));
         display: block;
         pointer-events: none;
       }
 
-      /* Okno podglądu jak wydruk 7:10 (np. 70×100 cm), nie kwadrat na całą komórkę */
+      /* Podgląd w naturalnej proporcji pliku — bez czarnego „letterboxa” w przycisku */
       #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
         flex-shrink: 0;
-        width: min(100%, calc(0.7 * min(80dvh, 920px)));
-        max-width: 100%;
-        aspect-ratio: 7 / 10;
-        height: auto;
-        max-height: min(80dvh, 100%);
-        margin: 0 auto;
-        border-radius: 2px;
-        border: clamp(9px, 1.1vw, 14px) solid color-mix(in srgb, var(--bg-card) 52%, #1c1a18);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.055),
-          0 26px 60px rgba(0, 0, 0, 0.52);
-        background: #060504;
-        overflow: hidden;
-      }
-
-      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
-        border-color: color-mix(in srgb, var(--border) 42%, #c5c0b8);
-        background: #faf9f6;
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.75),
-          0 16px 42px rgba(30, 26, 22, 0.11);
-      }
-
-      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-visual img {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-      }
-
-      /* Wersja z ramką: ten sam plik co na dysku (np. 9:16) — bez sztucznego 7:10 i pasków z boku */
-      #modal.modal-backdrop
-        .modal-poster
-        .modal-poster-preview-column
-        button.modal-visual.modal-visual--interactive.modal-visual--source-aspect {
         width: fit-content;
         max-width: 100%;
         aspect-ratio: auto;
         height: auto;
         max-height: none;
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        overflow: visible;
       }
 
-      #modal.modal-backdrop
-        .modal-poster
-        .modal-poster-preview-column
-        button.modal-visual.modal-visual--interactive.modal-visual--source-aspect
-        img {
+      html[data-theme='light'] #modal.modal-backdrop .modal-poster .modal-poster-preview-column button.modal-visual.modal-visual--interactive {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-visual img {
         display: block;
         width: auto;
         height: auto;
         max-width: 100%;
-        max-height: min(80dvh, 920px);
+        max-height: min(52dvh, calc(100dvh - 15.5rem), calc(100svh - 12rem), 720px);
         object-fit: contain;
+        border-radius: 0;
+      }
+    }
+
+    /* Surowy podgląd bez dekoracyjnej ramki */
+    #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-window {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+      width: 100%;
+      vertical-align: top;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      transform: none;
+      box-shadow: none;
+    }
+
+    #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-window::before {
+      content: none;
+    }
+
+    #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-window::after {
+      content: none;
+    }
+
+    #modal.modal-backdrop
+      .modal-poster
+      .modal-poster-preview-column
+      .modal-poster-window
+      button.modal-visual.modal-visual--interactive {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border: none;
+      padding: 0;
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    html[data-theme='light']
+      #modal.modal-backdrop
+      .modal-poster
+      .modal-poster-preview-column
+      .modal-poster-window {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    html[data-theme='light']
+      #modal.modal-backdrop
+      .modal-poster
+      .modal-poster-preview-column
+      .modal-poster-window::before {
+      content: none;
+    }
+
+    html[data-theme='light']
+      #modal.modal-backdrop
+      .modal-poster
+      .modal-poster-preview-column
+      .modal-poster-window::after {
+      content: none;
+    }
+
+    html[data-theme='light']
+      #modal.modal-backdrop
+      .modal-poster
+      .modal-poster-preview-column
+      .modal-poster-window
+      button.modal-visual.modal-visual--interactive {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-window {
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      #modal.modal-backdrop .modal-poster .modal-poster-preview-column .modal-poster-window::after {
+        opacity: 0.25;
+        mix-blend-mode: normal;
       }
     }
 
@@ -1812,7 +2192,7 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.8rem 0.95rem;
-      padding: 0.25rem 1.1rem 1.15rem 1.35rem;
+      padding: 0.4rem 1.25rem 1.25rem 1.45rem;
       align-content: start;
     }
 
@@ -1874,10 +2254,162 @@
       margin-top: 0.15rem;
     }
 
+    #modal.modal-backdrop .modal-tile--files {
+      overflow: hidden;
+    }
+
     #modal.modal-backdrop .modal-tile-files-pdf {
       margin-top: 0.85rem;
       padding-top: 0.75rem;
       border-top: 1px solid var(--border);
+    }
+
+    #modal.modal-backdrop .modal-file-variants-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.6rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-col {
+      padding: 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 0.7rem;
+      background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-title {
+      margin: 0;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-row {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-preview {
+      width: 58px;
+      aspect-ratio: 7 / 10;
+      border-radius: 0.42rem;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      display: block;
+      background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+    }
+
+    #modal.modal-backdrop .modal-file-variant-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    #modal.modal-backdrop .modal-file-variant-path {
+      display: block;
+      font-size: 0.72rem;
+      line-height: 1.25;
+      white-space: normal;
+      word-break: break-word;
+      color: var(--text-muted);
+      background: color-mix(in srgb, var(--bg-card) 82%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 0.42rem;
+      padding: 0.34rem 0.42rem;
+    }
+
+    #modal.modal-backdrop .modal-copy-combo-line.modal-copy-combo-line--compact {
+      width: fit-content;
+      font-size: 0.72rem;
+      padding: 0.24rem 0.5rem;
+    }
+
+    #modal.modal-backdrop .modal-pdf-variants {
+      margin-top: 0.75rem;
+      padding: 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 0.8rem;
+      background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+    }
+
+    #modal.modal-backdrop .modal-pdf-variants-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
+    }
+
+    #modal.modal-backdrop .modal-pdf-variant-col {
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      padding: 0.5rem;
+      background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+    }
+
+    #modal.modal-backdrop .modal-pdf-variant-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+
+    #modal.modal-backdrop .modal-pdf-variant-title {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    #modal.modal-backdrop .modal-pdf-variant-count {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+      white-space: nowrap;
+    }
+
+    #modal.modal-backdrop .modal-pdf-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    #modal.modal-backdrop .modal-pdf-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      border-radius: 999px;
+      padding: 0.22rem 0.5rem;
+    }
+
+    #modal.modal-backdrop .modal-pdf-chip:hover {
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
+    }
+
+    #modal.modal-backdrop .modal-pdf-empty {
+      margin: 0;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-file-variants-grid,
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-pdf-variants-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     @media (min-width: 720px) and (max-width: 960px) {
@@ -1900,6 +2432,14 @@
 
       #modal.modal-backdrop .modal-tile--span-2 {
         grid-column: unset;
+      }
+
+      #modal.modal-backdrop .modal-file-variants-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #modal.modal-backdrop .modal-pdf-variants-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -2007,51 +2547,288 @@
       z-index: 1050;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     }
 
-    .modal-lightbox-inner {
+    .modal-lightbox-shell {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
+      align-items: stretch;
+      gap: 0.85rem;
       width: 100%;
-      max-width: none;
-      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.5rem);
-      padding: clamp(0.5rem, 2vw, 1rem);
+      max-width: min(1320px, 100%);
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem);
+      min-height: 0;
+      padding: clamp(0.45rem, 1.5vw, 0.85rem);
+      padding-top: clamp(2.75rem, 6vw, 3.35rem);
       box-sizing: border-box;
+      position: relative;
     }
 
-    .modal-lightbox-inner img {
-      max-width: 100%;
-      max-height: 100%;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      border-radius: 0;
+    .modal-lightbox-layout {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: clamp(0.65rem, 2vw, 1.1rem);
+      min-height: 0;
+      flex: 1 1 auto;
     }
 
-    .modal-lightbox-close {
+    .modal-lightbox-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      min-height: 0;
+    }
+
+    .modal-lightbox-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem 0.5rem;
       flex-shrink: 0;
-      padding: 0.55rem 1.15rem;
-      border-radius: 999px;
+    }
+
+    .modal-lightbox-toolbar-spacer {
+      flex: 1 1 12px;
+      min-width: 8px;
+    }
+
+    .modal-lightbox-icon-btn {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--bg-elevated);
       color: var(--text);
+      font-size: 1.45rem;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .modal-lightbox-icon-btn:hover:not(:disabled) {
+      background: var(--bg-card);
+    }
+
+    .modal-lightbox-icon-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .modal-lightbox-counter {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 0 0.25rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-lightbox-variant {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .modal-lightbox-chip {
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .modal-lightbox-chip[aria-pressed='true'] {
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .modal-lightbox-tool-text {
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.4rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .modal-lightbox-tool-text:hover {
+      color: var(--text);
+      background: var(--bg-card);
+    }
+
+    .modal-lightbox-tool-text[aria-pressed='true'] {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .modal-lightbox-zoom {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-left: 0.35rem;
+    }
+
+    .modal-lightbox-zoom-readout {
+      min-width: 3.6rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-lightbox-stage {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 0;
+      background:
+        radial-gradient(120% 90% at 50% 45%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 58%),
+        linear-gradient(160deg, #cfd5df 0%, #c6cdd8 48%, #bcc4d1 100%);
+    }
+
+    .modal-lightbox-stage.modal-lightbox-stage--loupe {
+      cursor: crosshair;
+    }
+
+    .modal-lightbox-stage .poster-aspect-frame {
+      position: relative;
+      z-index: 0;
+    }
+
+    .modal-lightbox-lens {
+      position: absolute;
+      z-index: 4;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 12px 40px rgba(0, 0, 0, 0.55);
+      pointer-events: none;
+      background-repeat: no-repeat;
+      background-color: #0a0908;
+      opacity: 0;
+      transition: opacity 0.08s;
+    }
+
+    .modal-lightbox-meta {
+      flex: 0 0 min(280px, 38vw);
+      max-width: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 0.75rem 0.85rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-sizing: border-box;
+    }
+
+    .modal-lightbox-meta-title {
+      margin: 0 0 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .modal-lightbox-meta-dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .modal-lightbox-meta-dl dt {
+      margin: 0;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .modal-lightbox-meta-dl dd {
+      margin: 0;
+      word-break: break-word;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .modal-lightbox-meta-foot {
+      margin: 0.75rem 0 0;
+      font-size: 0.68rem;
+      line-height: 1.45;
+    }
+
+    .modal-lightbox-shell .poster-aspect-frame img {
+      max-width: 100%;
+      max-height: min(78dvh, 900px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 0;
+      transform-origin: center center;
+      transition: transform 0.12s ease-out;
+    }
+
+    .modal-lightbox-close {
+      position: absolute;
+      top: 0.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, #ff4d4f 55%, var(--border));
+      background: color-mix(in srgb, #ff4d4f 26%, #000 74%);
+      color: #ff6b6b;
       font-family: var(--font-body);
-      font-size: 0.9rem;
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1;
       cursor: pointer;
       transition: background 0.15s;
     }
 
     .modal-lightbox-close:hover {
-      background: var(--bg-card);
+      background: color-mix(in srgb, #ff4d4f 36%, #000 64%);
     }
 
     .modal-lightbox-close:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
+    }
+
+    @media (max-width: 780px) {
+      .modal-lightbox-layout {
+        flex-direction: column;
+      }
+
+      .modal-lightbox-meta {
+        flex: 0 1 auto;
+        max-height: min(42dvh, 320px);
+      }
     }
 
     .modal-detail h2 {
@@ -2447,22 +3224,42 @@
       margin: 0 auto;
     }
 
-    .modal-lightbox-inner .poster-aspect-frame {
-      width: min(100%, calc(0.7 * min(88dvh, 1400px)));
+    .modal-lightbox-shell .poster-aspect-frame {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
       max-height: min(88dvh, 1400px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      border-radius: 0;
+      box-shadow: none;
+      background:
+        linear-gradient(
+          to right,
+          rgba(58, 71, 95, 0.16) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          to bottom,
+          rgba(58, 71, 95, 0.16) 1px,
+          transparent 1px
+        ),
+        radial-gradient(115% 90% at 50% 40%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(165deg, #cfd6e0 0%, #c5cedb 100%);
+      background-size: 24px 24px, 24px 24px, 100% 100%;
+      background-position: center center;
     }
 
-    .modal-lightbox-inner .poster-aspect-frame.poster-aspect-frame--natural {
-      width: auto;
-      max-width: min(96vw, 1400px);
+    .modal-lightbox-shell .poster-aspect-frame.poster-aspect-frame--natural {
+      width: 100%;
+      max-width: 100%;
       aspect-ratio: auto;
       height: auto;
       max-height: min(88dvh, 1400px);
     }
 
-    .modal-lightbox-inner .poster-aspect-frame.poster-aspect-frame--natural img {
-      max-width: min(96vw, 1400px);
+    .modal-lightbox-shell .poster-aspect-frame.poster-aspect-frame--natural img {
+      max-width: 100%;
       max-height: min(88dvh, 1400px);
       width: auto;
       height: auto;
@@ -3224,6 +4021,183 @@
       cursor: not-allowed;
       transform: none;
     }
+
+    .modal-top-premium-menu {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent));
+      background:
+        radial-gradient(130% 100% at 0% 0%, rgba(255, 165, 92, 0.18), transparent 55%),
+        linear-gradient(160deg, color-mix(in srgb, var(--bg-elevated) 90%, #1c1610), var(--bg-card));
+      box-shadow: 0 14px 34px rgba(6, 6, 8, 0.26);
+    }
+
+    .modal-top-premium-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .modal-premium-chip {
+      border: 1px solid color-mix(in srgb, var(--border) 72%, var(--accent));
+      background: color-mix(in srgb, var(--bg-card) 88%, var(--bg-elevated));
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.42rem 0.85rem;
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.18s ease, border-color 0.18s ease;
+    }
+
+    .modal-premium-chip:hover {
+      filter: brightness(1.07);
+      border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+    }
+
+    .modal-premium-chip.is-active {
+      color: #fffaf4;
+      border-color: color-mix(in srgb, var(--accent) 78%, #8c3c12);
+      background: linear-gradient(162deg, #ff954b 0%, #de7128 55%, #ad4815 100%);
+      box-shadow: 0 8px 24px rgba(188, 87, 33, 0.4);
+    }
+
+    .modal-top-premium-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.55rem;
+    }
+
+    .modal-premium-action {
+      border: 1px solid color-mix(in srgb, var(--border) 70%, var(--accent));
+      background: color-mix(in srgb, var(--bg-card) 86%, var(--bg-elevated));
+      color: var(--text);
+      border-radius: 11px;
+      padding: 0.48rem 0.7rem;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.18s ease;
+    }
+
+    .modal-premium-action:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .modal-premium-action--print {
+      color: #ebfff3;
+      border-color: color-mix(in srgb, #1f8b56 76%, #0f281d);
+      background: linear-gradient(165deg, #37b977 0%, #23925d 56%, #166844 100%);
+      box-shadow:
+        0 8px 20px rgba(28, 132, 83, 0.36),
+        0 0 18px rgba(44, 187, 114, 0.22);
+    }
+
+    .modal-premium-action--print.is-active {
+      box-shadow:
+        0 10px 24px rgba(28, 132, 83, 0.5),
+        0 0 28px rgba(63, 220, 136, 0.42);
+      animation: premiumPrintPulse 1.8s ease-in-out infinite;
+    }
+
+    .modal-premium-print-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.42rem;
+      padding: 0.08rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid rgba(198, 255, 221, 0.46);
+      background: rgba(12, 58, 37, 0.44);
+      color: #d5ffe8;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    @keyframes premiumPrintPulse {
+      0%, 100% {
+        box-shadow:
+          0 10px 24px rgba(28, 132, 83, 0.42),
+          0 0 18px rgba(63, 220, 136, 0.3);
+      }
+      50% {
+        box-shadow:
+          0 12px 28px rgba(28, 132, 83, 0.56),
+          0 0 34px rgba(63, 220, 136, 0.5);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .modal-top-premium-menu {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-top-premium-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] .modal-tile--prompt {
+      min-height: clamp(220px, 30dvh, 460px);
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] .modal-tile--listing {
+      min-height: clamp(240px, 34dvh, 460px);
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] .modal-tile--prompt {
+      grid-column: 1 / -1;
+      min-height: clamp(260px, 40dvh, 560px);
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'],
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'] .modal-tile,
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-tile {
+      grid-column: 1;
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'] .modal-tile--files,
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-tile--files {
+      min-height: clamp(320px, 56dvh, 760px);
+    }
+
+    @media (max-width: 1100px) {
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] {
+        grid-template-columns: 1fr;
+      }
+
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] .modal-tile--prompt {
+        grid-column: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3256,6 +4230,7 @@
               </svg>
               <span class="theme-toggle-label" id="themeToggleText">Dzień</span>
             </button>
+            <span class="version-pill" id="appVersionPill" title="Wersja aplikacji">Version 1.0</span>
             <span class="meta-pill" id="updatedAt" aria-live="polite">—</span>
             <button type="button" class="btn btn-primary" id="refreshBtn">Odśwież dane</button>
           </div>
@@ -3400,6 +4375,12 @@
         <p class="library-browse-lead">
           Filtry po lewej (szukaj, kategoria, styl, status) i siatka po prawej — siatka odświeża się dopiero po „Zastosuj filtry”. Jedno pole szukaj obejmuje też kategorię i styl.
         </p>
+        <div class="library-reload-hero-wrap">
+          <button type="button" class="library-reload-hero" id="refreshBtnHero" aria-label="Odśwież bibliotekę teraz">
+            <span class="library-reload-hero-icon" aria-hidden="true">⟳</span>
+            <span>Odśwież bibliotekę teraz</span>
+          </button>
+        </div>
       </header>
       <div class="library-browse-surface">
         <aside class="library-browse-sidebar" aria-label="Panel filtrów i kategorii">
@@ -3459,12 +4440,6 @@
         <div class="library-browse-main">
           <div class="library-browse-main-inner">
             <p class="filter-results-meta" id="filterResultsMeta" aria-live="polite"></p>
-            <div class="library-frame-toolbar">
-              <button type="button" class="btn btn-secondary" id="libraryFrameFilteredBtn">
-                Wersja z ramką — widoczna siatka
-              </button>
-              <span class="library-frame-feedback" id="libraryFrameFeedback" role="status" aria-live="polite"></span>
-            </div>
             <div class="grid-wrap library-browse-grid">
               <div id="posterGrid" class="poster-grid" role="list"></div>
               <p id="emptyState" class="empty" hidden>Brak plakatów spełniających filtry.</p>
@@ -3500,8 +4475,23 @@
   <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal modal-poster" role="document">
       <button type="button" class="modal-close" id="modalClose" aria-label="Zamknij">×</button>
-      <div class="modal-detail modal-detail--tiled">
-        <div class="modal-tile modal-tile--span-2 modal-tile--hero">
+      <div class="modal-detail modal-detail--tiled" id="modalDetailTiled" data-modal-view="all">
+        <div class="modal-top-premium-menu" id="modalTopPremiumMenu">
+          <div class="modal-top-premium-filters" role="group" aria-label="Menu widoku plakatu">
+            <button type="button" class="modal-premium-chip is-active" data-modal-view="all" aria-pressed="true">Pełny widok</button>
+            <button type="button" class="modal-premium-chip" data-modal-view="workflow" aria-pressed="false">Workflow</button>
+            <button type="button" class="modal-premium-chip" data-modal-view="print" aria-pressed="false">Druk premium</button>
+            <button type="button" class="modal-premium-chip" data-modal-view="files" aria-pressed="false">Pliki</button>
+          </div>
+          <div class="modal-top-premium-actions">
+            <button type="button" class="modal-premium-action modal-premium-action--print" id="modalPremiumPrintAction">
+              Aktywuj druk premium
+              <span class="modal-premium-print-badge" id="modalPremiumPrintBadge">OFF</span>
+            </button>
+            <button type="button" class="modal-premium-action" id="modalOpenFolderBtnTop">📁 Explorer</button>
+          </div>
+        </div>
+        <div class="modal-tile modal-tile--span-2 modal-tile--hero" data-modal-section="workflow">
           <div class="modal-hero-title-row">
             <h2 id="modalTitle"></h2>
             <button type="button" class="modal-copy-prompt" id="modalCopyTitle" aria-label="Copy poster title" title="Copy title">
@@ -3512,7 +4502,7 @@
             </button>
           </div>
         </div>
-        <div class="modal-tile modal-tile--meta">
+        <div class="modal-tile modal-tile--meta" data-modal-section="workflow">
           <p class="modal-tile-label">Category &amp; style</p>
           <div class="modal-hero-taxonomy" role="group" aria-label="Category and art style">
             <div class="modal-meta-copy-row">
@@ -3538,7 +4528,7 @@
             <button type="button" class="modal-copy-combo-line" id="modalCopyMetaLine">Copy line: style · category</button>
           </div>
         </div>
-        <div class="modal-tile modal-tile--listing">
+        <div class="modal-tile modal-tile--listing" data-modal-section="workflow">
           <div class="modal-listing-block" id="modalListingBlock">
             <div class="modal-listing-head">
               <p class="section-label">Shop listing</p>
@@ -3557,7 +4547,7 @@
             <p class="modal-listing-feedback" id="modalListingFeedback" role="status" aria-live="polite"></p>
           </div>
         </div>
-        <div class="modal-tile modal-tile--span-2 modal-tile--approval">
+        <div class="modal-tile modal-tile--span-2 modal-tile--approval" data-modal-section="print">
           <div class="modal-print-approval" id="modalPrintApprovalBlock">
             <label class="modal-print-approval-label" for="modalApprovedPrint">
               <input type="checkbox" id="modalApprovedPrint" />
@@ -3566,13 +4556,13 @@
             <p class="modal-approval-feedback" id="modalApprovalFeedback" role="status" aria-live="polite"></p>
             <div class="modal-basket-tools">
               <button type="button" class="modal-add-remove-basket-btn" id="modalAddToRemoveBasket">
-                Dodaj do koszyka usunięć
+                Oznacz do usunięcia (jak na karcie)
               </button>
               <p class="modal-basket-feedback" id="modalBasketFeedback" role="status" aria-live="polite" hidden></p>
             </div>
           </div>
         </div>
-        <div class="modal-tile modal-tile--prompt">
+        <div class="modal-tile modal-tile--prompt" data-modal-section="workflow">
           <div id="modalPromptBlock">
             <div class="modal-prompt-head">
               <div class="modal-prompt-head-text">
@@ -3590,19 +4580,38 @@
             <p class="modal-copy-feedback" id="modalCopyFeedback" aria-live="polite"></p>
           </div>
         </div>
-        <div class="modal-tile modal-tile--files">
-          <div id="modalFramedSection">
-            <p class="section-label">Wersja z ramką (PNG)</p>
-            <div class="modal-actions" id="modalFramedRow"></div>
+        <div class="modal-tile modal-tile--files" data-modal-section="files print">
+          <div class="modal-pdf-variants" id="modalPdfVariants">
+            <p class="section-label">Warianty PDF (druk)</p>
+            <div class="modal-pdf-variants-grid" id="modalPdfVariantsGrid"></div>
+          </div>
+          <div class="modal-file-variants" id="modalFileVariants">
+            <p class="section-label">Warianty pliku</p>
+            <div class="modal-file-variants-grid" id="modalFileVariantsGrid"></div>
           </div>
           <div class="modal-tile-files-pdf">
-            <p class="section-label">PDF (CLI / starsze wpisy)</p>
-            <div class="modal-actions" id="modalPdfs"></div>
-            <p class="field-hint" id="modalPdfsEmptyHint" hidden>Brak PDF — nowe wpisy ze studia mają tylko PNG.</p>
+            <p class="section-label">Informacje techniczne</p>
+            <dl class="modal-lightbox-meta-dl" id="modalTechnicalMetaDl"></dl>
+            <p class="field-hint">
+              Dane pochodzą bezpośrednio z pliku na dysku (format, rozdzielczość, kanały, metadane DPI).
+            </p>
           </div>
         </div>
       </div>
       <div class="modal-poster-preview-column">
+      <div class="modal-poster-preview-inner">
+      <div class="modal-preview-thumbs" id="modalPreviewThumbs" hidden>
+        <button type="button" class="modal-preview-thumb" id="modalPreviewFullBtn" aria-pressed="true" title="Podgląd MASTER">
+          <img id="modalPreviewFullImg" src="" alt="Miniatura master" />
+          <span class="modal-preview-thumb-label">Master</span>
+        </button>
+        <button type="button" class="modal-preview-thumb" id="modalPreviewFramedBtn" aria-pressed="false" title="Podgląd MASTER z ramką">
+          <img id="modalPreviewFramedImg" src="" alt="Miniatura master z ramką" />
+          <span class="modal-preview-thumb-label">Ramka</span>
+        </button>
+      </div>
+      <div class="modal-poster-preview-main">
+      <div class="modal-poster-window">
       <button
         type="button"
         class="modal-visual modal-visual--interactive"
@@ -3611,29 +4620,8 @@
       >
         <img id="modalImg" src="" alt="" />
       </button>
-      <div class="modal-preview-thumbs" id="modalPreviewThumbs" hidden>
-        <button
-          type="button"
-          class="modal-preview-thumb is-active"
-          id="modalPreviewThumbFull"
-          data-variant="full"
-          aria-pressed="true"
-          aria-label="Podgląd pełnej strony"
-          title="Pełna strona"
-        >
-          <img id="modalPreviewThumbFullImg" src="" alt="" />
-        </button>
-        <button
-          type="button"
-          class="modal-preview-thumb"
-          id="modalPreviewThumbFramed"
-          data-variant="framed"
-          aria-pressed="false"
-          aria-label="Podgląd z ramką"
-          title="Z ramką"
-        >
-          <img id="modalPreviewThumbFramedImg" src="" alt="" />
-        </button>
+      </div>
+      </div>
       </div>
       </div>
     </div>
@@ -3641,21 +4629,68 @@
 
   <div class="modal-backdrop modal-lightbox-backdrop" id="modalLightbox" role="dialog" aria-modal="true" aria-labelledby="modalLightboxHeading" hidden>
     <h2 id="modalLightboxHeading" class="visually-hidden">Powiększony podgląd plakatu</h2>
-    <div class="modal-lightbox-inner" role="document">
-      <div class="poster-aspect-frame" id="modalLightboxFrame">
-        <img id="modalLightboxImg" src="" alt="" />
+    <div class="modal-lightbox-shell" id="modalLightboxShell" role="document">
+      <div class="modal-lightbox-layout">
+        <div class="modal-lightbox-main">
+          <div class="modal-lightbox-toolbar" role="toolbar" aria-label="Narzędzia podglądu">
+            <button type="button" class="modal-lightbox-icon-btn" id="modalLightboxPrev" aria-label="Poprzedni plakat" title="Poprzedni">‹</button>
+            <button type="button" class="modal-lightbox-icon-btn" id="modalLightboxNext" aria-label="Następny plakat" title="Następny">›</button>
+            <span class="modal-lightbox-counter" id="modalLightboxCounter"></span>
+            <div class="modal-lightbox-zoom" role="group" aria-label="Powiększenie obrazu">
+              <button type="button" class="modal-lightbox-icon-btn" id="modalLightboxZoomOut" aria-label="Pomniejsz" title="Pomniejsz">−</button>
+              <span class="modal-lightbox-zoom-readout" id="modalLightboxZoomReadout">100%</span>
+              <button type="button" class="modal-lightbox-icon-btn" id="modalLightboxZoomIn" aria-label="Powiększ" title="Powiększ">+</button>
+              <button type="button" class="modal-lightbox-chip" id="modalLightboxZoomReset" title="Reset powiększenia">Reset</button>
+            </div>
+            <div class="modal-lightbox-toolbar-spacer" aria-hidden="true"></div>
+            <div class="modal-lightbox-variant" id="modalLightboxVariantGroup" hidden>
+              <button type="button" class="modal-lightbox-chip" id="modalLightboxFull" aria-pressed="true">Pełna</button>
+              <button type="button" class="modal-lightbox-chip" id="modalLightboxFramedChip" aria-pressed="false">Z ramką</button>
+            </div>
+            <button type="button" class="modal-lightbox-tool-text" id="modalLightboxLoupe" aria-pressed="false" aria-label="Lupa — inspekcja jakości" title="Lupa">Lupa</button>
+            <button type="button" class="modal-lightbox-tool-text" id="modalLightboxInfoBtn" aria-pressed="false" aria-label="Informacje o pliku PNG" title="Metadane">Info</button>
+          </div>
+          <div class="modal-lightbox-stage" id="modalLightboxStage">
+            <div class="poster-aspect-frame" id="modalLightboxFrame">
+              <img id="modalLightboxImg" src="" alt="" draggable="false" />
+            </div>
+            <div class="modal-lightbox-lens" id="modalLightboxLens" hidden aria-hidden="true"></div>
+          </div>
+        </div>
+        <aside class="modal-lightbox-meta" id="modalLightboxMeta" hidden>
+          <p class="modal-lightbox-meta-title">Plik i jakość obrazu</p>
+          <dl class="modal-lightbox-meta-dl" id="modalLightboxMetaDl"></dl>
+          <p class="modal-lightbox-meta-foot field-hint">Dane z dysku (sharp). PNG jest bezstratny; ostrość druku zależy od DPI przy eksporcie do PDF.</p>
+        </aside>
       </div>
-      <button type="button" class="modal-lightbox-close" id="modalLightboxClose">Zamknij podgląd</button>
+      <button type="button" class="modal-lightbox-close" id="modalLightboxClose" aria-label="Zamknij podgląd" title="Zamknij">×</button>
     </div>
   </div>
 
-  <div class="library-remove-basket" id="libraryRemoveBasket" hidden>
-    <div class="library-remove-basket-inner">
-      <p class="library-remove-basket-label">Koszyk usunięć: <span id="libraryBasketCount">0</span></p>
-      <ul class="library-basket-list" id="libraryBasketList" aria-label="Plakaty oznaczone do usunięcia"></ul>
-      <div class="library-remove-basket-actions">
-        <button type="button" class="btn-basket-secondary" id="libraryBasketClear">Wyczyść koszyk</button>
-        <button type="button" class="btn-danger" id="libraryBasketConfirm">Usuń z biblioteki</button>
+  <div class="library-selection-dock" id="librarySelectionDock" hidden>
+    <div class="library-selection-dock-inner">
+      <div class="library-selection-dock-main">
+        <p class="library-selection-eyebrow">Biblioteka</p>
+        <p class="library-selection-title">Zaznaczenia</p>
+        <p class="library-selection-stats" id="librarySelectionStats" aria-live="polite">
+          <strong id="libraryCountRemove">0</strong> do usunięcia ·
+          <strong class="library-stat-approve" id="libraryCountApprove">0</strong> do zatwierdzenia
+        </p>
+        <div class="library-selection-chip-wrap">
+          <div id="libraryRemoveChipGroup" hidden>
+            <span class="library-chip-group-label">Usunięcie</span>
+            <ul class="library-basket-list" id="libraryBasketList" aria-label="Oznaczone do usunięcia"></ul>
+          </div>
+          <div id="libraryApproveChipGroup" hidden>
+            <span class="library-chip-group-label">Zatwierdzenie do druku</span>
+            <ul class="library-basket-list" id="libraryApproveChipList" aria-label="Oznaczone do zatwierdzenia"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="library-selection-actions">
+        <button type="button" class="btn-basket-secondary" id="librarySelectionClear">Wyczyść zaznaczenia</button>
+        <button type="button" class="btn-bulk-approve" id="libraryBulkApproveBtn" disabled>Zatwierdź zaznaczone</button>
+        <button type="button" class="btn-danger" id="libraryBasketConfirm" disabled>Usuń zaznaczone</button>
       </div>
     </div>
   </div>
@@ -3718,17 +4753,14 @@
         posterGrid: document.getElementById('posterGrid'),
         search: document.getElementById('search'),
         refreshBtn: document.getElementById('refreshBtn'),
+        refreshBtnHero: document.getElementById('refreshBtnHero'),
         updatedAt: document.getElementById('updatedAt'),
         emptyState: document.getElementById('emptyState'),
         errorState: document.getElementById('errorState'),
         modal: document.getElementById('modal'),
+        modalDetailTiled: document.getElementById('modalDetailTiled'),
         modalClose: document.getElementById('modalClose'),
         modalImg: document.getElementById('modalImg'),
-        modalPreviewThumbs: document.getElementById('modalPreviewThumbs'),
-        modalPreviewThumbFull: document.getElementById('modalPreviewThumbFull'),
-        modalPreviewThumbFramed: document.getElementById('modalPreviewThumbFramed'),
-        modalPreviewThumbFullImg: document.getElementById('modalPreviewThumbFullImg'),
-        modalPreviewThumbFramedImg: document.getElementById('modalPreviewThumbFramedImg'),
         modalTitle: document.getElementById('modalTitle'),
         modalCategoryValue: document.getElementById('modalCategoryValue'),
         modalStyleValue: document.getElementById('modalStyleValue'),
@@ -3747,12 +4779,38 @@
         modalCopyPrompt: document.getElementById('modalCopyPrompt'),
         modalCopyFeedback: document.getElementById('modalCopyFeedback'),
         modalVisualOpenLightbox: document.getElementById('modalVisualOpenLightbox'),
-        modalPdfs: document.getElementById('modalPdfs'),
-        modalPdfsEmptyHint: document.getElementById('modalPdfsEmptyHint'),
-        modalFramedRow: document.getElementById('modalFramedRow'),
+        modalPreviewThumbs: document.getElementById('modalPreviewThumbs'),
+        modalPreviewFullBtn: document.getElementById('modalPreviewFullBtn'),
+        modalPreviewFramedBtn: document.getElementById('modalPreviewFramedBtn'),
+        modalPreviewFullImg: document.getElementById('modalPreviewFullImg'),
+        modalPreviewFramedImg: document.getElementById('modalPreviewFramedImg'),
+        modalTopPremiumMenu: document.getElementById('modalTopPremiumMenu'),
+        modalPremiumPrintAction: document.getElementById('modalPremiumPrintAction'),
+        modalPremiumPrintBadge: document.getElementById('modalPremiumPrintBadge'),
+        modalOpenFolderBtnTop: document.getElementById('modalOpenFolderBtnTop'),
+        modalPdfVariantsGrid: document.getElementById('modalPdfVariantsGrid'),
+        modalFileVariantsGrid: document.getElementById('modalFileVariantsGrid'),
+        modalTechnicalMetaDl: document.getElementById('modalTechnicalMetaDl'),
         modalLightbox: document.getElementById('modalLightbox'),
+        modalLightboxShell: document.getElementById('modalLightboxShell'),
         modalLightboxFrame: document.getElementById('modalLightboxFrame'),
         modalLightboxImg: document.getElementById('modalLightboxImg'),
+        modalLightboxStage: document.getElementById('modalLightboxStage'),
+        modalLightboxLens: document.getElementById('modalLightboxLens'),
+        modalLightboxPrev: document.getElementById('modalLightboxPrev'),
+        modalLightboxNext: document.getElementById('modalLightboxNext'),
+        modalLightboxCounter: document.getElementById('modalLightboxCounter'),
+        modalLightboxZoomOut: document.getElementById('modalLightboxZoomOut'),
+        modalLightboxZoomIn: document.getElementById('modalLightboxZoomIn'),
+        modalLightboxZoomReset: document.getElementById('modalLightboxZoomReset'),
+        modalLightboxZoomReadout: document.getElementById('modalLightboxZoomReadout'),
+        modalLightboxVariantGroup: document.getElementById('modalLightboxVariantGroup'),
+        modalLightboxFull: document.getElementById('modalLightboxFull'),
+        modalLightboxFramedChip: document.getElementById('modalLightboxFramedChip'),
+        modalLightboxLoupe: document.getElementById('modalLightboxLoupe'),
+        modalLightboxInfoBtn: document.getElementById('modalLightboxInfoBtn'),
+        modalLightboxMeta: document.getElementById('modalLightboxMeta'),
+        modalLightboxMetaDl: document.getElementById('modalLightboxMetaDl'),
         modalLightboxClose: document.getElementById('modalLightboxClose'),
         studioCategory: document.getElementById('studioCategory'),
         studioCategoryHint: document.getElementById('studioCategoryHint'),
@@ -3785,15 +4843,18 @@
         studioAutoProgress: document.getElementById('studioAutoProgress'),
         studioAutoProgressFill: document.getElementById('studioAutoProgressFill'),
         studioAutoProgressMeta: document.getElementById('studioAutoProgressMeta'),
-        libraryRemoveBasket: document.getElementById('libraryRemoveBasket'),
-        libraryBasketCount: document.getElementById('libraryBasketCount'),
+        librarySelectionDock: document.getElementById('librarySelectionDock'),
+        libraryCountRemove: document.getElementById('libraryCountRemove'),
+        libraryCountApprove: document.getElementById('libraryCountApprove'),
         libraryBasketList: document.getElementById('libraryBasketList'),
-        libraryBasketClear: document.getElementById('libraryBasketClear'),
+        libraryApproveChipList: document.getElementById('libraryApproveChipList'),
+        libraryRemoveChipGroup: document.getElementById('libraryRemoveChipGroup'),
+        libraryApproveChipGroup: document.getElementById('libraryApproveChipGroup'),
+        librarySelectionClear: document.getElementById('librarySelectionClear'),
+        libraryBulkApproveBtn: document.getElementById('libraryBulkApproveBtn'),
         libraryBasketConfirm: document.getElementById('libraryBasketConfirm'),
         modalAddToRemoveBasket: document.getElementById('modalAddToRemoveBasket'),
         modalBasketFeedback: document.getElementById('modalBasketFeedback'),
-        libraryFrameFilteredBtn: document.getElementById('libraryFrameFilteredBtn'),
-        libraryFrameFeedback: document.getElementById('libraryFrameFeedback'),
       };
 
       const STUDIO_AUTO_FLASH_KEY = 'plakatyStudioAutoFlash';
@@ -3803,7 +4864,7 @@
       const STUDIO_HEADING_MANUAL = 'Twórz plakaty z pomocą AI';
       const STUDIO_HEADING_AUTO = 'Generowanie automatyczne';
       const STUDIO_SUB_MANUAL_HTML =
-        'OpenAI układa prompt (gdy jest klucz) → DALL-E → podgląd → zapis <strong>tylko PNG</strong>. Ramkę (_ramka.png) dodasz w Bibliotece.';
+        'OpenAI układa prompt (gdy jest klucz) → DALL-E → podgląd → zapis <strong>tylko PNG</strong>. PDF wygenerujesz później z Biblioteki.';
 
       function getStoredStudioMode() {
         try {
@@ -3839,8 +4900,49 @@
       let activeStudioPreviewId = null;
       /** Aktualnie otwarty plakat w modalu (referencja z flatItems). */
       let modalPosterItem = null;
-      /** 'full' | 'framed' — gdy jest imagePathFramed. */
+      /** 'full' | 'framed' */
       let modalPreviewVariant = 'full';
+
+      /** Kolejka lightboxa = ta sama co siatka (filtry). */
+      let lightboxPlaylist = [];
+      let lightboxIndex = 0;
+      let lightboxLoupeActive = false;
+      let lightboxZoom = 1;
+      let lightboxLoupeSize = 220;
+      let modalTopView = 'all';
+      const LIGHTBOX_ZOOM_MIN = 0.5;
+      const LIGHTBOX_ZOOM_MAX = 20;
+      const LIGHTBOX_ZOOM_STEP = 0.2;
+      const LIGHTBOX_LOUPE_SIZE_MIN = 120;
+      const LIGHTBOX_LOUPE_SIZE_MAX = 360;
+      const LIGHTBOX_LOUPE_SIZE_STEP = 16;
+
+      function applyLightboxZoom() {
+        const bounded = Math.max(LIGHTBOX_ZOOM_MIN, Math.min(LIGHTBOX_ZOOM_MAX, lightboxZoom));
+        lightboxZoom = Number(bounded.toFixed(2));
+        if (els.modalLightboxImg) {
+          els.modalLightboxImg.style.transform = `scale(${lightboxZoom})`;
+        }
+        if (els.modalLightboxZoomReadout) {
+          els.modalLightboxZoomReadout.textContent = `${Math.round(lightboxZoom * 100)}%`;
+        }
+        if (els.modalLightboxZoomOut) {
+          els.modalLightboxZoomOut.disabled = lightboxZoom <= LIGHTBOX_ZOOM_MIN + 0.001;
+        }
+        if (els.modalLightboxZoomIn) {
+          els.modalLightboxZoomIn.disabled = lightboxZoom >= LIGHTBOX_ZOOM_MAX - 0.001;
+        }
+      }
+
+      function changeLightboxZoom(delta) {
+        lightboxZoom += delta;
+        applyLightboxZoom();
+      }
+
+      function resetLightboxZoom() {
+        lightboxZoom = 1;
+        applyLightboxZoom();
+      }
 
       let rawCategories = {};
       let flatItems = [];
@@ -3857,63 +4959,119 @@
       let draftStyleFilter = 'all';
       /** Style z /api/generation-config (kolejność listy filtra) */
       let configArtStylesList = [];
+      /** Kategorie z /api/generation-config (kanoniczna lista dla studio + filtrów biblioteki). */
+      let configCategoriesList = [];
       let categoryHints = {};
       /** Liczniki plakatów wg kategorii z API + __all */
       let categoryCountMap = { __all: 0 };
 
-      /** Klucz: imagePath z API (np. /Botanika/plik.png) → meta do paska koszyka. */
+      /** Klucz: imagePath z API — zaznaczenia na karcie (usunięcie / zatwierdzenie). */
       const removeBasket = new Map();
+      const approveBasket = new Map();
 
       function removeBasketKeyFromItem(item) {
         return item && item.imagePath ? String(item.imagePath) : '';
       }
 
-      function renderRemoveBasketDock() {
-        const n = removeBasket.size;
-        if (els.libraryRemoveBasket) els.libraryRemoveBasket.hidden = n === 0;
-        if (els.libraryBasketCount) els.libraryBasketCount.textContent = String(n);
-        if (!els.libraryBasketList) return;
-        els.libraryBasketList.innerHTML = '';
-        for (const [pathKey, meta] of removeBasket.entries()) {
-          const li = document.createElement('li');
-          li.className = 'library-basket-chip';
-          const rm = document.createElement('button');
-          rm.type = 'button';
-          rm.className = 'library-basket-chip-remove';
-          rm.setAttribute('aria-label', 'Usuń z koszyka');
-          rm.textContent = '×';
-          rm.addEventListener('click', () => {
-            removeBasket.delete(pathKey);
-            renderRemoveBasketDock();
-            renderGrid();
-          });
-          const titleSpan = document.createElement('span');
-          titleSpan.className = 'library-basket-chip-title';
-          titleSpan.textContent = meta.title || '—';
-          const catSpan = document.createElement('span');
-          catSpan.className = 'library-basket-chip-meta';
-          catSpan.textContent = meta.category || '';
-          li.appendChild(titleSpan);
-          li.appendChild(catSpan);
-          li.appendChild(rm);
-          els.libraryBasketList.appendChild(li);
+      function renderSelectionDock() {
+        const nR = removeBasket.size;
+        const nA = approveBasket.size;
+        const show = nR > 0 || nA > 0;
+        if (els.librarySelectionDock) els.librarySelectionDock.hidden = !show;
+        if (els.libraryCountRemove) els.libraryCountRemove.textContent = String(nR);
+        if (els.libraryCountApprove) els.libraryCountApprove.textContent = String(nA);
+        if (els.libraryBasketConfirm) els.libraryBasketConfirm.disabled = nR === 0;
+        if (els.libraryBulkApproveBtn) els.libraryBulkApproveBtn.disabled = nA === 0;
+        if (els.libraryRemoveChipGroup) els.libraryRemoveChipGroup.hidden = nR === 0;
+        if (els.libraryApproveChipGroup) els.libraryApproveChipGroup.hidden = nA === 0;
+
+        if (els.libraryBasketList) {
+          els.libraryBasketList.innerHTML = '';
+          for (const [pathKey, meta] of removeBasket.entries()) {
+            const li = document.createElement('li');
+            li.className = 'library-basket-chip';
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'library-basket-chip-remove';
+            rm.setAttribute('aria-label', 'Cofnij zaznaczenie do usunięcia');
+            rm.textContent = '×';
+            rm.addEventListener('click', () => {
+              removeBasket.delete(pathKey);
+              renderSelectionDock();
+              renderGrid();
+            });
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'library-basket-chip-title';
+            titleSpan.textContent = meta.title || '—';
+            const catSpan = document.createElement('span');
+            catSpan.className = 'library-basket-chip-meta';
+            catSpan.textContent = meta.category || '';
+            li.appendChild(titleSpan);
+            li.appendChild(catSpan);
+            li.appendChild(rm);
+            els.libraryBasketList.appendChild(li);
+          }
+        }
+
+        if (els.libraryApproveChipList) {
+          els.libraryApproveChipList.innerHTML = '';
+          for (const [pathKey, meta] of approveBasket.entries()) {
+            const li = document.createElement('li');
+            li.className = 'library-basket-chip library-basket-chip--approve';
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'library-basket-chip-remove';
+            rm.setAttribute('aria-label', 'Cofnij zaznaczenie do zatwierdzenia');
+            rm.textContent = '×';
+            rm.addEventListener('click', () => {
+              approveBasket.delete(pathKey);
+              renderSelectionDock();
+              renderGrid();
+            });
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'library-basket-chip-title';
+            titleSpan.textContent = meta.title || '—';
+            const catSpan = document.createElement('span');
+            catSpan.className = 'library-basket-chip-meta';
+            catSpan.textContent = meta.category || '';
+            li.appendChild(titleSpan);
+            li.appendChild(catSpan);
+            li.appendChild(rm);
+            els.libraryApproveChipList.appendChild(li);
+          }
         }
       }
 
-      function syncRemoveBasketWithLibrary() {
+      function syncSelectionBasketsWithLibrary() {
         const valid = new Set(flatItems.map((x) => x.imagePath).filter(Boolean));
         for (const k of [...removeBasket.keys()]) {
           if (!valid.has(k)) removeBasket.delete(k);
         }
-        renderRemoveBasketDock();
+        for (const k of [...approveBasket.keys()]) {
+          if (!valid.has(k)) approveBasket.delete(k);
+          else {
+            const it = flatItems.find((x) => x.imagePath === k);
+            if (it && it.approvedForPrint) approveBasket.delete(k);
+          }
+        }
+        renderSelectionDock();
       }
 
-      function toggleRemoveBasketItem(item) {
+      function setRemoveBasketChecked(item, checked) {
         const k = removeBasketKeyFromItem(item);
         if (!k) return;
-        if (removeBasket.has(k)) removeBasket.delete(k);
-        else removeBasket.set(k, { title: item.title, category: item.category });
-        renderRemoveBasketDock();
+        if (checked) removeBasket.set(k, { title: item.title, category: item.category });
+        else removeBasket.delete(k);
+        renderSelectionDock();
+        renderGrid();
+      }
+
+      function setApproveBasketChecked(item, checked) {
+        const k = removeBasketKeyFromItem(item);
+        if (!k || item.approvedForPrint) return;
+        if (checked) approveBasket.set(k, { title: item.title, category: item.category });
+        else approveBasket.delete(k);
+        renderSelectionDock();
         renderGrid();
       }
 
@@ -3924,16 +5082,17 @@
         if (removeBasket.has(k)) {
           if (els.modalBasketFeedback) {
             els.modalBasketFeedback.hidden = false;
-            els.modalBasketFeedback.textContent = 'Ten plakat jest już w koszyku usunięć.';
+            els.modalBasketFeedback.textContent = 'Ten plakat jest już oznaczony do usunięcia.';
           }
           return;
         }
         removeBasket.set(k, { title: modalPosterItem.title, category: modalPosterItem.category });
-        renderRemoveBasketDock();
+        renderSelectionDock();
         renderGrid();
         if (els.modalBasketFeedback) {
           els.modalBasketFeedback.hidden = false;
-          els.modalBasketFeedback.textContent = 'Dodano do koszyka. Na dole strony kliknij „Usuń z biblioteki”.';
+          els.modalBasketFeedback.textContent =
+            'Oznaczono do usunięcia. Na dole strony kliknij „Usuń zaznaczone”.';
         }
       }
 
@@ -3960,7 +5119,10 @@
               style: p.style,
               imagePath: p.imagePath,
               imagePathFramed: p.imagePathFramed || '',
+              imagePathThumb: p.imagePathThumb || '',
+              imagePathFramedThumb: p.imagePathFramedThumb || '',
               pdfLinks: sortPdfLinks(p.pdfLinks || legacyPdfsToLinks(p.pdfs)),
+              pdfLinksFramed: sortPdfLinks(p.pdfLinksFramed || []),
               createdAt: p.createdAt || null,
               prompt: p.prompt || '',
               promptLlmLabel: (p.promptLlmLabel || '').trim(),
@@ -4354,7 +5516,8 @@
         if (!els.studioAutoProgress || !els.studioAutoProgressMeta) return;
         if (success) {
           els.studioAutoProgress.classList.add('is-complete');
-          els.studioAutoProgressMeta.textContent = 'Gotowe — PNG w bibliotece (bez PDF). Odświeżanie strony…';
+          els.studioAutoProgressMeta.textContent =
+            'Gotowe — PNG w bibliotece (PDF zależnie od trybu npm). Odświeżanie strony…';
         } else {
           els.studioAutoProgress.hidden = true;
           els.studioAutoProgress.classList.remove('is-complete');
@@ -4385,69 +5548,307 @@
         els.posterGrid.innerHTML = '';
 
         filtered.forEach((item, i) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'poster-card';
-          btn.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
-          btn.setAttribute('role', 'listitem');
+          const card = document.createElement('article');
+          card.className = 'poster-card';
+          card.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
+          card.setAttribute('role', 'listitem');
+          card.tabIndex = 0;
+          const k = removeBasketKeyFromItem(item);
+          const inRemove = removeBasket.has(k);
+          const inApprove = approveBasket.has(k);
+          if (inRemove) card.classList.add('poster-card--marked-remove');
+          if (inApprove) card.classList.add('poster-card--marked-approve');
+
           const pdfs = item.pdfLinks || [];
           const hasFramed = !!(item.imagePathFramed && String(item.imagePathFramed).trim());
           const appr = !!item.approvedForPrint;
           const badgeClass = appr ? 'poster-status-badge--approved' : 'poster-status-badge--new';
           const badgeText = appr ? 'Zatwierdzony' : 'Nowy';
           const framedPill = hasFramed ? '<span class="size-pill size-pill--framed">Ramka</span>' : '';
-          btn.innerHTML = `
-            <figure><img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" /><span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span></figure>
+          const approveCb = !appr
+            ? `<label class="poster-card-cb poster-card-cb--approve poster-card-ctrl"><input type="checkbox" class="lib-cb-approve" ${
+                inApprove ? 'checked' : ''
+              } /><span>Druk</span></label>`
+            : '';
+
+          card.innerHTML = `
+            <figure class="poster-card-figure">
+              <img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" />
+              <span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+              <div class="poster-card-select poster-card-ctrl" role="group" aria-label="Zaznaczenia na karcie">
+                <label class="poster-card-cb poster-card-ctrl">
+                  <input type="checkbox" class="lib-cb-remove" ${inRemove ? 'checked' : ''} />
+                  <span>Usuń</span>
+                </label>
+                ${approveCb}
+              </div>
+            </figure>
             <div class="poster-body">
               <h3 class="poster-title">${escapeHtml(item.title)}</h3>
               <p class="poster-style">${escapeHtml(item.style)} · ${escapeHtml(item.category)}</p>
               <div class="poster-sizes">
                 ${framedPill}
-                ${pdfs.map((l) => `<span class="size-pill">${escapeHtml(l.label)}</span>`).join('')}
+                ${pdfs
+                  .map(
+                    (l) =>
+                      `<a class="size-pill-link" href="${escapeAttr(l.href)}" target="_blank" rel="noopener"><span class="size-pill">${escapeHtml(
+                        l.label
+                      )}</span></a>`
+                  )
+                  .join('')}
               </div>
+              <button type="button" class="poster-open-folder-btn poster-card-ctrl" title="Otwórz folder plakatu" aria-label="Otwórz folder plakatu">📁</button>
             </div>
           `;
-          btn.addEventListener('click', () => openModal(item));
-          btn.addEventListener('keydown', (e) => {
+
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.poster-card-ctrl')) return;
+            if (e.target.closest('.size-pill-link')) return;
+            openModal(item);
+          });
+          card.addEventListener('keydown', (e) => {
+            if (e.target.closest('.poster-card-ctrl')) return;
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               openModal(item);
             }
           });
-          const fig = btn.querySelector('figure');
-          if (fig) {
-            const inBasket = removeBasket.has(removeBasketKeyFromItem(item));
-            if (inBasket) btn.classList.add('poster-card--marked-remove');
-            const bq = document.createElement('button');
-            bq.type = 'button';
-            bq.className = 'poster-card-basket-btn' + (inBasket ? ' is-in-basket' : '');
-            bq.textContent = inBasket ? 'W koszyku' : 'Do koszyka';
-            bq.setAttribute(
-              'aria-label',
-              inBasket ? 'Usuń z koszyka usunięć' : 'Dodaj do koszyka usunięć'
-            );
-            bq.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleRemoveBasketItem(item);
-            });
-            bq.addEventListener('keydown', (e) => {
-              if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
-            });
-            fig.appendChild(bq);
+
+          const rcb = card.querySelector('.lib-cb-remove');
+          if (rcb) {
+            rcb.addEventListener('click', (e) => e.stopPropagation());
+            rcb.addEventListener('change', () => setRemoveBasketChecked(item, rcb.checked));
           }
-          els.posterGrid.appendChild(btn);
+          const acb = card.querySelector('.lib-cb-approve');
+          if (acb) {
+            acb.addEventListener('click', (e) => e.stopPropagation());
+            acb.addEventListener('change', () => setApproveBasketChecked(item, acb.checked));
+          }
+          const folderBtn = card.querySelector('.poster-open-folder-btn');
+          if (folderBtn) {
+            folderBtn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              try {
+                const payload = item.id ? { id: item.id } : { imagePath: item.imagePath };
+                const res = await fetch('/api/posters/open-folder', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Nie udało się otworzyć folderu');
+              } catch (err) {
+                window.alert(err.message || 'Nie udało się otworzyć folderu');
+              }
+            });
+          }
+
+          if (item.approvedForPrint && hasFramed) {
+            const img = card.querySelector('figure img');
+            if (img) {
+              const fullSrc = item.imagePath;
+              const framedSrc = item.imagePathFramed;
+              card.addEventListener('mouseenter', () => {
+                img.src = framedSrc;
+              });
+              card.addEventListener('mouseleave', () => {
+                img.src = fullSrc;
+              });
+            }
+          }
+
+          els.posterGrid.appendChild(card);
         });
         updateFilterResultsMeta();
       }
 
+      function setLightboxLoupe(on) {
+        lightboxLoupeActive = !!on;
+        if (els.modalLightboxLoupe) els.modalLightboxLoupe.setAttribute('aria-pressed', lightboxLoupeActive ? 'true' : 'false');
+        if (els.modalLightboxStage) els.modalLightboxStage.classList.toggle('modal-lightbox-stage--loupe', lightboxLoupeActive);
+        if (els.modalLightboxLens) {
+          els.modalLightboxLens.hidden = !lightboxLoupeActive;
+          els.modalLightboxLens.style.opacity = lightboxLoupeActive ? '' : '0';
+        }
+      }
+
+      function changeLightboxLoupeSize(delta) {
+        const next = lightboxLoupeSize + Number(delta || 0);
+        lightboxLoupeSize = Math.max(LIGHTBOX_LOUPE_SIZE_MIN, Math.min(LIGHTBOX_LOUPE_SIZE_MAX, next));
+      }
+
+      function posterItemsMatch(a, b) {
+        if (!a || !b) return false;
+        if (a.id && b.id && a.id === b.id) return true;
+        return (a.imagePath || '') === (b.imagePath || '');
+      }
+
+      function syncLightboxImageFromModal() {
+        const src = els.modalImg && els.modalImg.getAttribute('src');
+        if (!src || !els.modalLightboxImg) return;
+        els.modalLightboxImg.src = src;
+        els.modalLightboxImg.alt = (els.modalImg.alt || '').trim();
+        if (els.modalLightboxFrame) {
+          els.modalLightboxFrame.classList.toggle(
+            'poster-aspect-frame--natural',
+            modalPreviewVariant === 'framed'
+          );
+        }
+        updateLightboxVariantToolbar();
+        resetLightboxZoom();
+      }
+
+      function updateLightboxVariantToolbar() {
+        const item = lightboxPlaylist[lightboxIndex] || modalPosterItem;
+        const fr = item && item.imagePathFramed && String(item.imagePathFramed).trim();
+        const show = !!fr;
+        if (els.modalLightboxVariantGroup) els.modalLightboxVariantGroup.hidden = !show;
+        if (els.modalLightboxFramedChip) els.modalLightboxFramedChip.hidden = !fr;
+        if (els.modalLightboxFull && els.modalLightboxFramedChip) {
+          els.modalLightboxFull.setAttribute('aria-pressed', modalPreviewVariant === 'full' ? 'true' : 'false');
+          els.modalLightboxFramedChip.setAttribute('aria-pressed', modalPreviewVariant === 'framed' ? 'true' : 'false');
+        }
+      }
+
+      function preferredPreviewForItem(item, preferred) {
+        if (!item) return 'full';
+        const fr = item.imagePathFramed && String(item.imagePathFramed).trim();
+        if (preferred === 'framed' && fr) return 'framed';
+        return 'full';
+      }
+
+      function refreshLightboxNav() {
+        const n = lightboxPlaylist.length;
+        const i = lightboxIndex;
+        if (els.modalLightboxPrev) els.modalLightboxPrev.disabled = n <= 1 || i <= 0;
+        if (els.modalLightboxNext) els.modalLightboxNext.disabled = n <= 1 || i >= n - 1;
+        if (els.modalLightboxCounter) {
+          els.modalLightboxCounter.textContent = n ? `${i + 1} / ${n}` : '';
+        }
+      }
+
+      function formatBytesMeta(n) {
+        if (n == null || Number.isNaN(n)) return '—';
+        const x = Number(n);
+        if (x < 1024) return `${x} B`;
+        if (x < 1048576) return `${(x / 1024).toFixed(1)} KB`;
+        return `${(x / 1048576).toFixed(2)} MB`;
+      }
+
+      async function fetchLightboxImageMeta() {
+        if (!els.modalLightboxMetaDl) return;
+        const src = els.modalLightboxImg && els.modalLightboxImg.getAttribute('src');
+        if (!src) {
+          els.modalLightboxMetaDl.innerHTML = '<dt>Status</dt><dd>Brak obrazu</dd>';
+          return;
+        }
+        els.modalLightboxMetaDl.innerHTML = '<dt>Status</dt><dd>Ładowanie…</dd>';
+        let path = src.split('?')[0];
+        try {
+          const u = new URL(src, window.location.origin);
+          path = u.pathname;
+        } catch (_) {}
+        try {
+          const res = await fetch('/api/posters/image-meta?path=' + encodeURIComponent(path), { cache: 'no-store' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+          const rows = [
+            ['Plik', data.fileName],
+            ['Ścieżka', data.webPath],
+            ['Piksele', data.width && data.height ? `${data.width} × ${data.height}` : '—'],
+            ['Proporcje (w/h)', data.aspectRatio != null ? String(data.aspectRatio) : '—'],
+            ['Megapiksele', data.megapixels != null ? String(data.megapixels) : '—'],
+            ['Format', data.format || '—'],
+            ['Rozmiar na dysku', formatBytesMeta(data.bytes)],
+            ['Modyfikacja', data.mtime ? new Date(data.mtime).toLocaleString('pl-PL') : '—'],
+            ['Przestrzeń barw', data.space || '—'],
+            ['Kanały', data.channels != null ? String(data.channels) : '—'],
+            ['Głębia', data.depth != null ? String(data.depth) : '—'],
+            ['Kanał alfa', data.hasAlpha ? 'tak' : 'nie'],
+            ['DPI (metadane)', data.density != null ? String(data.density) : '—'],
+            ['Jednostka DPI', data.resolutionUnit || '—'],
+            ['Progressive', data.isProgressive != null ? (data.isProgressive ? 'tak' : 'nie') : '—'],
+            ['Chroma subsampling', data.chromaSubsampling || '—'],
+            ['Kompresja', data.compression != null ? String(data.compression) : '—'],
+            ['Paleta', data.palette != null ? (data.palette ? 'tak' : 'nie') : '—'],
+            ['Strony', data.pages != null ? String(data.pages) : '—'],
+            ['Orientacja', data.orientation != null ? String(data.orientation) : '—'],
+          ];
+          els.modalLightboxMetaDl.innerHTML = rows
+            .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`)
+            .join('');
+        } catch (e) {
+          els.modalLightboxMetaDl.innerHTML = `<dt>Błąd</dt><dd>${escapeHtml(e.message || 'Żądanie nieudane')}</dd>`;
+        }
+      }
+
+      function lightboxNavigate(delta) {
+        const n = lightboxPlaylist.length;
+        if (n === 0) return;
+        const j = lightboxIndex + delta;
+        if (j < 0 || j >= n) return;
+        lightboxIndex = j;
+        const item = lightboxPlaylist[lightboxIndex];
+        populatePosterDetailModal(item, preferredPreviewForItem(item, modalPreviewVariant));
+        syncLightboxImageFromModal();
+        refreshLightboxNav();
+        if (els.modalLightboxMeta && !els.modalLightboxMeta.hidden) fetchLightboxImageMeta();
+      }
+
+      function lightboxSetVariant(variant) {
+        const item = lightboxPlaylist[lightboxIndex] || modalPosterItem;
+        if (!item) return;
+        setModalPreviewVariant(variant);
+        syncLightboxImageFromModal();
+        if (els.modalLightboxMeta && !els.modalLightboxMeta.hidden) fetchLightboxImageMeta();
+      }
+
+      function onLightboxStagePointerMove(e) {
+        if (!lightboxLoupeActive || !els.modalLightboxLens || !els.modalLightboxImg || !els.modalLightboxStage) return;
+        const img = els.modalLightboxImg;
+        const stage = els.modalLightboxStage;
+        const lens = els.modalLightboxLens;
+        if (!img.naturalWidth) return;
+        const ir = img.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect();
+        if (e.clientX < ir.left || e.clientX > ir.right || e.clientY < ir.top || e.clientY > ir.bottom) {
+          lens.style.opacity = '0';
+          return;
+        }
+        lens.style.opacity = '1';
+        const nx = (e.clientX - ir.left) / ir.width;
+        const ny = (e.clientY - ir.top) / ir.height;
+        const Z = 2.75;
+        const LW = lightboxLoupeSize;
+        const bw = img.naturalWidth * Z;
+        const bh = img.naturalHeight * Z;
+        const px = nx * bw - LW / 2;
+        const py = ny * bh - LW / 2;
+        const src = img.currentSrc || img.src;
+        lens.style.width = `${LW}px`;
+        lens.style.height = `${LW}px`;
+        lens.style.backgroundImage = 'url(' + JSON.stringify(src) + ')';
+        lens.style.backgroundSize = `${bw}px ${bh}px`;
+        lens.style.backgroundPosition = `${-px}px ${-py}px`;
+        lens.style.left = `${e.clientX - sr.left - LW / 2}px`;
+        lens.style.top = `${e.clientY - sr.top - LW / 2}px`;
+      }
+
       function closePosterLightbox() {
         if (!els.modalLightbox || els.modalLightbox.hidden) return;
+        setLightboxLoupe(false);
+        resetLightboxZoom();
+        if (els.modalLightboxMeta) els.modalLightboxMeta.hidden = true;
+        if (els.modalLightboxInfoBtn) els.modalLightboxInfoBtn.setAttribute('aria-pressed', 'false');
         els.modalLightbox.classList.remove('is-open');
         els.modalLightbox.hidden = true;
         els.modalLightboxImg.removeAttribute('src');
         els.modalLightboxImg.alt = '';
+        els.modalLightboxImg.style.transform = '';
         if (els.modalLightboxFrame) els.modalLightboxFrame.classList.remove('poster-aspect-frame--natural');
+        lightboxPlaylist = [];
+        lightboxIndex = 0;
+        if (els.modalLightboxMetaDl) els.modalLightboxMetaDl.innerHTML = '';
       }
 
       async function copyTextWithOptionalFeedback(text, feedbackEl, okMsg) {
@@ -4477,75 +5878,223 @@
 
       function setModalPreviewVariant(variant) {
         if (!modalPosterItem) return;
-        const fr = modalPosterItem.imagePathFramed && String(modalPosterItem.imagePathFramed).trim();
-        const full = modalPosterItem.imagePath || '';
-        const v = variant === 'framed' && fr ? 'framed' : 'full';
-        const src = v === 'framed' ? fr : full;
+        const full = String(modalPosterItem.imagePath || '').trim();
+        const framed = String(modalPosterItem.imagePathFramed || '').trim();
+        const canFramed = !!framed;
+        const v = variant === 'framed' && canFramed ? 'framed' : 'full';
+        const src = v === 'framed' ? framed : full;
         if (!src) return;
         els.modalImg.src = src;
         modalPreviewVariant = v;
-        if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
-          els.modalPreviewThumbFull.classList.toggle('is-active', v === 'full');
-          els.modalPreviewThumbFramed.classList.toggle('is-active', v === 'framed');
-          els.modalPreviewThumbFull.setAttribute('aria-pressed', v === 'full' ? 'true' : 'false');
-          els.modalPreviewThumbFramed.setAttribute('aria-pressed', v === 'framed' ? 'true' : 'false');
+        if (els.modalPreviewFullBtn) {
+          const on = v === 'full';
+          els.modalPreviewFullBtn.classList.toggle('is-active', on);
+          els.modalPreviewFullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
         }
-        if (els.modalVisualOpenLightbox) {
-          els.modalVisualOpenLightbox.classList.toggle('modal-visual--source-aspect', v === 'framed');
+        if (els.modalPreviewFramedBtn) {
+          const on = v === 'framed';
+          els.modalPreviewFramedBtn.classList.toggle('is-active', on);
+          els.modalPreviewFramedBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          els.modalPreviewFramedBtn.disabled = !canFramed;
+        }
+        fetchModalTechnicalMeta(src);
+        if (els.modalLightbox && !els.modalLightbox.hidden) {
+          syncLightboxImageFromModal();
+          updateLightboxVariantToolbar();
+          if (els.modalLightboxMeta && !els.modalLightboxMeta.hidden) fetchLightboxImageMeta();
         }
       }
 
+      function setModalTopView(view) {
+        modalTopView = ['all', 'workflow', 'print', 'files'].includes(view) ? view : 'all';
+        if (els.modalDetailTiled) {
+          els.modalDetailTiled.setAttribute('data-modal-view', modalTopView);
+        }
+        document.querySelectorAll('[data-modal-view]').forEach((btn) => {
+          const on = btn.getAttribute('data-modal-view') === modalTopView;
+          btn.classList.toggle('is-active', on);
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-modal-section]').forEach((node) => {
+          const own = String(node.getAttribute('data-modal-section') || '')
+            .split(/\s+/)
+            .filter(Boolean);
+          const show = modalTopView === 'all' || own.includes(modalTopView);
+          node.hidden = !show;
+        });
+      }
+
+      function syncPremiumPrintBadge() {
+        if (!els.modalPremiumPrintAction) return;
+        const on = !!(modalPosterItem && modalPosterItem.approvedForPrint);
+        els.modalPremiumPrintAction.classList.toggle('is-active', on);
+        if (els.modalPremiumPrintBadge) els.modalPremiumPrintBadge.textContent = on ? 'ON' : 'OFF';
+      }
+
       function syncModalPosterPreview(item, preferredVariant) {
-        const fr = item.imagePathFramed && String(item.imagePathFramed).trim();
         const title = item.title || '';
+        const full = String(item.imagePath || '').trim();
+        const framed = String(item.imagePathFramed || '').trim();
+        const hasFramed = !!framed;
         els.modalImg.alt = title;
-        if (fr && els.modalPreviewThumbs) {
-          els.modalPreviewThumbs.hidden = false;
-          if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.src = item.imagePath || '';
-          if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.src = fr;
-          const want = preferredVariant === 'framed' ? 'framed' : 'full';
-          setModalPreviewVariant(want);
-        } else {
-          if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
-          if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.removeAttribute('src');
-          if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.removeAttribute('src');
-          els.modalImg.src = item.imagePath || '';
-          modalPreviewVariant = 'full';
-          if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
-            els.modalPreviewThumbFull.classList.add('is-active');
-            els.modalPreviewThumbFramed.classList.remove('is-active');
-            els.modalPreviewThumbFull.setAttribute('aria-pressed', 'true');
-            els.modalPreviewThumbFramed.setAttribute('aria-pressed', 'false');
-          }
-          if (els.modalVisualOpenLightbox) els.modalVisualOpenLightbox.classList.remove('modal-visual--source-aspect');
+        if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = !hasFramed;
+        if (els.modalPreviewFullImg) els.modalPreviewFullImg.src = full;
+        if (els.modalPreviewFramedImg) els.modalPreviewFramedImg.src = hasFramed ? framed : full;
+        setModalPreviewVariant(preferredVariant === 'framed' ? 'framed' : 'full');
+      }
+
+      function renderModalFileVariants(item) {
+        if (!els.modalFileVariantsGrid) return;
+        const mkRow = (label, value) => {
+          const v = String(value || '').trim();
+          const shown = v || '—';
+          const img = v
+            ? `<img class="modal-file-variant-preview" src="${escapeAttr(v)}" alt="${escapeAttr(label)}" loading="lazy" />`
+            : '';
+          const copyBtn = v
+            ? `<button type="button" class="modal-copy-combo-line modal-copy-combo-line--compact" data-copy-path="${escapeAttr(v)}">Kopiuj</button>`
+            : '';
+          return `
+            <div class="modal-file-variant-row">
+              <span class="modal-file-variant-name">${escapeHtml(label)}</span>
+              ${img}
+              <code class="modal-file-variant-path">${escapeHtml(shown)}</code>
+              ${copyBtn}
+            </div>
+          `;
+        };
+        const html = `
+          <section class="modal-file-variant-col">
+            <p class="modal-file-variant-title">Druk / PNG</p>
+            ${mkRow('MASTER', item.imagePath)}
+            ${mkRow('MASTER + RAMKA', item.imagePathFramed)}
+          </section>
+          <section class="modal-file-variant-col">
+            <p class="modal-file-variant-title">Sklep / THUMB JPEG</p>
+            ${mkRow('THUMB MASTER', item.imagePathThumb)}
+            ${mkRow('THUMB RAMKA', item.imagePathFramedThumb)}
+          </section>
+        `;
+        els.modalFileVariantsGrid.innerHTML = html;
+        els.modalFileVariantsGrid.querySelectorAll('[data-copy-path]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const path = btn.getAttribute('data-copy-path') || '';
+            if (!path.trim()) return;
+            await copyTextWithOptionalFeedback(path, els.modalListingFeedback, 'Path copied.');
+            window.setTimeout(() => {
+              if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+            }, 1800);
+          });
+        });
+      }
+
+      function renderModalPdfVariants(item) {
+        if (!els.modalPdfVariantsGrid) return;
+        const mkLinks = (links) => {
+          const list = Array.isArray(links) ? links : [];
+          if (!list.length) return '<p class="modal-pdf-empty">Brak wygenerowanych PDF.</p>';
+          return `<div class="modal-pdf-chip-list">${list
+            .map((l) => {
+              const href = String(l && l.href ? l.href : '').trim();
+              const label = String(l && l.label ? l.label : 'format').trim();
+              if (!href) return '';
+              return `<a class="modal-pdf-chip" href="${escapeAttr(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+            })
+            .join('')}</div>`;
+        };
+        const fullLinks = item && Array.isArray(item.pdfLinks) ? item.pdfLinks : [];
+        const framedLinks = item && Array.isArray(item.pdfLinksFramed) ? item.pdfLinksFramed : [];
+        els.modalPdfVariantsGrid.innerHTML = `
+          <section class="modal-pdf-variant-col">
+            <div class="modal-pdf-variant-head">
+              <p class="modal-pdf-variant-title">Master</p>
+              <span class="modal-pdf-variant-count">${fullLinks.length} formatów</span>
+            </div>
+            ${mkLinks(fullLinks)}
+          </section>
+          <section class="modal-pdf-variant-col">
+            <div class="modal-pdf-variant-head">
+              <p class="modal-pdf-variant-title">Master + Ramka</p>
+              <span class="modal-pdf-variant-count">${framedLinks.length} formatów</span>
+            </div>
+            ${mkLinks(framedLinks)}
+          </section>
+        `;
+      }
+
+      async function fetchModalTechnicalMeta(imageSrc) {
+        if (!els.modalTechnicalMetaDl) return;
+        if (!imageSrc) {
+          els.modalTechnicalMetaDl.innerHTML = '<dt>Status</dt><dd>Brak obrazu</dd>';
+          return;
+        }
+        els.modalTechnicalMetaDl.innerHTML = '<dt>Status</dt><dd>Ładowanie…</dd>';
+        let webPath = imageSrc.split('?')[0];
+        try {
+          const u = new URL(imageSrc, window.location.origin);
+          webPath = u.pathname;
+        } catch (_) {}
+        try {
+          const res = await fetch('/api/posters/image-meta?path=' + encodeURIComponent(webPath), { cache: 'no-store' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+          const rows = [
+            ['Plik', data.fileName || '—'],
+            ['Ścieżka', data.webPath || '—'],
+            ['Format', data.format || '—'],
+            ['Piksele', data.width && data.height ? `${data.width} × ${data.height}` : '—'],
+            ['Proporcje (w/h)', data.aspectRatio != null ? String(data.aspectRatio) : '—'],
+            ['Megapiksele', data.megapixels != null ? String(data.megapixels) : '—'],
+            ['Rozmiar na dysku', formatBytesMeta(data.bytes)],
+            ['Przestrzeń barw', data.space || '—'],
+            ['Kanały', data.channels != null ? String(data.channels) : '—'],
+            ['Głębia', data.depth != null ? String(data.depth) : '—'],
+            ['Kanał alfa', data.hasAlpha ? 'tak' : 'nie'],
+            ['DPI (metadane)', data.density != null ? String(data.density) : '—'],
+            ['Jednostka DPI', data.resolutionUnit || '—'],
+            ['Progressive', data.isProgressive != null ? (data.isProgressive ? 'tak' : 'nie') : '—'],
+            ['Kompresja', data.compression != null ? String(data.compression) : '—'],
+            ['Paleta', data.palette != null ? (data.palette ? 'tak' : 'nie') : '—'],
+            ['Modyfikacja', data.mtime ? new Date(data.mtime).toLocaleString('pl-PL') : '—'],
+          ];
+          els.modalTechnicalMetaDl.innerHTML = rows
+            .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`)
+            .join('');
+        } catch (e) {
+          els.modalTechnicalMetaDl.innerHTML = `<dt>Błąd</dt><dd>${escapeHtml(e.message || 'Nie udało się pobrać metadanych')}</dd>`;
         }
       }
 
       function openPosterLightbox() {
         const src = els.modalImg.getAttribute('src');
         if (!src) return;
-        els.modalLightboxImg.src = src;
-        els.modalLightboxImg.alt = els.modalImg.alt || '';
-        if (els.modalLightboxFrame) {
-          els.modalLightboxFrame.classList.toggle('poster-aspect-frame--natural', modalPreviewVariant === 'framed');
+        lightboxPlaylist = flatItems.filter(matchesFilters);
+        lightboxIndex = lightboxPlaylist.findIndex((it) => posterItemsMatch(it, modalPosterItem));
+        if (lightboxIndex < 0) {
+          lightboxPlaylist = modalPosterItem ? [modalPosterItem] : [];
+          lightboxIndex = 0;
         }
+        syncLightboxImageFromModal();
+        refreshLightboxNav();
         els.modalLightbox.hidden = false;
         requestAnimationFrame(() => els.modalLightbox.classList.add('is-open'));
         els.modalLightboxClose.focus();
       }
 
-      function openModal(item) {
-        closePosterLightbox();
+      function populatePosterDetailModal(item, preferredPreviewVariant) {
         modalPosterItem = item;
+        setModalTopView('all');
+        syncPremiumPrintBadge();
         if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
         if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = '';
         if (els.modalBasketFeedback) {
           els.modalBasketFeedback.hidden = true;
           els.modalBasketFeedback.textContent = '';
         }
-        els.modal.hidden = false;
-        els.modal.classList.add('is-open');
-        syncModalPosterPreview(item, 'full');
+        const pv = preferredPreviewVariant === 'framed' ? 'framed' : 'full';
+        syncModalPosterPreview(item, pv);
+        renderModalPdfVariants(item);
+        renderModalFileVariants(item);
         els.modalTitle.textContent = item.title;
         if (els.modalCategoryValue) els.modalCategoryValue.textContent = item.category || '—';
         if (els.modalStyleValue) els.modalStyleValue.textContent = item.style || '—';
@@ -4582,27 +6131,14 @@
           els.modalPrompt.textContent = '';
           if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = true;
         }
-        const pdfs = item.pdfLinks || [];
-        els.modalPdfs.innerHTML = pdfs
-          .map(
-            (l) =>
-              `<a href="${escapeAttr(l.href)}" download target="_blank" rel="noopener">PDF ${escapeHtml(l.label)}</a>`
-          )
-          .join('');
-        if (els.modalPdfsEmptyHint) {
-          const hideEmpty = pdfs.length > 0;
-          els.modalPdfsEmptyHint.hidden = hideEmpty;
-        }
-        if (els.modalFramedRow) {
-          const fr = item.imagePathFramed && String(item.imagePathFramed).trim();
-          if (fr) {
-            els.modalFramedRow.innerHTML = `<a href="${escapeAttr(fr)}" download target="_blank" rel="noopener">Pobierz PNG z ramką</a>`;
-          } else if (item.id) {
-            els.modalFramedRow.innerHTML = `<button type="button" class="studio-pro-chip" id="modalGenerateFramedBtn">Wygeneruj wersję z ramką</button>`;
-          } else {
-            els.modalFramedRow.innerHTML = '<span class="field-hint">Brak id wpisu — użyj przycisku pod siatką.</span>';
-          }
-        }
+      }
+
+      function openModal(item, previewVariant) {
+        closePosterLightbox();
+        els.modal.hidden = false;
+        els.modal.classList.add('is-open');
+        const pv = previewVariant === 'framed' ? 'framed' : 'full';
+        populatePosterDetailModal(item, pv);
         document.body.style.overflow = 'hidden';
         els.modalClose.focus();
       }
@@ -4610,34 +6146,30 @@
       function closeModal() {
         closePosterLightbox();
         modalPosterItem = null;
+        setModalTopView('all');
+        syncPremiumPrintBadge();
         els.modal.classList.remove('is-open');
         els.modal.hidden = true;
         document.body.style.overflow = '';
         els.modalImg.src = '';
         modalPreviewVariant = 'full';
-        if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
-        if (els.modalPreviewThumbFullImg) els.modalPreviewThumbFullImg.removeAttribute('src');
-        if (els.modalPreviewThumbFramedImg) els.modalPreviewThumbFramedImg.removeAttribute('src');
-        if (els.modalPreviewThumbFull && els.modalPreviewThumbFramed) {
-          els.modalPreviewThumbFull.classList.add('is-active');
-          els.modalPreviewThumbFramed.classList.remove('is-active');
-          els.modalPreviewThumbFull.setAttribute('aria-pressed', 'true');
-          els.modalPreviewThumbFramed.setAttribute('aria-pressed', 'false');
-        }
-        if (els.modalVisualOpenLightbox) els.modalVisualOpenLightbox.classList.remove('modal-visual--source-aspect');
         if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
         if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = '';
         if (els.modalPromptLlm) {
           els.modalPromptLlm.hidden = true;
           els.modalPromptLlm.textContent = '';
         }
-        if (els.modalFramedRow) els.modalFramedRow.innerHTML = '';
-        if (els.modalPdfsEmptyHint) els.modalPdfsEmptyHint.hidden = true;
+        if (els.modalTechnicalMetaDl) els.modalTechnicalMetaDl.innerHTML = '';
         if (els.modalListingText) els.modalListingText.textContent = '';
         if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = true;
         if (els.modalGenerateListingBtn) els.modalGenerateListingBtn.hidden = true;
         if (els.modalCopyListing) els.modalCopyListing.disabled = true;
         if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+        if (els.modalPdfVariantsGrid) els.modalPdfVariantsGrid.innerHTML = '';
+        if (els.modalFileVariantsGrid) els.modalFileVariantsGrid.innerHTML = '';
+        if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
+        if (els.modalPreviewFullImg) els.modalPreviewFullImg.src = '';
+        if (els.modalPreviewFramedImg) els.modalPreviewFramedImg.src = '';
       }
 
       async function load() {
@@ -4649,7 +6181,10 @@
           rawCategories = data.posters || {};
           flatItems = flattenPosters(rawCategories);
           renderStats(data.stats || { totalPosters: 0, totalPdfs: 0, categories: 0 });
-          const cats = Object.keys(rawCategories);
+          const catsFromInventory = Object.keys(rawCategories);
+          const catsBase = configCategoriesList.length ? [...configCategoriesList] : [...catsFromInventory];
+          const catsExtra = catsFromInventory.filter((c) => !catsBase.includes(c));
+          const cats = [...catsBase, ...catsExtra];
           if (activeCategory !== 'all' && !cats.includes(activeCategory)) activeCategory = 'all';
           draftCategory = activeCategory;
           draftStatusFilter = activeStatusFilter;
@@ -4661,7 +6196,7 @@
           syncStatusFilterButtons();
           updatePendingHint();
           renderGrid();
-          syncRemoveBasketWithLibrary();
+          syncSelectionBasketsWithLibrary();
           els.updatedAt.textContent =
             'Zaktualizowano: ' +
             new Intl.DateTimeFormat('pl-PL', {
@@ -4692,12 +6227,45 @@
         }
       }
 
-      if (els.libraryBasketClear) {
-        els.libraryBasketClear.addEventListener('click', () => {
-          if (removeBasket.size === 0) return;
+      if (els.librarySelectionClear) {
+        els.librarySelectionClear.addEventListener('click', () => {
+          if (removeBasket.size === 0 && approveBasket.size === 0) return;
           removeBasket.clear();
-          renderRemoveBasketDock();
+          approveBasket.clear();
+          renderSelectionDock();
           renderGrid();
+        });
+      }
+
+      if (els.libraryBulkApproveBtn) {
+        els.libraryBulkApproveBtn.addEventListener('click', async () => {
+          if (approveBasket.size === 0) return;
+          const n = approveBasket.size;
+          const msg =
+            'Zatwierdzić do druku ' +
+            plCountPosters(n) +
+            '? Status „Zatwierdzony” zapisze się w bibliotece.';
+          if (!window.confirm(msg)) return;
+          const items = [];
+          for (const pathKey of approveBasket.keys()) {
+            const row = flatItems.find((x) => x.imagePath === pathKey);
+            if (row && row.id) items.push({ id: row.id });
+            else items.push({ imagePath: pathKey });
+          }
+          try {
+            const res = await fetch('/api/posters/bulk-approval', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items, approvedForPrint: true }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            approveBasket.clear();
+            renderSelectionDock();
+            await load();
+          } catch (err) {
+            window.alert(err.message || 'Nie udało się zatwierdzić plakatów.');
+          }
         });
       }
 
@@ -4717,7 +6285,7 @@
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || res.statusText);
             removeBasket.clear();
-            renderRemoveBasketDock();
+            renderSelectionDock();
             await load();
           } catch (err) {
             window.alert(err.message || 'Nie udało się usunąć plakatów.');
@@ -4729,41 +6297,37 @@
         els.modalAddToRemoveBasket.addEventListener('click', () => addCurrentModalToRemoveBasket());
       }
 
-      els.refreshBtn.addEventListener('click', load);
+      if (els.refreshBtn) els.refreshBtn.addEventListener('click', load);
+      if (els.refreshBtnHero) els.refreshBtnHero.addEventListener('click', load);
 
-      if (els.libraryFrameFilteredBtn) {
-        els.libraryFrameFilteredBtn.addEventListener('click', async () => {
-          const ids = flatItems.filter(matchesFilters).map((x) => x.id).filter(Boolean);
-          if (ids.length === 0) {
-            if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = 'Brak widocznych plakatów (sprawdź filtry).';
-            return;
+      document.querySelectorAll('[data-modal-view]').forEach((btn) => {
+        btn.addEventListener('click', () => setModalTopView(btn.getAttribute('data-modal-view') || 'all'));
+      });
+
+      if (els.modalPremiumPrintAction) {
+        els.modalPremiumPrintAction.addEventListener('click', () => {
+          setModalTopView('print');
+          if (els.modalApprovedPrint) {
+            els.modalApprovedPrint.focus();
+            if (!els.modalApprovedPrint.checked) els.modalApprovedPrint.click();
           }
-          if (
-            !window.confirm(
-              'Wygenerować plik *_ramka.png (równy passe-partout) dla ' + ids.length + ' widocznych plakatów?'
-            )
-          ) {
-            return;
-          }
-          if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = 'Przetwarzanie…';
-          els.libraryFrameFilteredBtn.disabled = true;
+        });
+      }
+
+      if (els.modalOpenFolderBtnTop) {
+        els.modalOpenFolderBtnTop.addEventListener('click', async () => {
+          if (!modalPosterItem) return;
           try {
-            const res = await fetch('/api/library/frame-variant', {
+            const payload = modalPosterItem.id ? { id: modalPosterItem.id } : { imagePath: modalPosterItem.imagePath };
+            const res = await fetch('/api/posters/open-folder', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ posterIds: ids }),
+              body: JSON.stringify(payload),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || res.statusText);
-            if (els.libraryFrameFeedback) {
-              els.libraryFrameFeedback.textContent =
-                'OK: ' + (data.okCount != null ? data.okCount : 0) + ', błędy: ' + (data.failCount != null ? data.failCount : 0);
-            }
-            await load();
+            if (!res.ok) throw new Error(data.error || 'Nie udało się otworzyć folderu');
           } catch (err) {
-            if (els.libraryFrameFeedback) els.libraryFrameFeedback.textContent = err.message || 'Błąd';
-          } finally {
-            els.libraryFrameFilteredBtn.disabled = false;
+            window.alert(err.message || 'Nie udało się otworzyć folderu');
           }
         });
       }
@@ -4808,6 +6372,7 @@
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || res.statusText);
             modalPosterItem.approvedForPrint = want;
+            syncPremiumPrintBadge();
             if (els.modalApprovalFeedback) {
               els.modalApprovalFeedback.textContent = want
                 ? 'Zapisano: zatwierdzony do druku.'
@@ -4817,6 +6382,7 @@
           } catch (err) {
             modalPosterItem.approvedForPrint = prev;
             els.modalApprovedPrint.checked = prev;
+            syncPremiumPrintBadge();
             if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = err.message || 'Błąd zapisu';
           } finally {
             els.modalApprovedPrint.disabled = false;
@@ -4847,47 +6413,76 @@
 
       els.modalClose.addEventListener('click', closeModal);
       els.modal.addEventListener('click', async (e) => {
-        const frameBtn = e.target.closest('#modalGenerateFramedBtn');
-        if (frameBtn && modalPosterItem && modalPosterItem.id) {
-          e.preventDefault();
-          e.stopPropagation();
-          frameBtn.disabled = true;
-          const idKeep = modalPosterItem.id;
-          try {
-            const res = await fetch('/api/library/frame-variant', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ posterIds: [idKeep] }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || res.statusText);
-            await load();
-            const next = flatItems.find((x) => x.id === idKeep);
-            if (next) openModal(next);
-          } catch (err) {
-            window.alert(err.message || 'Błąd generowania ramki');
-            frameBtn.disabled = false;
-          }
-          return;
-        }
         if (e.target === els.modal) closeModal();
       });
 
       els.modalVisualOpenLightbox.addEventListener('click', () => openPosterLightbox());
 
-      if (els.modalPreviewThumbs) {
-        els.modalPreviewThumbs.addEventListener('click', (e) => {
-          const btn = e.target.closest('.modal-preview-thumb');
-          if (!btn || !els.modalPreviewThumbs.contains(btn)) return;
-          const v = btn.getAttribute('data-variant');
-          if (v === 'full' || v === 'framed') setModalPreviewVariant(v);
-        });
-      }
-
       els.modalLightboxClose.addEventListener('click', () => closePosterLightbox());
       els.modalLightbox.addEventListener('click', (e) => {
         if (e.target === els.modalLightbox) closePosterLightbox();
       });
+
+      if (els.modalLightboxPrev) els.modalLightboxPrev.addEventListener('click', () => lightboxNavigate(-1));
+      if (els.modalLightboxNext) els.modalLightboxNext.addEventListener('click', () => lightboxNavigate(1));
+      if (els.modalLightboxZoomOut) els.modalLightboxZoomOut.addEventListener('click', () => changeLightboxZoom(-LIGHTBOX_ZOOM_STEP));
+      if (els.modalLightboxZoomIn) els.modalLightboxZoomIn.addEventListener('click', () => changeLightboxZoom(LIGHTBOX_ZOOM_STEP));
+      if (els.modalLightboxZoomReset) els.modalLightboxZoomReset.addEventListener('click', () => resetLightboxZoom());
+      if (els.modalLightboxFull) els.modalLightboxFull.addEventListener('click', () => lightboxSetVariant('full'));
+      if (els.modalLightboxFramedChip) els.modalLightboxFramedChip.addEventListener('click', () => lightboxSetVariant('framed'));
+      if (els.modalPreviewFullBtn) {
+        els.modalPreviewFullBtn.addEventListener('click', () => setModalPreviewVariant('full'));
+      }
+      if (els.modalPreviewFramedBtn) {
+        els.modalPreviewFramedBtn.addEventListener('click', () => setModalPreviewVariant('framed'));
+      }
+      if (els.modalLightboxLoupe) {
+        els.modalLightboxLoupe.addEventListener('click', () => setLightboxLoupe(!lightboxLoupeActive));
+      }
+      if (els.modalLightboxInfoBtn && els.modalLightboxMeta) {
+        els.modalLightboxInfoBtn.addEventListener('click', () => {
+          const on = els.modalLightboxMeta.hidden;
+          els.modalLightboxMeta.hidden = !on;
+          els.modalLightboxInfoBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          if (on) fetchLightboxImageMeta();
+        });
+      }
+      if (els.modalLightboxStage) {
+        els.modalLightboxStage.addEventListener('wheel', (e) => {
+          if (!els.modalLightbox || els.modalLightbox.hidden) return;
+          const img = els.modalLightboxImg;
+          if (!img) return;
+          const rect = img.getBoundingClientRect();
+          const overImage =
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom;
+          if (!overImage) return;
+          e.preventDefault();
+          if (lightboxLoupeActive) {
+            const loupeDelta = e.deltaY < 0 ? LIGHTBOX_LOUPE_SIZE_STEP : -LIGHTBOX_LOUPE_SIZE_STEP;
+            changeLightboxLoupeSize(loupeDelta);
+            onLightboxStagePointerMove({ clientX: e.clientX, clientY: e.clientY });
+            return;
+          }
+          const delta = e.deltaY < 0 ? LIGHTBOX_ZOOM_STEP : -LIGHTBOX_ZOOM_STEP;
+          changeLightboxZoom(delta);
+        }, { passive: false });
+        els.modalLightboxStage.addEventListener('mousemove', onLightboxStagePointerMove);
+        els.modalLightboxStage.addEventListener('touchmove', (e) => {
+          if (!lightboxLoupeActive || !e.touches[0]) return;
+          const t = e.touches[0];
+          onLightboxStagePointerMove({ clientX: t.clientX, clientY: t.clientY });
+        }, { passive: true });
+      }
+      if (els.modalLightboxImg) {
+        els.modalLightboxImg.addEventListener('load', () => {
+          if (!els.modalLightbox.hidden && els.modalLightboxMeta && !els.modalLightboxMeta.hidden) {
+            fetchLightboxImageMeta();
+          }
+        });
+      }
 
       els.modalCopyPrompt.addEventListener('click', async () => {
         const text = (els.modalPrompt.textContent || '').trim();
@@ -5010,7 +6605,7 @@
           return;
         }
         const previewId = activeStudioPreviewId;
-        setStudioStatus('Zapis do biblioteki (PNG)…');
+        setStudioStatus('Zapis do biblioteki (tylko PNG)…');
         els.studioPreviewAccept.disabled = true;
         els.studioPreviewReject.disabled = true;
         els.studioPreviewClose.disabled = true;
@@ -5032,7 +6627,7 @@
           if (!res.ok) throw new Error(data.error || res.statusText);
           activeStudioPreviewId = null;
           closeStudioPreviewModal();
-          setStudioStatus('Zapisano w bibliotece (PNG). Wersję z ramką dodasz w Bibliotece.', 'ok');
+          setStudioStatus('Zapisano w bibliotece (PNG). PDF wygenerujesz później z Biblioteki.', 'ok');
           await load();
         } catch (err) {
           setStudioStatus(err.message || 'Błąd zapisu', 'error');
@@ -5095,6 +6690,15 @@
           }
           if (!els.modal.hidden) closeModal();
         }
+        if (!els.modalLightbox.hidden && els.modalLightbox.classList.contains('is-open')) {
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            lightboxNavigate(-1);
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            lightboxNavigate(1);
+          }
+        }
       });
 
       function setStudioStatus(text, kind) {
@@ -5115,6 +6719,7 @@
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const data = await res.json();
           categoryHints = data.categoryHints || {};
+          configCategoriesList = Array.isArray(data.categories) ? [...data.categories] : [];
           els.studioCategory.innerHTML = (data.categories || [])
             .map((c) => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
             .join('');
