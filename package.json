@@ -8,6 +8,9 @@
     "generate-all": "node index.js generate-all 5",
     "generate-botanika": "node index.js generate Botanika 5",
     "stats": "node index.js stats",
+    "shopify:thumbs": "node scripts/syncShopifyThumbs.js",
+    "shopify:export": "node scripts/exportShopifyCsv.js",
+    "shopify:export:all": "node scripts/exportShopifyCsv.js --all",
     "start": "node index.js",
     "preview": "node preview.js"
   },
@@ -16,13 +19,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "axios": "^1.15.0",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "openai": "^6.34.0",
     "pdfkit": "^0.18.0",
-    "replicate": "^1.4.0",
     "sharp": "^0.34.5",
     "uuid": "^13.0.0"
   }
