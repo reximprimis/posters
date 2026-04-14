@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { reconcileInventoryShopifyStates, evaluatePosterShopifyState } = require('../src/shopifyState');
 
 const projectRoot = path.resolve(__dirname, '..');
 const inventoryPath = path.join(projectRoot, 'posters_inventory.json');
@@ -37,14 +38,21 @@ function main() {
   }
 
   const inv = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  const reconcileSummary = reconcileInventoryShopifyStates(projectRoot, inv);
   const posters = Array.isArray(inv.posters) ? inv.posters : [];
 
   let masterCopied = 0;
   let framedCopied = 0;
   let skipped = 0;
+  let skippedNotReady = 0;
 
   for (const p of posters) {
     if (!p || p.approvedForPrint !== true) continue;
+    const evalState = evaluatePosterShopifyState(projectRoot, p);
+    if (evalState.state !== 'ready') {
+      skippedNotReady += 1;
+      continue;
+    }
     const master = copyIfExists(p.imagePathThumb);
     const framed = copyIfExists(p.imagePathFramedThumb);
     if (master) masterCopied += 1;
@@ -52,9 +60,17 @@ function main() {
     if (!master) skipped += 1;
   }
 
+  if (reconcileSummary.changed > 0) {
+    fs.writeFileSync(inventoryPath, JSON.stringify(inv, null, 2), 'utf8');
+  }
+
   console.log(`Master thumbs copied: ${masterCopied}`);
   console.log(`Framed thumbs copied: ${framedCopied}`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
+  console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
+  console.log(
+    `Inventory state summary: ready=${reconcileSummary.ready}, pending_assets=${reconcileSummary.pending_assets}, legacy_blocked=${reconcileSummary.legacy_blocked}`
+  );
   console.log(`Output dir: ${outRoot}`);
 }
 

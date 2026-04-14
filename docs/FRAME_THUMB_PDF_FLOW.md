@@ -1,0 +1,7 @@
+# Frame + Thumb + PDF + Shopify Readiness Flow
+
+Flow działa teraz na statusach eksportowych zapisanych w `posters_inventory.json`: `ready`, `pending_assets`, `legacy_blocked`. Rekord `ready` ma aktywny source PNG + miniaturę master (`*_thumb.jpg`) i może wejść do eksportu Shopify. Rekord `pending_assets` to nowe/planned pozycje (np. jeszcze niezatwierdzone albo bez kompletu assets). Rekord `legacy_blocked` oznacza brak source PNG lub uszkodzony stary wpis — rekord zostaje w inventory historycznie, ale nie trafia do eksportu.
+
+Operacyjnie obowiązuje stała kolejność dla nowych produktów: `approve -> frame/thumb/pdf generation -> shopify_thumbs sync -> shopify export`. Generator ramek trzyma stałe `5%` (`marginRatio: 0.05`), miniatury są JPEG do 1000 px dłuższego boku, a eksport bierze wyłącznie rekordy `ready` oraz publikuje URL pod `SHOPIFY_IMAGE_BASE_URL` (obecnie `shopify_thumbs` przez Git CDN). Dzięki temu import Shopify jest powtarzalny i nie miesza rekordów legacy z nowymi.
+
+Do utrzymania pipeline używamy komend: `npm run shopify:reconcile` (pełna klasyfikacja inventory), `npm run shopify:thumbs` (sync tylko gotowych thumbów), `npm run shopify:export` (CSV tylko `ready`), oraz endpointu `GET /api/shopify/readiness` (raport: ready/pending/legacy + lista zatwierdzonych zablokowanych). Cleanup historycznych danych jest nieniszczący: legacy zostaje w inventory, ale jest blokowane z eksportu.

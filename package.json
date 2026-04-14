@@ -8,6 +8,7 @@
     "generate-all": "node index.js generate-all 5",
     "generate-botanika": "node index.js generate Botanika 5",
     "stats": "node index.js stats",
+    "shopify:reconcile": "node scripts/reconcileShopifyStates.js",
     "shopify:thumbs": "node scripts/syncShopifyThumbs.js",
     "shopify:export": "node scripts/exportShopifyCsv.js",
     "shopify:export:all": "node scripts/exportShopifyCsv.js --all",

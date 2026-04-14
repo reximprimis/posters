@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const { normalizeRelPath, evaluatePosterShopifyState, reconcileInventoryShopifyStates } = require('../src/shopifyState');
 
 const projectRoot = path.resolve(__dirname, '..');
 const inventoryPath = path.join(projectRoot, 'posters_inventory.json');
@@ -107,10 +108,6 @@ function slugifyTag(v) {
     .replace(/^-+|-+$/g, '');
 }
 
-function normalizeRelPath(p) {
-  return String(p || '').replace(/\\/g, '/').replace(/^\/+/, '');
-}
-
 function withThumbSuffix(relPath) {
   const p = normalizeRelPath(relPath);
   if (!p) return '';
@@ -175,13 +172,23 @@ function main() {
     throw new Error('Brak posters_inventory.json');
   }
   const inv = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  const reconcileSummary = reconcileInventoryShopifyStates(projectRoot, inv);
+  if (reconcileSummary.changed > 0) {
+    fs.writeFileSync(inventoryPath, JSON.stringify(inv, null, 2), 'utf8');
+  }
   const approvedOnly = !process.argv.includes('--all');
   const posters = dedupePosters(inv.posters || []).filter((p) => (approvedOnly ? p.approvedForPrint === true : true));
   const headers = pickHeaders();
   const lines = [headers.join(',')];
   let skippedNoThumb = 0;
+  let skippedNotReady = 0;
 
   for (const p of posters) {
+    const evalState = evaluatePosterShopifyState(projectRoot, p);
+    if (evalState.state !== 'ready') {
+      skippedNotReady += 1;
+      continue;
+    }
     const handle = toHandle(p.title);
     const title = String(p.title || '').trim();
     const body = htmlDescription(p.shopDescription || p.prompt || '');
@@ -287,8 +294,17 @@ function main() {
   fs.writeFileSync(outputCsvPath, lines.join('\n') + '\n', 'utf8');
   console.log(`Shopify CSV exported: ${outputCsvPath}`);
   console.log(`Products exported: ${Math.max(0, Math.floor((lines.length - 1) / (SIZES.length * PRINT_STYLES.length)))}, rows: ${lines.length - 1}`);
+  console.log(
+    `Inventory state summary: ready=${reconcileSummary.ready}, pending_assets=${reconcileSummary.pending_assets}, legacy_blocked=${reconcileSummary.legacy_blocked}`
+  );
+  if (reconcileSummary.changed > 0) {
+    console.log(`Inventory records reconciled: ${reconcileSummary.changed}`);
+  }
   if (skippedNoThumb > 0) {
     console.log(`Skipped (no thumb): ${skippedNoThumb}`);
+  }
+  if (skippedNotReady > 0) {
+    console.log(`Skipped (not ready): ${skippedNotReady}`);
   }
   if (!process.env.SHOPIFY_IMAGE_BASE_URL) {
     console.log('Warning: SHOPIFY_IMAGE_BASE_URL is missing. CSV will be generated without image URLs.');

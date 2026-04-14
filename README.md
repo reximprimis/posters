@@ -7,6 +7,19 @@ Automated system to generate print-ready posters in 16+ categories using AI.
 - Frame + thumb + PDF workflow: `docs/FRAME_THUMB_PDF_FLOW.md`
 - Application versioning: `docs/VERSIONING.md`
 
+## Shopify Operations
+
+```bash
+# 1) Reconcile inventory states (ready / pending_assets / legacy_blocked)
+npm run shopify:reconcile
+
+# 2) Sync ready thumbnails to git-trackable folder
+npm run shopify:thumbs
+
+# 3) Export Shopify CSV (ready products only)
+npm run shopify:export
+```
+
 ## Quick Start
 
 ```bash

@@ -8,6 +8,8 @@ const { v4: uuidv4 } = require('uuid');
 
 const projectRoot = path.join(__dirname, '..');
 const { applyMatFrameFromBuffer } = require('./posterMatFrame');
+const { compositeLifestyleMockupFromBuffer } = require('./lifestyleMockup');
+const sharp = require('sharp');
 
 /**
  * @param {{ printLayout?: string, matStyle?: string, matFrame?: boolean }} options
@@ -40,6 +42,23 @@ function styleFolderSegment(style) {
 
 function posterOutputDir(category, style) {
   return path.join(config.outputDir, category, styleFolderSegment(style));
+}
+
+function makeSafeFileBase(title) {
+  const raw = String(title || '').trim();
+  const slug = raw
+    .replace(/\s+/g, '_')
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+  return slug || 'poster';
+}
+
+function getAllowedStylesForCategory(category) {
+  const mapped = config.categoryStyles && Array.isArray(config.categoryStyles[category])
+    ? config.categoryStyles[category].filter((s) => config.artStyles.includes(s))
+    : [];
+  return mapped.length ? mapped : config.artStyles;
 }
 
 class PosterBatchGenerator {
@@ -94,6 +113,9 @@ class PosterBatchGenerator {
       status: 'ready',
       /** Ręczne zatwierdzenie do druku — domyślnie false dla nowych / wygenerowanych. */
       approvedForPrint: false,
+      /** Shopify flow state: pending_assets -> ready -> legacy_blocked */
+      shopifyState: 'pending_assets',
+      shopifyIssues: [],
     };
 
     this.db.posters.push(poster);
@@ -129,6 +151,28 @@ class PosterBatchGenerator {
     return { previewId, stagingAbs };
   }
 
+  /**
+   * Manual studio flow: accept already prepared image buffer and stage it for review.
+   * Input image is normalized to PNG and autorotated from EXIF when present.
+   */
+  async generateStagingPreviewFromImageBuffer(imageBuffer) {
+    if (!Buffer.isBuffer(imageBuffer) || imageBuffer.length === 0) {
+      throw new Error('Brak danych obrazu do podglądu ręcznego');
+    }
+    const dir = this.getStagingDir();
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const previewId = uuidv4();
+    const stagingAbs = path.join(dir, `${previewId}.png`);
+    const out = await sharp(imageBuffer)
+      .rotate()
+      .png()
+      .toBuffer();
+    fs.writeFileSync(stagingAbs, out);
+    return { previewId, stagingAbs };
+  }
+
   discardPreview(previewId) {
     if (!this.isValidPreviewId(previewId)) return false;
     const p = path.join(this.getStagingDir(), `${previewId.trim()}.png`);
@@ -142,7 +186,7 @@ class PosterBatchGenerator {
   }
 
   /**
-   * Zatwierdzenie podglądu: tylko PNG (full bleed) w posters/{kategoria}/{styl}/, wpis do inventory. PDF i ramka — osobno w bibliotece / CLI.
+   * Zatwierdzenie podglądu: PNG (full bleed) w posters/{kategoria}/{styl}/ + opcjonalnie PDF pełnej strony, wpis do inventory.
    */
   async commitPreview(previewId, category, title, style, imagePrompt, promptLlmMeta = {}, commitOpts = {}) {
     if (!this.isValidPreviewId(previewId)) {
@@ -158,7 +202,7 @@ class PosterBatchGenerator {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    const safeFileBase = title.replace(/\s+/g, '_');
+    const safeFileBase = makeSafeFileBase(title);
     const finalAbs = path.join(outputDir, `${safeFileBase}.png`);
 
     if (fs.existsSync(finalAbs)) {
@@ -171,7 +215,26 @@ class PosterBatchGenerator {
       fs.unlinkSync(stagingAbs);
     } catch (_) {}
 
-    const pdfPaths = {};
+    const generatePdf = commitOpts.generatePdf === true;
+    const generateVariants = commitOpts.generateVariants === true;
+    const generatePrintPdfs = commitOpts.generatePrintPdfs === true;
+    let pdfPaths = {};
+    if (generatePdf) {
+      try {
+        const pdfAbsMap = await this.pdfGen.createMultisizePDF(finalAbs, title, outputDir);
+        for (const [sizeKey, p] of Object.entries(pdfAbsMap)) {
+          if (typeof p === 'string' && p.startsWith('ERROR:')) {
+            pdfPaths[sizeKey] = p;
+          } else {
+            pdfPaths[sizeKey] = path.relative(projectRoot, path.resolve(p));
+          }
+        }
+      } catch (e) {
+        console.warn('commitPreview PDF:', e.message || e);
+        pdfPaths = {};
+      }
+    }
+
     const imagePathForDb = path.relative(projectRoot, finalAbs);
 
     const shopDesc =
@@ -180,22 +243,54 @@ class PosterBatchGenerator {
       printLayout: 'full',
       ...(shopDesc ? { shopDescription: shopDesc } : {}),
     });
+    if (generateVariants) {
+      try {
+        await this.applyUniformFrameForPosterId(rowId);
+      } catch (e) {
+        console.warn('commitPreview frame variant:', e.message || e);
+      }
+      try {
+        await this.applyShopThumbnailsForPosterId(rowId);
+      } catch (e) {
+        console.warn('commitPreview shop thumbnails:', e.message || e);
+      }
+    }
+    if (generatePrintPdfs) {
+      try {
+        if (!generatePdf) {
+          await this.applyFullPrintPdfsForPosterId(rowId);
+        }
+      } catch (e) {
+        console.warn('commitPreview full PDFs:', e.message || e);
+      }
+      try {
+        await this.applyFramedPrintPdfsForPosterId(rowId);
+      } catch (e) {
+        console.warn('commitPreview framed PDFs:', e.message || e);
+      }
+    }
     return { id: rowId, imagePath: finalAbs, pdfPaths };
   }
 
   /**
    * Jeden plakat: jeden obraz DALL-E z podanego promptu + wpis do inventory.
-   * @param {{ generatePdf?: boolean }} [options] — jeśli true, dodatkowo 6 PDF-ów (wszystkie formaty); domyślnie false (tylko podgląd PNG).
+   * @param {{ generatePdf?: boolean }} [options] — jeśli false, bez PDF (tylko PNG); domyślnie true (6 formatów).
    */
   async generateOnePoster(category, title, style, imagePrompt, options = {}) {
-    const { generatePdf = false, promptLlm } = options;
+    const { generatePdf = true, promptLlm } = options;
+    const generateVariants = options.generateVariants === true;
+    const generatePrintPdfs = options.generatePrintPdfs === true;
+    const allowedStyles = getAllowedStylesForCategory(category);
+    if (!allowedStyles.includes(style)) {
+      throw new Error(`Styl "${style}" nie jest dozwolony dla kategorii "${category}"`);
+    }
 
     const outputDir = posterOutputDir(category, style);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    const safeFileBase = title.replace(/\s+/g, '_');
+    const safeFileBase = makeSafeFileBase(title);
     const imagePath = path.join(outputDir, `${safeFileBase}.png`);
 
     const matStyle = resolveMatStyleFromOptions(options);
@@ -238,16 +333,43 @@ class PosterBatchGenerator {
       printLayout: pl,
       ...(shopDescription ? { shopDescription } : {}),
     });
+    if (generateVariants) {
+      try {
+        await this.applyUniformFrameForPosterId(id);
+      } catch (e) {
+        console.warn('generateOnePoster frame variant:', e.message || e);
+      }
+      try {
+        await this.applyShopThumbnailsForPosterId(id);
+      } catch (e) {
+        console.warn('generateOnePoster shop thumbnails:', e.message || e);
+      }
+    }
+    if (generatePrintPdfs) {
+      try {
+        if (!generatePdf) {
+          await this.applyFullPrintPdfsForPosterId(id);
+        }
+      } catch (e) {
+        console.warn('generateOnePoster full PDFs:', e.message || e);
+      }
+      try {
+        await this.applyFramedPrintPdfsForPosterId(id);
+      } catch (e) {
+        console.warn('generateOnePoster framed PDFs:', e.message || e);
+      }
+    }
 
     return { id, imagePath, pdfPaths, previewOnly: !generatePdf };
   }
 
   async generateCategory(category, count = 5, options = {}) {
     const { llmProvider: llmProviderOpt, artStyle: fixedArtStyle } = options;
+    const stylesForCategory = getAllowedStylesForCategory(category);
     const useFixedStyle =
-      typeof fixedArtStyle === 'string' && config.artStyles.includes(fixedArtStyle);
+      typeof fixedArtStyle === 'string' && stylesForCategory.includes(fixedArtStyle);
 
-    const nStyles = config.artStyles.length;
+    const nStyles = stylesForCategory.length;
     const totalPlanned = useFixedStyle ? count : count * nStyles;
 
     console.log('\n' + '='.repeat(60));
@@ -284,7 +406,7 @@ class PosterBatchGenerator {
       console.log(`  → Prompt: ${imagePrompt}`);
 
       console.log(`  → Generating image...`);
-      const imagePath = path.join(outputDir, `${title.replace(/\s+/g, '_')}.png`);
+      const imagePath = path.join(outputDir, `${makeSafeFileBase(title)}.png`);
       const matStyle = resolveMatStyleFromOptions(options);
       await this.imageGen.generateImage(title, category, style, imagePath, {
         customPrompt: imagePrompt,
@@ -342,7 +464,7 @@ class PosterBatchGenerator {
     } else {
       console.log(`📝 All styles: ${nStyles} separate title batches × ${count} title(s) each\n`);
       let globalIdx = 0;
-      for (const style of config.artStyles) {
+      for (const style of stylesForCategory) {
         console.log(`—— Styl: ${style} ——`);
         const titles = await this.contentGen.generatePosterTitles(category, count, { llmProvider: llmProviderOpt });
         console.log(`✓ Titles: ${titles.join(', ')}\n`);
@@ -358,20 +480,20 @@ class PosterBatchGenerator {
   }
 
   async generateAllCategories(perCategory = 5, options = {}) {
-    const useFixedStyle =
-      typeof options.artStyle === 'string' && config.artStyles.includes(options.artStyle);
-    const nStyles = config.artStyles.length;
-    const perCatTotal = useFixedStyle ? perCategory : perCategory * nStyles;
+    const useFixedStyle = typeof options.artStyle === 'string' && options.artStyle.trim() !== '';
+    const categories = Object.keys(config.categories);
+    const sumStyles = categories.reduce((acc, c) => acc + getAllowedStylesForCategory(c).length, 0);
+    const avgStyles = categories.length ? (sumStyles / categories.length) : 0;
     console.log('\n' + '='.repeat(60));
     console.log(
-      `BATCH GENERATION: ${Object.keys(config.categories).length} categories · ` +
+      `BATCH GENERATION: ${categories.length} categories · ` +
         (useFixedStyle
           ? `${perCategory} poster(s) per category (fixed style)`
-          : `${perCategory} per style × ${nStyles} styles = ${perCatTotal} poster(s) per category`)
+          : `${perCategory} per allowed style (avg ${avgStyles.toFixed(2)} style/category)`)
     );
     console.log('='.repeat(60) + '\n');
 
-    for (const category of Object.keys(config.categories)) {
+    for (const category of categories) {
       try {
         await this.generateCategory(category, perCategory, options);
       } catch (error) {
@@ -418,16 +540,33 @@ class PosterBatchGenerator {
       throw new Error('Brak pliku PNG na dysku');
     }
     const buf = fs.readFileSync(abs);
-    const out = await applyMatFrameFromBuffer(buf, { style: 'uniform' });
+    const out = await applyMatFrameFromBuffer(buf, { style: 'uniform', marginRatio: 0.05 });
     const parsed = path.parse(abs);
     const framedAbs = path.join(parsed.dir, `${parsed.name}_ramka${parsed.ext}`);
     fs.writeFileSync(framedAbs, out);
     const framedRel = path.relative(projectRoot, framedAbs).replace(/\\/g, '/');
+    const thumbMainRel = await this.createShopThumbnailForImageAbs(abs);
+    const thumbFramedRel = await this.createShopThumbnailForImageAbs(framedAbs);
+
+    const pdfAbsMap = await this.pdfGen.createMultisizePDF(
+      framedAbs,
+      poster.title,
+      parsed.dir,
+      { nameInfix: 'ramka' }
+    );
+    const pdfPathsFramed = {};
+    for (const [sizeKey, pth] of Object.entries(pdfAbsMap)) {
+      if (typeof pth !== 'string' || pth.startsWith('ERROR:')) continue;
+      pdfPathsFramed[sizeKey] = path.relative(projectRoot, path.resolve(pth)).replace(/\\/g, '/');
+    }
 
     const key = this.normInventoryImageKey(poster.imagePath);
     for (const p of this.db.posters) {
       if (this.normInventoryImageKey(p.imagePath) === key) {
         p.imagePathFramed = framedRel;
+        p.imagePathThumb = thumbMainRel;
+        p.imagePathFramedThumb = thumbFramedRel;
+        p.pdfPathsFramed = { ...pdfPathsFramed };
       }
     }
     this.saveDatabase();
@@ -445,6 +584,248 @@ class PosterBatchGenerator {
       try {
         const rel = await this.applyUniformFrameForPosterId(pid);
         results.push({ id: pid, ok: true, imagePathFramed: rel });
+      } catch (e) {
+        results.push({ id: pid, ok: false, error: e.message || String(e) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Miniatura e-commerce JPEG: dłuższy bok max 1000 px, bez zmiany proporcji.
+   * Dla `poster.png` zapisuje `poster_thumb.jpg`.
+   * @param {string} imageAbs
+   * @returns {Promise<string>} rel path from project root
+   */
+  async createShopThumbnailForImageAbs(imageAbs) {
+    if (!imageAbs || typeof imageAbs !== 'string') {
+      throw new Error('Brak ścieżki obrazu do miniatury');
+    }
+    if (!fs.existsSync(imageAbs)) {
+      throw new Error('Brak pliku obrazu do miniatury');
+    }
+    const parsed = path.parse(imageAbs);
+    const thumbAbs = path.join(parsed.dir, `${parsed.name}_thumb.jpg`);
+    await sharp(imageAbs)
+      .rotate()
+      .resize({
+        width: 1000,
+        height: 1000,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .jpeg({
+        quality: 88,
+        mozjpeg: true,
+        chromaSubsampling: '4:4:4',
+      })
+      .toFile(thumbAbs);
+    return path.relative(projectRoot, thumbAbs).replace(/\\/g, '/');
+  }
+
+  /**
+   * Tworzy miniatury JPG dla wersji master i (jeśli istnieje) framed.
+   * @param {string} posterId
+   * @returns {Promise<{ imagePathThumb: string, imagePathFramedThumb?: string }>}
+   */
+  async applyShopThumbnailsForPosterId(posterId) {
+    this.reloadDatabase();
+    const id = String(posterId || '').trim();
+    const poster = this.db.posters.find((p) => p.id === id);
+    if (!poster) throw new Error('Nie znaleziono plakatu o podanym id');
+    if (!poster.imagePath || typeof poster.imagePath !== 'string') {
+      throw new Error('Brak głównej ścieżki obrazu');
+    }
+
+    const mainAbs = path.isAbsolute(poster.imagePath)
+      ? poster.imagePath
+      : path.join(projectRoot, poster.imagePath);
+    const imagePathThumb = await this.createShopThumbnailForImageAbs(mainAbs);
+
+    let imagePathFramedThumb = '';
+    const framedRel = poster.imagePathFramed;
+    if (framedRel && typeof framedRel === 'string') {
+      const framedAbs = path.isAbsolute(framedRel) ? framedRel : path.join(projectRoot, framedRel);
+      if (fs.existsSync(framedAbs)) {
+        imagePathFramedThumb = await this.createShopThumbnailForImageAbs(framedAbs);
+      }
+    }
+
+    const key = this.normInventoryImageKey(poster.imagePath);
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) === key) {
+        p.imagePathThumb = imagePathThumb;
+        if (imagePathFramedThumb) {
+          p.imagePathFramedThumb = imagePathFramedThumb;
+        }
+        p.shopifyState = p.approvedForPrint === true ? 'ready' : 'pending_assets';
+        p.shopifyIssues = [];
+      }
+    }
+    this.saveDatabase();
+    return imagePathFramedThumb ? { imagePathThumb, imagePathFramedThumb } : { imagePathThumb };
+  }
+
+  /**
+   * @param {string[]} ids
+   * @returns {Promise<{ id: string, ok: boolean, imagePathThumb?: string, imagePathFramedThumb?: string, error?: string }[]>}
+   */
+  async applyShopThumbnailsForPosterIds(ids) {
+    const list = Array.isArray(ids) ? ids.map((x) => String(x).trim()).filter(Boolean) : [];
+    const results = [];
+    for (const pid of list) {
+      try {
+        const out = await this.applyShopThumbnailsForPosterId(pid);
+        results.push({ id: pid, ok: true, ...out });
+      } catch (e) {
+        results.push({ id: pid, ok: false, error: e.message || String(e) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Mockup wnętrza (tylko PNG pod sklep): `{base}_lifestyle.png` — bez PDF druku.
+   * Używa głównego `imagePath` (pełna strona).
+   * @param {string} posterId
+   * @returns {Promise<{ imagePathLifestyle: string }>}
+   */
+  async applyLifestyleMockupForPosterId(posterId) {
+    this.reloadDatabase();
+    const id = String(posterId || '').trim();
+    const poster = this.db.posters.find((p) => p.id === id);
+    if (!poster) {
+      throw new Error('Nie znaleziono plakatu o podanym id');
+    }
+    const rel = poster.imagePath;
+    if (!rel || typeof rel !== 'string') {
+      throw new Error('Brak ścieżki obrazu w bibliotece');
+    }
+    const abs = path.isAbsolute(rel) ? rel : path.join(projectRoot, rel);
+    if (!fs.existsSync(abs)) {
+      throw new Error('Brak pliku PNG na dysku');
+    }
+    const buf = fs.readFileSync(abs);
+    const out = await compositeLifestyleMockupFromBuffer(buf);
+    const parsed = path.parse(abs);
+    const lifestyleAbs = path.join(parsed.dir, `${parsed.name}_lifestyle${parsed.ext}`);
+    fs.writeFileSync(lifestyleAbs, out);
+    const lifestyleRel = path.relative(projectRoot, lifestyleAbs).replace(/\\/g, '/');
+
+    const key = this.normInventoryImageKey(poster.imagePath);
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) === key) {
+        p.imagePathLifestyle = lifestyleRel;
+        delete p.pdfPathsLifestyle;
+      }
+    }
+    this.saveDatabase();
+    return { imagePathLifestyle: lifestyleRel };
+  }
+
+  /**
+   * @param {string[]} ids
+   * @returns {Promise<{ id: string, ok: boolean, imagePathLifestyle?: string, error?: string }[]>}
+   */
+  async applyLifestyleMockupForPosterIds(ids) {
+    const list = Array.isArray(ids) ? ids.map((x) => String(x).trim()).filter(Boolean) : [];
+    const results = [];
+    for (const pid of list) {
+      try {
+        const { imagePathLifestyle } = await this.applyLifestyleMockupForPosterId(pid);
+        results.push({ id: pid, ok: true, imagePathLifestyle });
+      } catch (e) {
+        results.push({ id: pid, ok: false, error: e.message || String(e) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * PDF-y druku z głównego PNG (pełna strona), bez infixu w nazwie.
+   */
+  async applyFullPrintPdfsForPosterId(posterId) {
+    this.reloadDatabase();
+    const id = String(posterId || '').trim();
+    const poster = this.db.posters.find((p) => p.id === id);
+    if (!poster) throw new Error('Nie znaleziono plakatu o podanym id');
+    const rel = poster.imagePath;
+    if (!rel || typeof rel !== 'string') throw new Error('Brak ścieżki obrazu w bibliotece');
+    const abs = path.isAbsolute(rel) ? rel : path.join(projectRoot, rel);
+    if (!fs.existsSync(abs)) throw new Error('Brak pliku PNG na dysku');
+    const parsed = path.parse(abs);
+    const pdfAbsMap = await this.pdfGen.createMultisizePDF(abs, poster.title, parsed.dir);
+    const pdfPaths = {};
+    for (const [sizeKey, pth] of Object.entries(pdfAbsMap)) {
+      if (typeof pth !== 'string' || pth.startsWith('ERROR:')) continue;
+      pdfPaths[sizeKey] = path.relative(projectRoot, path.resolve(pth)).replace(/\\/g, '/');
+    }
+    const key = this.normInventoryImageKey(poster.imagePath);
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) === key) {
+        p.pdfPaths = { ...pdfPaths };
+      }
+    }
+    this.saveDatabase();
+    return pdfPaths;
+  }
+
+  async applyFullPrintPdfsForPosterIds(ids) {
+    const list = Array.isArray(ids) ? ids.map((x) => String(x).trim()).filter(Boolean) : [];
+    const results = [];
+    for (const pid of list) {
+      try {
+        await this.applyFullPrintPdfsForPosterId(pid);
+        results.push({ id: pid, ok: true });
+      } catch (e) {
+        results.push({ id: pid, ok: false, error: e.message || String(e) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * PDF-y z passe-partout (_ramka_) liczone per format, aby zachować ten sam wygląd ramki.
+   */
+  async applyFramedPrintPdfsForPosterId(posterId) {
+    this.reloadDatabase();
+    const id = String(posterId || '').trim();
+    const poster = this.db.posters.find((p) => p.id === id);
+    if (!poster) throw new Error('Nie znaleziono plakatu o podanym id');
+    const mainRel = poster.imagePath;
+    if (!mainRel || typeof mainRel !== 'string') throw new Error('Brak głównego PNG plakatu');
+    const mainAbs = path.isAbsolute(mainRel) ? mainRel : path.join(projectRoot, mainRel);
+    if (!fs.existsSync(mainAbs)) throw new Error('Brak głównego PNG na dysku');
+    const parsed = path.parse(mainAbs);
+    const pdfAbsMap = await this.pdfGen.createMultisizePDF(mainAbs, poster.title, parsed.dir, {
+      nameInfix: 'ramka',
+      frameSpec: {
+        enabled: true,
+        marginRatio: 0.05,
+      },
+    });
+    const pdfPathsFramed = {};
+    for (const [sizeKey, pth] of Object.entries(pdfAbsMap)) {
+      if (typeof pth !== 'string' || pth.startsWith('ERROR:')) continue;
+      pdfPathsFramed[sizeKey] = path.relative(projectRoot, path.resolve(pth)).replace(/\\/g, '/');
+    }
+    const key = this.normInventoryImageKey(poster.imagePath);
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) === key) {
+        p.pdfPathsFramed = { ...pdfPathsFramed };
+      }
+    }
+    this.saveDatabase();
+    return pdfPathsFramed;
+  }
+
+  async applyFramedPrintPdfsForPosterIds(ids) {
+    const list = Array.isArray(ids) ? ids.map((x) => String(x).trim()).filter(Boolean) : [];
+    const results = [];
+    for (const pid of list) {
+      try {
+        await this.applyFramedPrintPdfsForPosterId(pid);
+        results.push({ id: pid, ok: true });
       } catch (e) {
         results.push({ id: pid, ok: false, error: e.message || String(e) });
       }

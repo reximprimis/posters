@@ -2709,6 +2709,14 @@
       cursor: crosshair;
     }
 
+    .modal-lightbox-stage.modal-lightbox-stage--pan-ready {
+      cursor: grab;
+    }
+
+    .modal-lightbox-stage.modal-lightbox-stage--panning {
+      cursor: grabbing;
+    }
+
     .modal-lightbox-stage .poster-aspect-frame {
       position: relative;
       z-index: 0;
@@ -3382,6 +3390,47 @@
       color: var(--sp-muted);
     }
 
+    .studio-shopify-export {
+      margin: 0 auto 1rem;
+      max-width: 52rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid var(--sp-border);
+      background: color-mix(in srgb, var(--sp-paper) 88%, var(--sp-surface));
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+    }
+
+    .studio-shopify-export-note {
+      margin: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 0.76rem;
+      color: var(--sp-muted);
+    }
+
+    .studio-shopify-export-note.is-ok {
+      color: var(--studio-status-ok);
+    }
+
+    .studio-shopify-export-note.is-error {
+      color: var(--studio-status-err);
+    }
+
+    .studio-shopify-export-link {
+      font-size: 0.8rem;
+      color: var(--sp-accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .studio-shopify-export-link:hover {
+      text-decoration: underline;
+    }
+
     .studio-pro-llm-wrap {
       margin: 0 auto 1.15rem;
       max-width: 28rem;
@@ -3721,12 +3770,28 @@
     }
 
     .studio-pro-model-pill {
+      font-family: inherit;
       font-size: 0.8125rem;
       padding: 0.4rem 0.85rem;
       border-radius: 999px;
       border: 1px solid var(--sp-border);
       background: var(--sp-surface);
       color: var(--sp-muted);
+      cursor: pointer;
+      transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s,
+        transform 0.12s;
+    }
+
+    .studio-pro-model-pill:hover {
+      border-color: var(--sp-border-strong);
+      color: var(--sp-text);
+    }
+
+    .studio-pro-model-pill:active {
+      transform: scale(0.98);
     }
 
     .studio-pro-model-pill.is-active {
@@ -3734,6 +3799,11 @@
       border-color: color-mix(in srgb, var(--sp-accent) 45%, transparent);
       color: var(--studio-model-active-fg);
       font-weight: 600;
+    }
+
+    .studio-pro-model-pill:focus-visible {
+      outline: 2px solid var(--sp-accent);
+      outline-offset: 2px;
     }
 
     .studio-pro-meta-grid {
@@ -3907,6 +3977,23 @@
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 0.65rem;
+    }
+
+    .studio-manual-upload-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .studio-manual-upload-note {
+      margin: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--sp-muted);
     }
 
     .studio-pro-send {
@@ -4246,6 +4333,14 @@
           OpenAI układa prompt (gdy jest <code>OPENAI_API_KEY</code>) → DALL-E generuje podgląd → po akceptacji zapis w bibliotece jako
           <strong>PNG pełna strona</strong> (bez PDF). Wersję z passe-partout dodasz w Bibliotece — przycisk pod siatką lub w szczegółach plakatu.
         </p>
+        <div class="studio-shopify-export">
+          <button type="button" class="studio-pro-chip" id="btnShopifyExportApproved">Eksport Shopify (zatwierdzone)</button>
+          <button type="button" class="studio-pro-chip" id="btnShopifyExportAll">Eksport Shopify (wszystkie)</button>
+          <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnShopifyReadiness">Sprawdź gotowość Shopify</button>
+          <a href="/products_export_shopify.csv" target="_blank" rel="noopener" class="studio-shopify-export-link" id="shopifyCsvOpenLink">Otwórz aktualny CSV</a>
+          <p class="studio-shopify-export-note" id="shopifyExportStatus" aria-live="polite"></p>
+          <p class="studio-shopify-export-note" id="shopifyReadinessStatus" aria-live="polite"></p>
+        </div>
         <div class="studio-pro-mode" role="group" aria-label="Tryb studia">
           <button type="button" class="studio-pro-mode-btn is-active" id="studioModeManual" aria-pressed="true">
             Manualny
@@ -4255,8 +4350,9 @@
           </button>
         </div>
         <div id="studioPanelManual" class="studio-pro-panel">
-          <div class="studio-pro-models" aria-hidden="true">
-            <span class="studio-pro-model-pill is-active">DALL-E 3</span>
+          <div class="studio-pro-models" role="group" aria-label="Źródło podglądu">
+            <button type="button" class="studio-pro-model-pill is-active" id="studioSourceDalle" aria-pressed="true">DALL·E</button>
+            <button type="button" class="studio-pro-model-pill" id="studioSourceManual" aria-pressed="false">✋ RĘCZNY</button>
           </div>
           <div class="studio-pro-meta-grid">
             <div class="studio-pro-field">
@@ -4289,6 +4385,12 @@
             <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnClearStudio">
               Wyczyść
             </button>
+          </div>
+          <div class="studio-manual-upload-row" id="studioManualUploadRow" hidden>
+            <input type="file" id="studioUploadInput" accept="image/png,image/jpeg,image/webp" hidden />
+            <button type="button" class="studio-pro-chip" id="btnPickStudioImage">Dodaj zdjęcie ręcznie</button>
+            <button type="button" class="studio-pro-chip" id="btnUploadStudioImage" disabled>Użyj zdjęcia jako podgląd</button>
+            <p class="studio-manual-upload-note" id="studioUploadNote">Ręczny flow: wybierz PNG/JPG/WEBP i zapisz przez ten sam modal akceptacji.</p>
           </div>
           <div class="studio-pro-send-row">
             <button type="button" class="studio-pro-send" id="btnGeneratePoster">
@@ -4817,10 +4919,22 @@
         studioTitle: document.getElementById('studioTitle'),
         studioStyle: document.getElementById('studioStyle'),
         studioPrompt: document.getElementById('studioPrompt'),
+        studioSourceDalle: document.getElementById('studioSourceDalle'),
+        studioSourceManual: document.getElementById('studioSourceManual'),
+        studioManualUploadRow: document.getElementById('studioManualUploadRow'),
         btnDraftPrompt: document.getElementById('btnDraftPrompt'),
         btnClearStudio: document.getElementById('btnClearStudio'),
+        studioUploadInput: document.getElementById('studioUploadInput'),
+        btnPickStudioImage: document.getElementById('btnPickStudioImage'),
+        btnUploadStudioImage: document.getElementById('btnUploadStudioImage'),
+        studioUploadNote: document.getElementById('studioUploadNote'),
         btnGeneratePoster: document.getElementById('btnGeneratePoster'),
         studioStatus: document.getElementById('studioStatus'),
+        btnShopifyExportApproved: document.getElementById('btnShopifyExportApproved'),
+        btnShopifyExportAll: document.getElementById('btnShopifyExportAll'),
+        btnShopifyReadiness: document.getElementById('btnShopifyReadiness'),
+        shopifyExportStatus: document.getElementById('shopifyExportStatus'),
+        shopifyReadinessStatus: document.getElementById('shopifyReadinessStatus'),
         studioPreviewModal: document.getElementById('studioPreviewModal'),
         studioPreviewImgFull: document.getElementById('studioPreviewImgFull'),
         studioPreviewAccept: document.getElementById('studioPreviewAccept'),
@@ -4898,6 +5012,8 @@
       }
 
       let activeStudioPreviewId = null;
+      let studioUploadedImageDataUrl = '';
+      let studioImageSource = 'dalle';
       /** Aktualnie otwarty plakat w modalu (referencja z flatItems). */
       let modalPosterItem = null;
       /** 'full' | 'framed' */
@@ -4908,6 +5024,13 @@
       let lightboxIndex = 0;
       let lightboxLoupeActive = false;
       let lightboxZoom = 1;
+      let lightboxPanX = 0;
+      let lightboxPanY = 0;
+      let lightboxPanning = false;
+      let lightboxPanStartX = 0;
+      let lightboxPanStartY = 0;
+      let lightboxPanOriginX = 0;
+      let lightboxPanOriginY = 0;
       let lightboxLoupeSize = 220;
       let modalTopView = 'all';
       const LIGHTBOX_ZOOM_MIN = 0.5;
@@ -4921,7 +5044,7 @@
         const bounded = Math.max(LIGHTBOX_ZOOM_MIN, Math.min(LIGHTBOX_ZOOM_MAX, lightboxZoom));
         lightboxZoom = Number(bounded.toFixed(2));
         if (els.modalLightboxImg) {
-          els.modalLightboxImg.style.transform = `scale(${lightboxZoom})`;
+          els.modalLightboxImg.style.transform = `translate(${lightboxPanX}px, ${lightboxPanY}px) scale(${lightboxZoom})`;
         }
         if (els.modalLightboxZoomReadout) {
           els.modalLightboxZoomReadout.textContent = `${Math.round(lightboxZoom * 100)}%`;
@@ -4932,6 +5055,14 @@
         if (els.modalLightboxZoomIn) {
           els.modalLightboxZoomIn.disabled = lightboxZoom >= LIGHTBOX_ZOOM_MAX - 0.001;
         }
+        updateLightboxPanUi();
+      }
+
+      function updateLightboxPanUi() {
+        if (!els.modalLightboxStage) return;
+        const canPan = !lightboxLoupeActive && lightboxZoom > 1.001;
+        els.modalLightboxStage.classList.toggle('modal-lightbox-stage--pan-ready', canPan && !lightboxPanning);
+        els.modalLightboxStage.classList.toggle('modal-lightbox-stage--panning', canPan && lightboxPanning);
       }
 
       function changeLightboxZoom(delta) {
@@ -4941,7 +5072,26 @@
 
       function resetLightboxZoom() {
         lightboxZoom = 1;
+        lightboxPanX = 0;
+        lightboxPanY = 0;
+        lightboxPanning = false;
         applyLightboxZoom();
+      }
+
+      function setStudioImageSource(source) {
+        studioImageSource = source === 'manual' ? 'manual' : 'dalle';
+        const isManual = studioImageSource === 'manual';
+        if (els.studioSourceDalle) {
+          const on = !isManual;
+          els.studioSourceDalle.classList.toggle('is-active', on);
+          els.studioSourceDalle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        if (els.studioSourceManual) {
+          const on = isManual;
+          els.studioSourceManual.classList.toggle('is-active', on);
+          els.studioSourceManual.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        if (els.studioManualUploadRow) els.studioManualUploadRow.hidden = !isManual;
       }
 
       let rawCategories = {};
@@ -5477,6 +5627,43 @@
         if (kind === 'ok') els.studioAutoRunStatus.classList.add('is-ok');
       }
 
+      function setShopifyExportStatus(text, kind) {
+        if (!els.shopifyExportStatus) return;
+        els.shopifyExportStatus.textContent = text || '';
+        els.shopifyExportStatus.classList.remove('is-error', 'is-ok');
+        if (kind === 'error') els.shopifyExportStatus.classList.add('is-error');
+        if (kind === 'ok') els.shopifyExportStatus.classList.add('is-ok');
+      }
+
+      function setShopifyReadinessStatus(text, kind) {
+        if (!els.shopifyReadinessStatus) return;
+        els.shopifyReadinessStatus.textContent = text || '';
+        els.shopifyReadinessStatus.classList.remove('is-error', 'is-ok');
+        if (kind === 'error') els.shopifyReadinessStatus.classList.add('is-error');
+        if (kind === 'ok') els.shopifyReadinessStatus.classList.add('is-ok');
+      }
+
+      async function refreshShopifyReadiness() {
+        if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = true;
+        setShopifyReadinessStatus('Sprawdzanie gotowości Shopify…');
+        try {
+          const res = await fetch('/api/shopify/readiness', { cache: 'no-store' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          const s = data.summary || {};
+          const blocked = Number(s.blockedApproved || 0);
+          const msg =
+            `Ready: ${Number(s.ready || 0)} · Pending: ${Number(s.pending_assets || 0)} · Legacy: ${Number(
+              s.legacy_blocked || 0
+            )}` + (blocked > 0 ? ` · Zablokowane zatwierdzone: ${blocked}` : '');
+          setShopifyReadinessStatus(msg, blocked > 0 ? 'error' : 'ok');
+        } catch (e) {
+          setShopifyReadinessStatus(e.message || 'Nie udało się sprawdzić gotowości Shopify.', 'error');
+        } finally {
+          if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = false;
+        }
+      }
+
       function setStudioAutoBatchUiBusy(busy) {
         const d = !!busy;
         if (els.studioAutoScope) els.studioAutoScope.disabled = d;
@@ -5484,6 +5671,31 @@
         if (els.studioAutoCount) els.studioAutoCount.disabled = d;
         if (els.btnRunStudioAutoBatch) els.btnRunStudioAutoBatch.disabled = d;
         if (els.btnCopyStudioAutoCommand) els.btnCopyStudioAutoCommand.disabled = d;
+      }
+
+      async function runShopifyExport(all) {
+        const isAll = all === true;
+        setShopifyExportStatus('Generowanie CSV Shopify…');
+        if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = true;
+        if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = true;
+        try {
+          const res = await fetch('/api/shopify/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ all: isAll }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          const bytes = Number(data.bytes || 0);
+          const kb = bytes > 0 ? ` (${(bytes / 1024).toFixed(1)} KB)` : '';
+          setShopifyExportStatus(`CSV gotowy${kb} — otwórz link i importuj w Shopify.`, 'ok');
+          await refreshShopifyReadiness();
+        } catch (e) {
+          setShopifyExportStatus(e.message || 'Eksport Shopify nie powiódł się.', 'error');
+        } finally {
+          if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = false;
+          if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = false;
+        }
       }
 
       function clearStudioAutoProgressInterval() {
@@ -5666,10 +5878,14 @@
         lightboxLoupeActive = !!on;
         if (els.modalLightboxLoupe) els.modalLightboxLoupe.setAttribute('aria-pressed', lightboxLoupeActive ? 'true' : 'false');
         if (els.modalLightboxStage) els.modalLightboxStage.classList.toggle('modal-lightbox-stage--loupe', lightboxLoupeActive);
+        if (lightboxLoupeActive) {
+          lightboxPanning = false;
+        }
         if (els.modalLightboxLens) {
           els.modalLightboxLens.hidden = !lightboxLoupeActive;
           els.modalLightboxLens.style.opacity = lightboxLoupeActive ? '' : '0';
         }
+        updateLightboxPanUi();
       }
 
       function changeLightboxLoupeSize(delta) {
@@ -5834,6 +6050,37 @@
         lens.style.top = `${e.clientY - sr.top - LW / 2}px`;
       }
 
+      function onLightboxPanStart(e) {
+        if (!els.modalLightboxStage || lightboxLoupeActive || lightboxZoom <= 1.001) return;
+        if (e.button !== 0) return;
+        const img = els.modalLightboxImg;
+        if (!img) return;
+        const rect = img.getBoundingClientRect();
+        const overImage = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if (!overImage) return;
+        e.preventDefault();
+        lightboxPanning = true;
+        lightboxPanStartX = e.clientX;
+        lightboxPanStartY = e.clientY;
+        lightboxPanOriginX = lightboxPanX;
+        lightboxPanOriginY = lightboxPanY;
+        updateLightboxPanUi();
+      }
+
+      function onLightboxPanMove(e) {
+        if (!lightboxPanning) return;
+        e.preventDefault();
+        lightboxPanX = lightboxPanOriginX + (e.clientX - lightboxPanStartX);
+        lightboxPanY = lightboxPanOriginY + (e.clientY - lightboxPanStartY);
+        applyLightboxZoom();
+      }
+
+      function onLightboxPanEnd() {
+        if (!lightboxPanning) return;
+        lightboxPanning = false;
+        updateLightboxPanUi();
+      }
+
       function closePosterLightbox() {
         if (!els.modalLightbox || els.modalLightbox.hidden) return;
         setLightboxLoupe(false);
@@ -5848,6 +6095,10 @@
         if (els.modalLightboxFrame) els.modalLightboxFrame.classList.remove('poster-aspect-frame--natural');
         lightboxPlaylist = [];
         lightboxIndex = 0;
+        lightboxPanning = false;
+        lightboxPanX = 0;
+        lightboxPanY = 0;
+        updateLightboxPanUi();
         if (els.modalLightboxMetaDl) els.modalLightboxMetaDl.innerHTML = '';
       }
 
@@ -6197,6 +6448,7 @@
           updatePendingHint();
           renderGrid();
           syncSelectionBasketsWithLibrary();
+          await refreshShopifyReadiness();
           els.updatedAt.textContent =
             'Zaktualizowano: ' +
             new Intl.DateTimeFormat('pl-PL', {
@@ -6470,12 +6722,15 @@
           changeLightboxZoom(delta);
         }, { passive: false });
         els.modalLightboxStage.addEventListener('mousemove', onLightboxStagePointerMove);
+        els.modalLightboxStage.addEventListener('mousedown', onLightboxPanStart);
         els.modalLightboxStage.addEventListener('touchmove', (e) => {
           if (!lightboxLoupeActive || !e.touches[0]) return;
           const t = e.touches[0];
           onLightboxStagePointerMove({ clientX: t.clientX, clientY: t.clientY });
         }, { passive: true });
       }
+      window.addEventListener('mousemove', onLightboxPanMove);
+      window.addEventListener('mouseup', onLightboxPanEnd);
       if (els.modalLightboxImg) {
         els.modalLightboxImg.addEventListener('load', () => {
           if (!els.modalLightbox.hidden && els.modalLightboxMeta && !els.modalLightboxMeta.hidden) {
@@ -6810,6 +7065,22 @@
         }, 2800);
       });
 
+      if (els.btnShopifyExportApproved) {
+        els.btnShopifyExportApproved.addEventListener('click', async () => {
+          await runShopifyExport(false);
+        });
+      }
+      if (els.btnShopifyExportAll) {
+        els.btnShopifyExportAll.addEventListener('click', async () => {
+          await runShopifyExport(true);
+        });
+      }
+      if (els.btnShopifyReadiness) {
+        els.btnShopifyReadiness.addEventListener('click', async () => {
+          await refreshShopifyReadiness();
+        });
+      }
+
       els.btnDraftPrompt.addEventListener('click', async () => {
         const title = els.studioTitle.value.trim();
         const category = els.studioCategory.value;
@@ -6847,6 +7118,12 @@
         els.btnClearStudio.addEventListener('click', () => {
           els.studioTitle.value = '';
           els.studioPrompt.value = '';
+          studioUploadedImageDataUrl = '';
+          if (els.studioUploadInput) els.studioUploadInput.value = '';
+          if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = true;
+          if (els.studioUploadNote) {
+            els.studioUploadNote.textContent = 'Ręczny flow: wybierz PNG/JPG/WEBP i zapisz przez ten sam modal akceptacji.';
+          }
           setStudioStatus('');
           try {
             els.studioTitle.focus();
@@ -6854,7 +7131,102 @@
         });
       }
 
+      if (els.btnPickStudioImage && els.studioUploadInput) {
+        els.btnPickStudioImage.addEventListener('click', () => {
+          els.studioUploadInput.click();
+        });
+      }
+
+      if (els.studioUploadInput) {
+        els.studioUploadInput.addEventListener('change', async () => {
+          const f = els.studioUploadInput.files && els.studioUploadInput.files[0];
+          if (!f) return;
+          const maxBytes = 25 * 1024 * 1024;
+          if (f.size > maxBytes) {
+            studioUploadedImageDataUrl = '';
+            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = true;
+            if (els.studioUploadNote) els.studioUploadNote.textContent = 'Plik jest za duży (max 25MB).';
+            return;
+          }
+          try {
+            const dataUrl = await new Promise((resolve, reject) => {
+              const r = new FileReader();
+              r.onload = () => resolve(String(r.result || ''));
+              r.onerror = () => reject(new Error('Nie udało się odczytać pliku.'));
+              r.readAsDataURL(f);
+            });
+            studioUploadedImageDataUrl = dataUrl;
+            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = !studioUploadedImageDataUrl;
+            if (els.studioUploadNote) {
+              els.studioUploadNote.textContent = `Wybrano: ${f.name} — kliknij „Użyj zdjęcia jako podgląd”.`;
+            }
+          } catch (e) {
+            studioUploadedImageDataUrl = '';
+            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = true;
+            if (els.studioUploadNote) els.studioUploadNote.textContent = e.message || 'Błąd odczytu pliku.';
+          }
+        });
+      }
+
+      if (els.btnUploadStudioImage) {
+        const runManualUploadPreview = async () => {
+          const title = els.studioTitle.value.trim();
+          const category = els.studioCategory.value;
+          const style = els.studioStyle.value;
+          const imagePrompt = els.studioPrompt.value.trim();
+          if (!title) return setStudioStatus('Podaj tytuł plakatu.', 'error');
+          if (!imagePrompt) return setStudioStatus('Najpierw ułóż lub wpisz prompt (ChatGPT/manual).', 'error');
+          if (!studioUploadedImageDataUrl) return setStudioStatus('Najpierw wybierz plik obrazu.', 'error');
+
+          if (activeStudioPreviewId) {
+            const oldId = activeStudioPreviewId;
+            activeStudioPreviewId = null;
+            closeStudioPreviewModal();
+            try {
+              await fetch('/api/studio/discard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ previewId: oldId }),
+              });
+            } catch (_) {}
+          }
+
+          setStudioStatus('Upload ręcznego zdjęcia — przygotowanie podglądu…');
+          if (els.btnDraftPrompt) els.btnDraftPrompt.disabled = true;
+          if (els.btnGeneratePoster) els.btnGeneratePoster.disabled = true;
+          if (els.btnPickStudioImage) els.btnPickStudioImage.disabled = true;
+          els.btnUploadStudioImage.disabled = true;
+          try {
+            const res = await fetch('/api/studio/preview-upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, category, style, imagePrompt, imageDataUrl: studioUploadedImageDataUrl }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            setStudioStatus('Ręczny podgląd gotowy — zaakceptuj lub odrzuć w oknie.', 'ok');
+            openStudioPreviewModal(data.previewId, data.imageUrl);
+          } catch (e) {
+            setStudioStatus(e.message || 'Błąd uploadu ręcznego zdjęcia', 'error');
+          } finally {
+            if (els.btnDraftPrompt) els.btnDraftPrompt.disabled = false;
+            if (els.btnGeneratePoster) els.btnGeneratePoster.disabled = false;
+            if (els.btnPickStudioImage) els.btnPickStudioImage.disabled = false;
+            els.btnUploadStudioImage.disabled = !studioUploadedImageDataUrl;
+          }
+        };
+        els.btnUploadStudioImage.addEventListener('click', runManualUploadPreview);
+        els.btnUploadStudioImage.__runManualUploadPreview = runManualUploadPreview;
+      }
+
       els.btnGeneratePoster.addEventListener('click', async () => {
+        if (studioImageSource === 'manual') {
+          const runManual = els.btnUploadStudioImage && els.btnUploadStudioImage.__runManualUploadPreview;
+          if (typeof runManual === 'function') {
+            await runManual();
+            return;
+          }
+        }
         const title = els.studioTitle.value.trim();
         const category = els.studioCategory.value;
         const style = els.studioStyle.value;
@@ -6900,6 +7272,13 @@
         }
       });
 
+      if (els.studioSourceDalle) {
+        els.studioSourceDalle.addEventListener('click', () => setStudioImageSource('dalle'));
+      }
+      if (els.studioSourceManual) {
+        els.studioSourceManual.addEventListener('click', () => setStudioImageSource('manual'));
+      }
+
       document.getElementById('themeToggle').addEventListener('click', function () {
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         applyTheme(isLight ? 'dark' : 'light');
@@ -6908,6 +7287,7 @@
       applyTheme(getStoredTheme());
 
       setStudioMode(getStoredStudioMode());
+      setStudioImageSource('dalle');
       updateStudioAutoCommand();
       try {
         const raw = sessionStorage.getItem(STUDIO_AUTO_FLASH_KEY);
