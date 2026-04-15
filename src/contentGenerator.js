@@ -59,15 +59,35 @@ function resolveStyleLogic(style) {
 }
 
 function buildCoreCreativePrompt({ title, category, style }) {
+  const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
+  const styleKey = String(style || '').trim();
+  const categoryStyleKey = `${categoryKey}|${styleKey}`;
+
+  if (categoryStyleKey === 'Retro|Photography' || categoryStyleKey === 'Retro|photography') {
+    return `Premium fine-art artwork for print.
+
+TITLE BRIEF — "${titleText}" defines the exact subject; interpret literally.
+A vintage cassette tape placed naturally on a soft surface, capturing nostalgic 80s mood.
+
+Photography style — analog realism, subtle film grain, slight imperfections.
+Warm faded tones: beige, brown, muted orange.
+
+Soft natural light with gentle shadows.
+Clean composition, single subject in focus.
+
+Full-bleed, no frame, no text, no modern elements.
+Ultra-detailed, print-ready.`.trim();
+  }
+
   const override = CATEGORY_CORE_OVERRIDE[categoryKey];
   if (override) {
-    return `Subject brief based on title "${String(title || '').trim()}", interpret semantically and never render the words as typography, label text, logo, or caption. ${override} Style direction: ${resolveStyleLogic(style)}`
+    return `Subject brief based on title "${titleText}", interpret semantically and never render the words as typography, label text, logo, or caption. ${override} Style direction: ${resolveStyleLogic(style)}`
       .replace(/\s+/g, ' ')
       .trim();
   }
 
-  return CORE_PROMPT_TEMPLATE.replace('{TITLE}', String(title || '').trim())
+  return CORE_PROMPT_TEMPLATE.replace('{TITLE}', titleText)
     .replace('{CATEGORY_LOGIC}', resolveCategoryLogic(category))
     .replace('{STYLE_LOGIC}', resolveStyleLogic(style))
     .replace(/\s+/g, ' ')

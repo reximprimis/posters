@@ -70,7 +70,8 @@ class DalleImageGenerator {
       console.log(`    → Generating image with DALL-E 3...`);
       const custom = options.customPrompt != null ? String(options.customPrompt).trim() : '';
       const basePrompt = (custom || this.buildImagePrompt(title, category, style)).trim();
-      const prompt = buildFullDallePrompt(basePrompt, category, style);
+      const looksLikeFullPrompt = /^Premium fine-art artwork for print\./i.test(basePrompt);
+      const prompt = looksLikeFullPrompt ? basePrompt : buildFullDallePrompt(basePrompt, category, style);
       console.log(`    → Prompt: ${prompt.substring(0, 80)}...`);
 
       const dalleStyle = this.resolveDalleStyle(style);
