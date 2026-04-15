@@ -61,6 +61,10 @@ const CATEGORY_STYLE_LOCK_HINTS = {
     'Hard lock: realistic city photography or architectural photography only. Use a physically plausible skyline, street canyon, or facade with editorial travel mood. No floating structures, impossible reflections, glossy CGI surfaces, or surreal mirrored floors unless the title explicitly asks for them.',
   'Mapy i miasta|photography':
     'Hard lock: realistic city photography or architectural photography only. Use a physically plausible skyline, street canyon, or facade with editorial travel mood. No floating structures, impossible reflections, glossy CGI surfaces, or surreal mirrored floors unless the title explicitly asks for them.',
+  'Retro|Photography':
+    'Hard lock: realistic retro-object photography or premium retro still life only. Use cassette, tape reel, or analog media as physically plausible objects with clean surfaces. No readable label text, no brand names, no packaging copy, no fake poster typography on objects.',
+  'Retro|photography':
+    'Hard lock: realistic retro-object photography or premium retro still life only. Use cassette, tape reel, or analog media as physically plausible objects with clean surfaces. No readable label text, no brand names, no packaging copy, no fake poster typography on objects.',
 };
 
 function getStyleCanvasHint(style) {

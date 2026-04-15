@@ -3,10 +3,11 @@ const config = require('../config');
 const { resolveDesignMdUrl, fetchDesignMdBody } = require('./designMd');
 const { getCategoryArtDirection, STYLE_PREMIUM, sanitizeCreativePrompt } = require('./posterPromptLayers');
 
-const CORE_PROMPT_TEMPLATE = `Literal subject from the title: "{TITLE}".
+const CORE_PROMPT_TEMPLATE = `Subject brief based on title "{TITLE}", interpret semantically and never render the words as typography, label text, logo, or caption.
 {CATEGORY_LOGIC}
 {STYLE_LOGIC}
 Single cohesive composition with one clear focal subject.
+No readable text, letters, numbers, logos, labels, or packaging copy anywhere in the image.
 Physically plausible scene, believable materials, and natural depth.
 Background integrated naturally behind the subject.`;
 
@@ -61,7 +62,7 @@ function buildCoreCreativePrompt({ title, category, style }) {
   const categoryKey = String(category || '').trim();
   const override = CATEGORY_CORE_OVERRIDE[categoryKey];
   if (override) {
-    return `Literal subject from the title: "${String(title || '').trim()}". ${override} Style direction: ${resolveStyleLogic(style)}`
+    return `Subject brief based on title "${String(title || '').trim()}", interpret semantically and never render the words as typography, label text, logo, or caption. ${override} Style direction: ${resolveStyleLogic(style)}`
       .replace(/\s+/g, ' ')
       .trim();
   }
