@@ -1,4 +1,15 @@
 require('dotenv').config();
+const path = require('path');
+
+/** Ułamek szer./wys. szablonu: lewo, góra, szerokość, wysokość slotu na plakat (0–1). */
+function parseLifestyleInset(raw) {
+  const fallback = { left: 0.22, top: 0.06, width: 0.56, height: 0.58 };
+  const s = (raw != null ? String(raw) : '').trim();
+  if (!s) return fallback;
+  const parts = s.split(',').map((x) => parseFloat(String(x).trim()));
+  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n) || n <= 0 || n > 1)) return fallback;
+  return { left: parts[0], top: parts[1], width: parts[2], height: parts[3] };
+}
 
 const config = {
   // API Keys
@@ -17,7 +28,14 @@ const config = {
   designMdMaxChars: Math.min(Math.max(parseInt(process.env.DESIGN_MD_MAX_CHARS, 10) || 6000, 500), 20000),
 
   // Output
-  outputDir: process.env.OUTPUT_DIR || './posters',
+  outputDir: path.resolve(__dirname, process.env.OUTPUT_DIR || 'posters'),
+
+  /** Opcjonalny szablon wnętrza (ścieżka względem root projektu lub absolutna). Pusty = syntetyczna ściana. */
+  lifestyleMockupTemplate: (process.env.LIFESTYLE_MOCKUP_TEMPLATE || '').trim(),
+  /** Np. 0.22,0.06,0.56,0.58 = slot na ścianie (dopasuj do swojego JPG). */
+  lifestyleInset: parseLifestyleInset(process.env.LIFESTYLE_INSET),
+  /** Końcowy PNG mockupu (sklep) w proporcji plakatu (np. 21×30). Wyłącz: LIFESTYLE_PDF_NORMALIZE=0 */
+  lifestyleNormalizeToPosterAspect: String(process.env.LIFESTYLE_PDF_NORMALIZE || '1').trim() !== '0',
 
   // Print Specifications
   dpi: 300,
@@ -34,37 +52,40 @@ const config = {
     '70x100': { cm: [70, 100], px: [8268, 11811] },
   },
 
-  // Categories
+  // Categories (MVP launch set: 8 top-selling groups)
   categories: {
-    'Botanika': 'botanical plants, flowers, leaves, natural, green, botanical garden',
-    'Pory roku': 'seasonal, spring, summer, autumn, winter, nature, weather',
-    'Natura i krajobrazy': 'nature landscapes, mountains, forests, water, scenic views',
-    'Obrazy do kuchni': 'kitchen art, food, culinary, recipes, cooking, vegetables',
-    'Plakaty z napisami': 'typography, quotes, motivational text, inspirational sayings',
-    'Zwierzęta': 'animals, wildlife, pets, insects, birds, mammals',
-    'Plakaty dla dzieci': 'kids, playful, colorful, educational, animals, fun',
-    'Mapy i miasta': 'maps, cities, travel, geography, urban, skyline',
-    'Moda': 'fashion, style, clothing, accessories, trendy, elegant',
-    'Retro': 'vintage, retro, 70s, 80s, nostalgia, classic design',
-    'Kultowe zdjęcia': 'iconic photos, famous scenes, memorable moments, classic',
-    'Złoto i srebro': 'metallic, gold, silver, luxury, elegant, premium',
-    'Kosmos i astronomia': 'space, stars, planets, universe, cosmic, galaxy',
-    'Sporty': 'sports, fitness, action, energy, dynamic, movement',
-    'Muzyka': 'music, instruments, sound, melody, rhythm, musical',
-    'Plakaty planery': 'planners, calendars, organizational, productivity, schedule',
+    'Botanika': 'botanical plants, flowers, stems, leaves, organic forms, natural calm',
+    'Abstrakcja': 'nonfigurative abstract composition, shape rhythm, color fields, texture',
+    'Natura i krajobrazy': 'nature landscapes, mountains, forests, water, scenic views, outdoor atmosphere',
+    'Zwierzęta': 'animals, pets, wildlife portraits, fur detail, natural light, expressive subjects',
+    'Mapy i miasta': 'city maps, skylines, urban geometry, travel-inspired graphics',
+    'Moda': 'fashion, garments, accessories, editorial styling, elegant composition',
+    'Plakaty dla dzieci': 'playful child-friendly illustrations, soft colors, whimsical themes',
+    'Kosmos i astronomia': 'space, stars, nebula, planets, cosmic scenes, deep sky',
+    'Retro': 'vintage nostalgia, analog textures, retro palettes, classic vibe',
   },
 
   // Art Styles
   artStyles: [
-    'photography',
-    'abstract art',
-    'minimalism',
-    'watercolor',
-    'line art',
-    'illustration',
-    'graphic design',
-    'digital art',
+    'Photography',
+    'Minimalism',
+    'Abstract',
+    'Illustration',
+    'Line art',
   ],
+
+  // Allowed styles per category (MVP control matrix)
+  categoryStyles: {
+    'Botanika': ['Photography', 'Minimalism', 'Line art'],
+    'Abstrakcja': ['Abstract', 'Minimalism'],
+    'Natura i krajobrazy': ['Photography', 'Minimalism'],
+    'Zwierzęta': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
+    'Mapy i miasta': ['Photography', 'Minimalism', 'Abstract'],
+    'Moda': ['Photography', 'Minimalism', 'Line art'],
+    'Plakaty dla dzieci': ['Illustration', 'Minimalism'],
+    'Kosmos i astronomia': ['Abstract', 'Illustration', 'Photography'],
+    'Retro': ['Photography', 'Abstract'],
+  },
 };
 
 module.exports = config;

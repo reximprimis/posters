@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const OpenAI = require('openai');
+const sharp = require('sharp');
 const { buildFullDallePrompt, DALLE3_PROMPT_MAX, MAX_DALLE_OVERHEAD_CHARS } = require('./posterPromptLayers');
 const { applyMatFrameToPngFile } = require('./posterMatFrame');
 
@@ -17,39 +18,46 @@ class DalleImageGenerator {
     });
   }
 
+  /**
+   * DALL-E 3 zwraca tylko kilka natywnych rozdzielczości.
+   * Po pobraniu normalizujemy finalny PNG do docelowej proporcji druku.
+   */
+  async normalizeOutputSize(outputPath) {
+    const targetW = parseInt(process.env.DALLE_TARGET_WIDTH || '2000', 10);
+    const targetH = parseInt(process.env.DALLE_TARGET_HEIGHT || '2857', 10);
+    if (!Number.isFinite(targetW) || !Number.isFinite(targetH) || targetW < 256 || targetH < 256) {
+      return;
+    }
+    const src = await fs.promises.readFile(outputPath);
+    const normalized = await sharp(src)
+      // Remove generated black/white letterbox bars if model adds them.
+      .trim({ threshold: 12 })
+      // Full-bleed output without synthetic/blurred edge extensions.
+      .resize(targetW, targetH, {
+        fit: 'cover',
+        position: 'centre',
+      })
+      .png()
+      .toBuffer();
+    await fs.promises.writeFile(outputPath, normalized);
+  }
+
   buildImagePrompt(title, category, style) {
-    // Photorealistic prompts optimized for professional wall art prints
-    const photoPrompts = {
-      'Botanika': `Ultra-detailed professional garden photography for wall art titled "${title}".
-      Scene: A lush, vibrant botanical garden in golden hour lighting with soft warm sunlight.
-      Features: Diverse blooming flowers (roses, peonies, lavender, sunflowers, daisies), green foliage, garden paths, natural lighting.
-      Style: Magazine-quality nature photography, sharp focus, rich colors, professional composition.
-      Lighting: Natural golden hour glow creating warm tones and soft shadows.
-      Quality: Museum-quality photo print, 4K resolution, perfect for high-end wall decor.
-      No text, no watermarks, no artificial elements.`,
+    // Fallback prompt only when higher-level generator did not provide a custom prompt.
+    return `Literal subject from the title: "${title}". Category: ${category}. Style: ${style}. Premium print-ready composition with one clear focal subject.`;
+  }
 
-      'Paisaje': `Stunning landscape photography for wall art titled "${title}".
-      Scene: Majestic natural landscape with mountains, valleys, or scenic views in perfect lighting.
-      Style: National Geographic quality photography with dramatic composition.
-      Lighting: Golden hour or dramatic sky lighting creating depth and atmosphere.
-      Quality: Professional print-ready landscape photography, sharp details, vibrant colors.`,
+  resolveDalleStyle(style) {
+    const envStyle = String(process.env.DALLE_IMAGE_STYLE || '').trim().toLowerCase();
+    if (envStyle === 'natural' || envStyle === 'vivid') {
+      return envStyle;
+    }
 
-      'Cocina': `Professional food photography for wall art titled "${title}".
-      Scene: Beautifully styled culinary dishes with fresh ingredients in natural lighting.
-      Style: High-end magazine food photography with professional plating.
-      Lighting: Soft natural light with warm, appetizing tones.
-      Quality: Professional culinary photography suitable for kitchen decor.`,
-
-      'Verano': `Vibrant summer photography for wall art titled "${title}".
-      Scene: Beach, tropical, or warm sunny landscape with bright colors and vacation vibes.
-      Style: Travel magazine quality photography with warm sunny tones.
-      Lighting: Bright natural sunlight creating energetic, warm atmosphere.
-      Quality: Professional vacation-inspired wall art photography.`
-    };
-
-    return photoPrompts[category] || `Professional wall art poster for "${title}".
-    High-quality photorealistic image perfect for home decoration and printing.
-    Gallery-quality photography with professional composition and vibrant colors.`;
+    const s = String(style || '').trim().toLowerCase();
+    if (s === 'photography' || s === 'minimalism') {
+      return 'natural';
+    }
+    return 'vivid';
   }
 
   async generateImage(title, category, style, outputPath, options = {}) {
@@ -65,13 +73,19 @@ class DalleImageGenerator {
       const prompt = buildFullDallePrompt(basePrompt, category, style);
       console.log(`    → Prompt: ${prompt.substring(0, 80)}...`);
 
-      // vivid: często mniej „foto-mockupów wnętrza”; natural zostaw przez DALLE_IMAGE_STYLE=natural
-      const dalleStyle =
-        String(process.env.DALLE_IMAGE_STYLE || 'vivid').trim().toLowerCase() === 'natural' ? 'natural' : 'vivid';
+      const dalleStyle = this.resolveDalleStyle(style);
 
       const sizeRaw = String(process.env.DALLE_IMAGE_SIZE || '1024x1792').trim().toLowerCase();
+      const sizeAliases = {
+        vertical: '1024x1792',
+        portrait: '1024x1792',
+        horizontal: '1792x1024',
+        landscape: '1792x1024',
+        '1024x1536': '1024x1792',
+      };
+      const sizeNormalized = sizeAliases[sizeRaw] || sizeRaw;
       const allowedSizes = new Set(['1024x1024', '1024x1792', '1792x1024']);
-      const dalleSize = allowedSizes.has(sizeRaw) ? sizeRaw : '1024x1792';
+      const dalleSize = allowedSizes.has(sizeNormalized) ? sizeNormalized : '1024x1792';
 
       const response = await this.client.images.generate({
         model: 'dall-e-3',
@@ -91,6 +105,7 @@ class DalleImageGenerator {
 
       // Download image from URL
       await this.downloadImage(imageUrl, outputPath);
+      await this.normalizeOutputSize(outputPath);
       const matStyle = options.matStyle;
       if (matStyle === 'uniform' || matStyle === 'gallery') {
         console.log(`    → Passe-partout (${matStyle})…`);

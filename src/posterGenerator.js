@@ -10,6 +10,9 @@ const projectRoot = path.join(__dirname, '..');
 const { applyMatFrameFromBuffer } = require('./posterMatFrame');
 const { compositeLifestyleMockupFromBuffer } = require('./lifestyleMockup');
 const sharp = require('sharp');
+const DALLE_RATIO_PORTRAIT = 2 / 3;
+const DALLE_RATIO_LANDSCAPE = 3 / 2;
+const DALLE_RATIO_TOLERANCE = 0.015;
 
 /**
  * @param {{ printLayout?: string, matStyle?: string, matFrame?: boolean }} options
@@ -71,7 +74,7 @@ class PosterBatchGenerator {
       throw error;
     }
     this.pdfGen = new PDFGenerator();
-    this.dbFile = 'posters_inventory.json';
+    this.dbFile = path.join(projectRoot, 'posters_inventory.json');
     this.db = this.loadDatabase();
   }
 
@@ -517,6 +520,81 @@ class PosterBatchGenerator {
 
   reloadDatabase() {
     this.db = this.loadDatabase();
+  }
+
+  resolveDalleTargetRatioForDimensions(width, height) {
+    if (Number(width || 0) > Number(height || 0)) return DALLE_RATIO_LANDSCAPE;
+    return DALLE_RATIO_PORTRAIT;
+  }
+
+  async enforceMasterStandardForPosterId(posterId) {
+    this.reloadDatabase();
+    const id = String(posterId || '').trim();
+    const poster = this.db.posters.find((p) => p.id === id);
+    if (!poster) throw new Error('Nie znaleziono plakatu o podanym id');
+    if (!poster.imagePath || typeof poster.imagePath !== 'string') throw new Error('Brak głównej ścieżki obrazu');
+    const abs = path.isAbsolute(poster.imagePath) ? poster.imagePath : path.join(projectRoot, poster.imagePath);
+    if (!fs.existsSync(abs)) throw new Error('Brak pliku PNG na dysku');
+
+    const meta = await sharp(abs).metadata();
+    const width = Number(meta.width || 0);
+    const height = Number(meta.height || 0);
+    if (!width || !height) throw new Error('Nie udało się odczytać wymiarów mastera');
+    const currentRatio = width / height;
+    const targetRatio = this.resolveDalleTargetRatioForDimensions(width, height);
+    const delta = Math.abs(currentRatio - targetRatio);
+
+    let adjusted = false;
+    let outWidth = width;
+    let outHeight = height;
+    if (delta > DALLE_RATIO_TOLERANCE) {
+      let left = 0;
+      let top = 0;
+      let extractWidth = width;
+      let extractHeight = height;
+      if (currentRatio > targetRatio) {
+        extractWidth = Math.max(1, Math.round(height * targetRatio));
+        left = Math.max(0, Math.floor((width - extractWidth) / 2));
+      } else {
+        extractHeight = Math.max(1, Math.round(width / targetRatio));
+        top = Math.max(0, Math.floor((height - extractHeight) / 2));
+      }
+      const buf = await sharp(abs)
+        .rotate()
+        .extract({ left, top, width: extractWidth, height: extractHeight })
+        .png()
+        .toBuffer();
+      fs.writeFileSync(abs, buf);
+      adjusted = true;
+      outWidth = extractWidth;
+      outHeight = extractHeight;
+    }
+
+    const finalRatio = Number((outWidth / outHeight).toFixed(5));
+    const key = this.normInventoryImageKey(poster.imagePath);
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) !== key) continue;
+      p.masterAspectRatio = finalRatio;
+      p.masterStandard = outWidth > outHeight ? 'dalle_3_2' : 'dalle_2_3';
+      p.masterStandardAdjusted = adjusted;
+      p.masterStandardAt = new Date().toISOString();
+    }
+    this.saveDatabase();
+    return { adjusted, width: outWidth, height: outHeight, ratio: finalRatio };
+  }
+
+  async enforceMasterStandardForPosterIds(ids) {
+    const list = Array.isArray(ids) ? ids.map((x) => String(x).trim()).filter(Boolean) : [];
+    const results = [];
+    for (const pid of list) {
+      try {
+        const out = await this.enforceMasterStandardForPosterId(pid);
+        results.push({ id: pid, ok: true, ...out });
+      } catch (e) {
+        results.push({ id: pid, ok: false, error: e.message || String(e) });
+      }
+    }
+    return results;
   }
 
   /**

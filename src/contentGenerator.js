@@ -3,18 +3,114 @@ const config = require('../config');
 const { resolveDesignMdUrl, fetchDesignMdBody } = require('./designMd');
 const { getCategoryArtDirection, STYLE_PREMIUM, sanitizeCreativePrompt } = require('./posterPromptLayers');
 
+const CORE_PROMPT_TEMPLATE = `Literal subject from the title: "{TITLE}".
+{CATEGORY_LOGIC}
+{STYLE_LOGIC}
+Single cohesive composition with one clear focal subject.
+Physically plausible scene, believable materials, and natural depth.
+Background integrated naturally behind the subject.`;
+
+const CATEGORY_CORE_OVERRIDE = {
+  'Kosmos i astronomia': `Show a calm cosmic scene or celestial landscape with one dominant focal subject, such as a planet, moon, nebula, or horizon. Keep the space composition clean, spacious, and premium rather than chaotic sci-fi clutter.`,
+  'Mapy i miasta': `Show one physically plausible urban hero subject: skyline, street canyon, architectural facade, or city detail. Keep perspective realistic, composition structured, and lighting editorial. Avoid surreal mirror reflections, floating structures, impossible architecture, or infographic-style map graphics unless the title explicitly asks for them.`,
+};
+
+const CATEGORY_LOGIC_MAP = {
+  Botanika:
+    'Botanical sales mode: blossom-led natural branch or stem subject, such as magnolia, cherry blossom, wild flower stem, single bloom, or delicate spring branch. Natural growth flow, not a decorative product arrangement. Avoid fern-heavy motifs, product-shot eucalyptus styling, rigid symmetry, and geometric botanical layouts.',
+  'Kosmos i astronomia':
+    'Cosmic subject: stars, planets, nebulae. Deep space atmosphere, controlled light, not sci-fi clutter.',
+  'Dla pary': 'Symbolic connection: intertwined elements, soft romance, subtle emotion, not kitsch.',
+  Moda: 'Fashion subject: garments, fabrics, accessories. Editorial composition, refined styling.',
+};
+
+const STYLE_LOGIC_MAP = {
+  Photography:
+    'Realistic photography with natural or editorial light, believable lens detail, grounded color, and a physically plausible scene. Avoid CGI, fantasy glow, plastic texture, and staged product-shot composition.',
+  photography:
+    'Realistic photography with natural or editorial light, believable lens detail, grounded color, and a physically plausible scene. Avoid CGI, fantasy glow, plastic texture, and staged product-shot composition.',
+  Illustration: 'Refined illustration with controlled detail, clear shape hierarchy, and premium print finish.',
+  illustration: 'Refined illustration with controlled detail, clear shape hierarchy, and premium print finish.',
+  'Abstract art':
+    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
+  'abstract art':
+    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
+  Abstract:
+    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
+  abstract:
+    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
+  Minimalism: 'Minimal composition with restrained forms, quiet luxury mood, and intentional negative space used as part of the artwork.',
+  minimalism: 'Minimal composition with restrained forms, quiet luxury mood, and intentional negative space used as part of the artwork.',
+  'Line art': 'Delicate line drawing with refined contours, elegant simplicity, and clean premium restraint.',
+  'line art': 'Delicate line drawing with refined contours, elegant simplicity, and clean premium restraint.',
+};
+
+function resolveCategoryLogic(category) {
+  const c = String(category || '').trim();
+  if (CATEGORY_LOGIC_MAP[c]) return CATEGORY_LOGIC_MAP[c];
+  return `${getCategoryArtDirection(c)} Keep category identity clear and consistent with the title.`;
+}
+
+function resolveStyleLogic(style) {
+  const s = String(style || '').trim();
+  if (STYLE_LOGIC_MAP[s]) return STYLE_LOGIC_MAP[s];
+  return `Style must remain strictly "${s || 'Photography'}" with clear visual discipline and no mixed-style drift.`;
+}
+
+function buildCoreCreativePrompt({ title, category, style }) {
+  const categoryKey = String(category || '').trim();
+  const override = CATEGORY_CORE_OVERRIDE[categoryKey];
+  if (override) {
+    return `Literal subject from the title: "${String(title || '').trim()}". ${override} Style direction: ${resolveStyleLogic(style)}`
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  return CORE_PROMPT_TEMPLATE.replace('{TITLE}', String(title || '').trim())
+    .replace('{CATEGORY_LOGIC}', resolveCategoryLogic(category))
+    .replace('{STYLE_LOGIC}', resolveStyleLogic(style))
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** When no LLM API is configured, still produce a real DALL-E poster prompt (not a raw keyword list from config). */
 const STYLE_EXECUTION = {
+  Photography:
+    'real-world botanical/editorial photography, crisp detail, one hero focal subject in focus with soft background blur, natural imperfections and slight asymmetry, flat scene composition rendered as 2D print art, never product photo or physical arrangement, no CGI/plastic look, no glow, no fantasy lighting',
   photography:
-    'photographic realism, crisp detail, editorial still-life or landscape clarity rendered as flat print art',
+    'real-world botanical/editorial photography, crisp detail, one hero focal subject in focus with soft background blur, natural imperfections and slight asymmetry, flat scene composition rendered as 2D print art, never product photo or physical arrangement, no CGI/plastic look, no glow, no fantasy lighting',
+  'Abstract art':
+    'abstract composition as one continuous painted surface filling the tall portrait frame—color fields, shapes, texture, and rhythm reach all four edges; no centered square picture on empty paper, no wide blank strips top or bottom; non-literal but physically edge-to-edge like ink or paint on the full print sheet',
   'abstract art':
     'abstract composition as one continuous painted surface filling the tall portrait frame—color fields, shapes, texture, and rhythm reach all four edges; no centered square picture on empty paper, no wide blank strips top or bottom; non-literal but physically edge-to-edge like ink or paint on the full print sheet',
+  Abstract:
+    'abstract composition as one continuous painted surface filling the tall portrait frame—color fields, shapes, texture, and rhythm reach all four edges; no centered square picture on empty paper, no wide blank strips top or bottom; non-literal but physically edge-to-edge like ink or paint on the full print sheet',
+  abstract:
+    'abstract composition as one continuous painted surface filling the tall portrait frame—color fields, shapes, texture, and rhythm reach all four edges; no centered square picture on empty paper, no wide blank strips top or bottom; non-literal but physically edge-to-edge like ink or paint on the full print sheet',
+  Minimalism: 'ultra-clean minimal forms, generous negative space, one or few restrained focal elements',
   minimalism: 'ultra-clean minimal forms, generous negative space, one or few restrained focal elements',
+  Watercolor: 'watercolor pigment on paper texture filling the frame, soft washes, luminous transparent color',
   watercolor: 'watercolor pigment on paper texture filling the frame, soft washes, luminous transparent color',
+  'Line art': 'refined ink line drawing, elegant contours, monochrome or sparse accent color, rich whitespace',
   'line art': 'refined ink line drawing, elegant contours, monochrome or sparse accent color, rich whitespace',
+  Illustration: 'polished editorial illustration, cohesive stylization, contemporary print illustration finish',
   illustration: 'polished editorial illustration, cohesive stylization, contemporary print illustration finish',
+  'Graphic design': 'bold graphic poster language, flat planes of color, contemporary Swiss-poster clarity',
   'graphic design': 'bold graphic poster language, flat planes of color, contemporary Swiss-poster clarity',
+  'Digital art': 'refined digital painting, unified lighting, collectible fine-art print quality',
   'digital art': 'refined digital painting, unified lighting, collectible fine-art print quality',
+  Scandinavian: 'Scandinavian simplicity, muted palette, airy spacing, clean Nordic editorial calm',
+  Boho: 'boho organic layering, earthy tones, handcrafted texture cues, relaxed but refined composition',
+  Vintage: 'vintage print tonality, subtle grain, classic color grading, timeless retro elegance',
+  Modern: 'modern contemporary art direction, confident geometry, clean contrast, refined minimal polish',
+  Luxury: 'luxury visual language: premium materials feel, restrained opulence, sophisticated tonal control',
+  Japandi: 'Japandi fusion: Japanese restraint and Scandinavian warmth, natural textures, minimal harmony',
+  Industrial: 'industrial aesthetic with structural forms, concrete/metal cues, gritty refined tonal depth',
+  'Dark aesthetic': 'dark aesthetic mood, deep shadows, selective highlights, cinematic premium atmosphere',
+  'Soft aesthetic': 'soft aesthetic mood, pastel-led harmony, diffused light, calm gentle composition',
+  Editorial: 'editorial art direction, magazine-level composition discipline, premium storytelling framing',
+  'Poster vintage': 'classic poster-vintage language, aged print character, retro typography-like geometry without text',
+  'Typographic minimal': 'typographic-minimal spirit via abstract glyph-like geometry only, strict no readable letters',
 };
 
 function titleSuggestsOutdoorOrLandscape(t) {
@@ -80,6 +176,15 @@ function buildOfflinePosterPrompt(title, category, style, categoryThemes, design
   return body;
 }
 
+function getCategoryStyleHardLock(category, style) {
+  const c = String(category || '').trim().toLowerCase();
+  const s = String(style || '').trim().toLowerCase();
+  if (c === 'dla pary' && s === 'photography') {
+    return 'HARD LOCK: Keep "Dla pary" and "Photography" simultaneously—realistic photo-based scene with paired/dual relationship motif, natural lens detail, romantic but tasteful mood; never switch to abstract digital painting language.';
+  }
+  return '';
+}
+
 function parseTitlesFromLlmResponse(content) {
   const raw = String(content || '').trim();
   const unfenced = raw
@@ -120,8 +225,10 @@ function getTitleGenerationExtraRules(category, count) {
     return (
       `${base}\n` +
       `Botanika: at least ${needBotanicalNouns} of ${n} titles MUST include a concrete botanical anchor in plain words ` +
-      `(e.g. fern, eucalyptus, monstera, magnolia, succulent, blossom, stem, seedhead, tropical leaf, dried grass, wildflower). ` +
-      `Prefer Scandinavian/editorial print-shop tone: short, specific, calm.`
+      `(e.g. magnolia branch, cherry blossom, wild flower stem, single bloom, spring branch, blossom stem, floral branch). ` +
+      `Prefer Scandinavian/editorial print-shop tone: short, specific, calm.\n` +
+      `Hard preference for sales mode motifs: magnolia branch, cherry blossom branch, wild flower stem, single blooming flower, delicate spring branch.\n` +
+      `Do NOT generate titles focused on: fern, geometric botanical, symmetric leaves, decorative object motifs, clean product-like eucalyptus.`
     );
   }
   return base;
@@ -243,6 +350,37 @@ class ContentGenerator {
       'Sporty': ['Go Team', 'Game Day', 'Athletic Spirit', 'Victory', 'Champion Vibes'],
       'Muzyka': ['Sound Wave', 'Music Soul', 'Rhythm', 'Melody Love', 'Beat Drop'],
       'Plakaty planery': ['Get Organized', 'Plan Ahead', 'Daily Goals', 'Productivity', 'Organized Life'],
+      Abstrakcja: ['Color Field Pulse', 'Layered Form Harmony', 'Silent Geometry', 'Chromatic Flow', 'Abstract Balance'],
+      Minimalizm: ['Quiet Shape Study', 'Minimal Horizon', 'Calm Form', 'Soft Contrast', 'Essential Composition'],
+      Architektura: ['Concrete Rhythm', 'Urban Facade Study', 'Geometric Atrium', 'Modern Structure', 'Architectural Light'],
+      'Dla niego': ['Refined Power', 'Quiet Confidence', 'Modern Edge', 'Bold Minimal Form', 'Steel and Shadow'],
+      'Dla niej': ['Soft Elegance', 'Graceful Balance', 'Luminous Bloom', 'Velvet Calm', 'Refined Harmony'],
+      'Dla taty': ['Classic Heritage', 'Steady Horizon', 'Timeless Craft', 'Warm Steel Tone', 'Noble Simplicity'],
+      'Dla mamy': ['Gentle Morning Bloom', 'Warm Light Study', 'Tender Harmony', 'Soft Botanical Calm', 'Elegant Glow'],
+      'Dla dziecka': ['Playful Safari Mood', 'Happy Color Shapes', 'Little Explorer', 'Dreamy Animal Parade', 'Joyful Sky'],
+      'Dla pary': ['Paired Harmony', 'Two Forms in Balance', 'Shared Horizon', 'Twin Light Study', 'United Rhythm'],
+      'Na prezent': ['Gifted Elegance', 'Celebration in Light', 'Curated Calm', 'Premium Joy', 'Refined Surprise'],
+      'Na urodziny': ['Birthday Glow', 'Festive Color Drift', 'Joyful Moment Study', 'Celebration Palette', 'Golden Wish'],
+      'Na ślub': ['Wedding Light', 'Timeless Vow Mood', 'Ivory Harmony', 'Romantic Balance', 'Soft Champagne Glow'],
+      'Na rocznicę': ['Anniversary Glow', 'Enduring Harmony', 'Quiet Romance', 'Timeless Pair Study', 'Golden Memory'],
+      'Na parapetówkę': ['New Home Calm', 'Housewarming Light', 'Fresh Start Palette', 'Modern Welcome', 'Cozy Minimal Scene'],
+      Motoryzacja: ['Engineered Motion', 'Velocity Lines', 'Mechanical Elegance', 'Road Energy', 'Automotive Pulse'],
+      Samochody: ['Sculpted Bodyline', 'Urban Speed Form', 'Chrome and Light', 'Roadside Elegance', 'Car Silhouette Study'],
+      Motocykle: ['Two-Wheel Momentum', 'Steel and Asphalt', 'Rider Spirit', 'Chrome Torque', 'Motor Rhythm'],
+      'Klasyczne auta': ['Vintage Grand Tourer', 'Classic Chrome Glow', 'Timeless Car Profile', 'Heritage Drive', 'Retro Road Elegance'],
+      'Sportowe auta': ['Apex Velocity', 'Racing Line', 'High-Performance Form', 'Trackside Energy', 'Speed in Contrast'],
+      Gaming: ['Neon Reflex', 'Digital Arena Flow', 'Pixel Pulse Mood', 'Cyber Motion', 'Game Night Energy'],
+      'Fitness i siłownia': ['Strength in Form', 'Athletic Momentum', 'Discipline and Motion', 'Powerline Study', 'Training Focus'],
+      Podróże: ['Journey Horizon', 'Wanderlight', 'Destination Calm', 'Exploration Mood', 'Voyage in Color'],
+      'Street art': ['Urban Spray Rhythm', 'Concrete Color Burst', 'Street Layer Study', 'Graffiti Motion', 'Wall Texture Flow'],
+      'Kawa i lifestyle': ['Morning Brew Mood', 'Espresso Ritual', 'Cafe Light Study', 'Cozy Roast Palette', 'Coffeehouse Calm'],
+      'Wino i alkohol': ['Cellar Light', 'Velvet Merlot Mood', 'Glass and Shadow', 'Bar Still Life', 'Aged Oak Glow'],
+      'Luxury / premium': ['Opulent Minimal', 'Champagne Geometry', 'Refined Gold Tone', 'Luxury Silence', 'Prestige Palette'],
+      Technologia: ['Future Grid', 'Precision Signal', 'Digital Structure', 'Techno Minimal Form', 'Neural Geometry'],
+      'Biznes i motywacja': ['Executive Focus', 'Clarity and Drive', 'Ambition in Form', 'Momentum Study', 'Strategic Horizon'],
+      'Tatuaż i sztuka alternatywna': ['Ink Ritual', 'Alternative Symbolic Form', 'Bold Line Totem', 'Dark Ornament Study', 'Tattoo Spirit'],
+      'Surfing / ocean': ['Wave Rider Energy', 'Ocean Motion Study', 'Coastal Flow', 'Surfline Horizon', 'Sea Spray Rhythm'],
+      'Góry / hiking': ['Alpine Path', 'Summit Light', 'Mountain Trail Mood', 'Ridge and Sky', 'Hiking Horizon'],
     };
 
     const provider = this.resolveLlmProvider(options.llmProvider);
@@ -282,76 +420,15 @@ Generate now:`;
   }
 
   async generateImagePrompt(title, category, style, options = {}) {
-    const designSuffix = await this.getDesignMdSuffix();
-    const categoryThemes = config.categories[category] || category;
-
-    const offlineResult = () => ({
-      text: buildOfflinePosterPrompt(title, category, style, categoryThemes, designSuffix),
-      promptLlm: this.describePromptLlm(null),
-    });
-
-    const provider = this.resolveLlmProvider(options.llmProvider);
-    if (!provider) {
-      return offlineResult();
-    }
-
-    const catDir = getCategoryArtDirection(category);
-    const styleTrim = String(style || '').trim();
-    const isAbstractArtStyle = styleTrim === 'abstract art';
-    const abstractLayoutBlock = isAbstractArtStyle
-      ? `
-ABSTRACT-ART LAYOUT (portrait 7:10): Describe paint, pigment, gradients, or shapes that occupy the full vertical height—top to bottom active surface. Forbidden: a smaller square or oval “picture” centered on cream/white with thick empty bands; letterboxed abstract. Prefer vertical rhythm (columns, bands, flowing forms) so the tall frame feels intentionally filled.`
-      : '';
-
-    const prompt = `You write the CREATIVE half of prompts for DALL-E 3. The server prepends a strong "flat print file only" block and adds category hints—do not repeat mockup rules at length; focus on subject, mood, light, palette, composition.
-
-Poster title (never render as readable text in the image): ${title}
-Category label: ${category}
-Category themes (secondary hints only; title wins if conflict): ${categoryThemes}
-Category print direction (weave in; stay consistent): ${catDir}
-Art style direction: ${style}
-${designSuffix}
-${abstractLayoutBlock}
-
-TITLE-LITERAL RULE: Open with 1–2 clauses that directly interpret the TITLE's words into a single clear visual (same plants, motifs, or mood the title implies). If the title is abstract, pick ONE literal botanical reading and commit—do not drift into a generic unrelated still life.
-
-TITLE is the primary brief. If the category spans many seasons but the title is one moment (e.g. snow on a road), describe only that—no seasonal grid or triptych.
-
-CRITICAL — output must describe **flat 2D artwork** or a **scene that is the artwork itself** filling the canvas (editorial illustration, photo-as-poster). NEVER describe a photograph *of* a poster, print on a wall, tape, clips, easel, frame, mat, room interior, wooden table, hands, or lifestyle mockup.
-- Forbidden concepts: mockup, framed art, gallery wall, shelf, sofa, window behind a print, drop shadow around a picture card, letterboxing, polaroid border, white margin band, comic panels unless title demands it.
-- Use: full-bleed, edge-to-edge, single unified composition, subject and environment (or abstract field) continue to all four edges.
-- Outdoor / landscape titles: real sky, land, weather to the edges when the title implies it—do not force a gray studio void behind a nature scene.
-
-${STYLE_PREMIUM}
-
-Wording bans (mockups AND stock-y fluff): never use "wall poster", "wall art", "for the wall", "viewer's space", "hanging on a wall", "room", "interior", "gallery wall", "display", "presentation", "showcase", "retail", "boutique", "perfect for", "suitable for", "themed display", "collector piece", "ambience for a room". Prefer: "full-bleed artwork", "composition filling the frame", "edge-to-edge scene". End with one short clause: ${
-      isAbstractArtStyle
-        ? 'energy and color distributed across the full portrait height and width, no postage-stamp motif on blank ground'
-        : 'one dominant focal subject, no busy collage unless the title demands it'
-    }.
-
-Output requirements:
-- ONE continuous English prompt, comma-separated clauses, no bullet lists, no markdown, no preamble.
-- Specific: subject, lighting, background or negative space, composition, palette—aligned with "${style}"; avoid repeating the same sage-cream-minimal recipe when the title calls for something else.
-- No text, letters, logos, watermarks in the image.
-- Length: about 60–150 words (tighter beats rambling).
-
-Example density (new subject for THIS poster; flat art only):
-Monstera leaves overlapping in soft side light, deep green and warm shadow, single hero composition filling the entire frame, editorial botanical print, no frame, no mockup
-
-Generate the prompt now:`;
-
-    try {
-      const text = await this.llmComplete(prompt, 700, provider, { temperature: 0.68 });
-      const bodyText = typeof text === 'string' ? text.trim() : '';
-      if (bodyText) {
-        return { text: sanitizeCreativePrompt(bodyText) || bodyText, promptLlm: this.describePromptLlm(provider) };
-      }
-      return offlineResult();
-    } catch (error) {
-      console.error('Error generating image prompt:', error.message);
-      return offlineResult();
-    }
+    const deterministic = buildCoreCreativePrompt({ title, category, style });
+    return {
+      text: sanitizeCreativePrompt(deterministic) || deterministic,
+      promptLlm: {
+        promptLlmProvider: 'template',
+        promptLlmModel: 'master-prompt-v1',
+        promptLlmLabel: 'Master Prompt v1',
+      },
+    };
   }
 
   /**
