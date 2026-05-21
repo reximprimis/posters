@@ -92,7 +92,6 @@ posters_inventory.json  # Complete catalog with metadata
 - Zwierzęta (animals)
 - Plakaty dla dzieci (kids)
 - Mapy i miasta (maps/cities)
-- Moda (fashion)
 - Retro (vintage)
 - Kultowe zdjęcia (iconic images)
 - Złoto i srebro (metallic/luxury)

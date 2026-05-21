@@ -3,6 +3,7 @@
 require('dotenv').config();
 const PosterBatchGenerator = require('./src/posterGenerator');
 const config = require('./config');
+const { GLOBAL_STYLES, isKnownCategory, assertCategoryStyleAllowed } = require('./src/categoryStyles');
 
 function parseCliArgs(argv) {
   const positional = [];
@@ -55,17 +56,43 @@ async function main() {
     return;
   }
 
-  if (cliArtStyle != null && String(cliArtStyle).trim() !== '' && !config.artStyles.includes(cliArtStyle)) {
-    console.error(`Unknown art style: ${cliArtStyle}`);
-    console.error(`Valid styles: ${config.artStyles.join(', ')}`);
-    process.exit(1);
+  const [command, param1, param2] = args;
+
+  if (cliArtStyle != null && String(cliArtStyle).trim() !== '') {
+    const styleName = String(cliArtStyle).trim();
+    if (!GLOBAL_STYLES.includes(styleName)) {
+      console.error(`Unknown art style: ${styleName}`);
+      console.error(`Valid styles: ${GLOBAL_STYLES.join(', ')}`);
+      process.exit(1);
+    }
+    if (command === 'generate' && param1) {
+      const category = param1;
+      if (!isKnownCategory(category)) {
+        console.error(`Unknown category: ${category}`);
+        process.exit(1);
+      }
+      try {
+        assertCategoryStyleAllowed(category, styleName);
+      } catch (e) {
+        console.error(e.message);
+        process.exit(1);
+      }
+    }
+    if (command === 'generate-all') {
+      for (const category of Object.keys(config.categories)) {
+        try {
+          assertCategoryStyleAllowed(category, styleName);
+        } catch (e) {
+          console.error(e.message);
+          process.exit(1);
+        }
+      }
+    }
   }
 
   const genOpts = { withPdf: true };
-  if (cliArtStyle != null && String(cliArtStyle).trim() !== '') genOpts.artStyle = cliArtStyle;
+  if (cliArtStyle != null && String(cliArtStyle).trim() !== '') genOpts.artStyle = String(cliArtStyle).trim();
   if (cliMatFrame) genOpts.printLayout = 'uniform';
-
-  const [command, param1, param2] = args;
 
   try {
     if (command === 'generate' && param1) {

@@ -15,6 +15,7 @@ const PORT = Number(process.env.PORT) || 3000;
 
 const INVENTORY_PATH = path.join(__dirname, 'posters_inventory.json');
 const PREVIEW_STAGING_DIR = path.join(__dirname, '.preview-staging');
+const SHOPIFY_EXPORT_SETTINGS_PATH = path.join(__dirname, 'shopify_export_settings.json');
 
 if (!fs.existsSync(PREVIEW_STAGING_DIR)) {
   fs.mkdirSync(PREVIEW_STAGING_DIR, { recursive: true });
@@ -33,6 +34,50 @@ function getBatchGenerator() {
 let approvalAssetsJobRunning = false;
 /** @type {Set<string>} */
 const approvalAssetsQueue = new Set();
+
+async function autoFillMissingShopListingsByImageKeys(imageKeys) {
+  try {
+    const keys = Array.isArray(imageKeys)
+      ? imageKeys.filter(Boolean).map((k) => String(k))
+      : [...(imageKeys || [])].filter(Boolean).map((k) => String(k));
+    if (keys.length === 0) return;
+    if (!fs.existsSync(INVENTORY_PATH)) return;
+    const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    if (!Array.isArray(inventory.posters)) return;
+    const keySet = new Set(keys);
+    const cg = new ContentGenerator();
+    if (!cg.resolveLlmProvider(null)) return;
+
+    let changed = 0;
+    for (const p of inventory.posters) {
+      const key = normPosterImagePathForMatch(p.imagePath);
+      if (!key || !keySet.has(key)) continue;
+      if (p.approvedForPrint !== true) continue;
+      if (typeof p.shopDescription === 'string' && p.shopDescription.trim()) continue; // keep manual text
+      try {
+        const text = await cg.generateListingDescription({
+          title: p.title,
+          category: p.category,
+          style: p.artStyle,
+          imagePrompt: p.prompt || '',
+          llmProvider: null,
+        });
+        if (String(text || '').trim()) {
+          p.shopDescription = String(text).trim();
+          changed += 1;
+        }
+      } catch (err) {
+        console.warn('auto listing generation failed for', p.id || p.title || p.imagePath, err && err.message ? err.message : err);
+      }
+    }
+    if (changed > 0) {
+      fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
+      console.log(`auto listing generated for ${changed} approved posters`);
+    }
+  } catch (err) {
+    console.warn('autoFillMissingShopListingsByImageKeys failed:', err && err.message ? err.message : err);
+  }
+}
 
 function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
   for (const k of imageKeys || []) {
@@ -56,6 +101,8 @@ function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
       approvalAssetsQueue.clear();
       if (posterIds.length === 0) return;
       const gen = getBatchGenerator();
+      await gen.enforceMasterStandardForPosterIds(posterIds);
+      await autoFillMissingShopListingsByImageKeys([...seen]);
       await gen.applyUniformFrameForPosterIds(posterIds);
       await gen.applyShopThumbnailsForPosterIds(posterIds);
       await gen.applyFullPrintPdfsForPosterIds(posterIds);
@@ -204,9 +251,12 @@ function openFolderInExplorerByAbsPath(absPath) {
 }
 
 function styleFromFolderSegment(seg) {
-  const raw = String(seg || '').trim().toLowerCase();
+  const raw = String(seg || '').trim();
   if (!raw) return 'Photography';
-  const norm = raw.replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  for (const s of config.artStyles || []) {
+    if (s === raw) return s;
+  }
+  const norm = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
   for (const s of config.artStyles || []) {
     const slug = String(s || '')
       .trim()
@@ -215,7 +265,11 @@ function styleFromFolderSegment(seg) {
       .replace(/^_|_$/g, '');
     if (slug === norm) return s;
   }
-  return seg;
+  return raw;
+}
+
+function styleToFolderSegment(style) {
+  return String(style || '').trim() || 'Photography';
 }
 
 function titleFromFileName(fileName) {
@@ -249,6 +303,7 @@ function collectImageFilesRecursively(rootDir) {
       if (!['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) continue;
       const lower = e.name.toLowerCase();
       if (lower.endsWith('_ramka.png') || lower.endsWith('_ramka.jpg') || lower.endsWith('_ramka.jpeg') || lower.endsWith('_ramka.webp')) continue;
+      if (lower.endsWith('_master.png') || lower.includes('.gen.tmp.')) continue;
       if (lower.includes('_thumb.')) continue;
       if (lower.includes('_lifestyle.')) continue;
       out.push(abs);
@@ -259,6 +314,22 @@ function collectImageFilesRecursively(rootDir) {
 
 function syncManualImageImports(inventory) {
   if (!inventory || !Array.isArray(inventory.posters)) return false;
+  let changed = false;
+  const before = inventory.posters.length;
+  inventory.posters = inventory.posters.filter((p) => {
+    const ip = String((p && p.imagePath) || '').replace(/\\/g, '/');
+    if (/_master\.png$/i.test(ip) || /\.gen\.tmp\.png$/i.test(ip)) {
+      changed = true;
+      const abs = path.join(__dirname, ip);
+      try {
+        if (fs.existsSync(abs)) fs.unlinkSync(abs);
+      } catch (_) {}
+      return false;
+    }
+    return true;
+  });
+  if (inventory.posters.length !== before) changed = true;
+
   const existing = new Set(
     inventory.posters
       .map((p) => normPosterImagePathForMatch(p && p.imagePath))
@@ -266,7 +337,6 @@ function syncManualImageImports(inventory) {
   );
   const postersRoot = path.join(__dirname, 'posters');
   const images = collectImageFilesRecursively(postersRoot);
-  let changed = false;
   for (const abs of images) {
     const rel = path.relative(__dirname, abs).replace(/\\/g, '/');
     const key = normPosterImagePathForMatch(rel);
@@ -324,6 +394,10 @@ app.get('/api/posters', (req, res) => {
   const groups = new Map();
 
   for (const poster of inventory.posters) {
+    const ipNorm = String(poster.imagePath || '').replace(/\\/g, '/');
+    if (/_master\.png$/i.test(ipNorm) || /\.gen\.tmp\.png$/i.test(ipNorm)) {
+      continue;
+    }
     if (!poster.imagePath || !fileExistsAtRelative(poster.imagePath)) {
       continue;
     }
@@ -354,6 +428,20 @@ app.get('/api/posters', (req, res) => {
     let imagePathLifestyle = primary.imagePathLifestyle || '';
     let imagePathThumb = primary.imagePathThumb || '';
     let imagePathFramedThumb = primary.imagePathFramedThumb || '';
+    let prompt = String(primary.prompt || '').trim();
+    let promptLlmLabel = primary.promptLlmLabel || '';
+    let promptLlmProvider = primary.promptLlmProvider || '';
+    let promptLlmModel = primary.promptLlmModel || '';
+    for (const row of items) {
+      const cand = String(row.poster.prompt || '').trim();
+      if (cand && (!prompt || cand.length > prompt.length)) {
+        prompt = cand;
+        promptLlmLabel = row.poster.promptLlmLabel || promptLlmLabel;
+        promptLlmProvider = row.poster.promptLlmProvider || promptLlmProvider;
+        promptLlmModel = row.poster.promptLlmModel || promptLlmModel;
+      }
+    }
+
     for (let i = 1; i < items.length; i++) {
       if (items[i].pdfLinks.length > pdfLinks.length) {
         pdfLinks = items[i].pdfLinks;
@@ -423,10 +511,11 @@ app.get('/api/posters', (req, res) => {
       pdfLinks,
       pdfs: legacyPdfs,
       createdAt: primary.createdAt || null,
-      prompt: primary.prompt || '',
-      promptLlmLabel: primary.promptLlmLabel || '',
-      promptLlmProvider: primary.promptLlmProvider || '',
-      promptLlmModel: primary.promptLlmModel || '',
+      prompt,
+      promptLlmLabel,
+      promptLlmProvider,
+      promptLlmModel,
+      needsManualMetadata: primary.needsManualMetadata === true,
       shopDescription: typeof primary.shopDescription === 'string' ? primary.shopDescription : '',
       approvedForPrint: primary.approvedForPrint === true,
       shopifyState: typeof primary.shopifyState === 'string' ? primary.shopifyState : 'pending_assets',
@@ -618,6 +707,48 @@ app.post('/api/posters/listing-description', async (req, res) => {
 });
 
 /** Ręczne zatwierdzenie do druku (zapis w posters_inventory.json). */
+app.patch('/api/posters/prompt', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const promptText = body.prompt != null ? String(body.prompt).trim() : '';
+    if (!promptText) {
+      return res.status(400).json({ error: 'Pole prompt nie może być puste' });
+    }
+    if (!fs.existsSync(INVENTORY_PATH)) {
+      return res.status(404).json({ error: 'missing_inventory' });
+    }
+    const idStr = body.id != null ? String(body.id).trim() : '';
+    const imgNorm = body.imagePath != null ? normPosterImagePathForMatch(body.imagePath) : '';
+    if (!idStr && !imgNorm) {
+      return res.status(400).json({ error: 'Podaj id lub imagePath plakatu' });
+    }
+    const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    if (!Array.isArray(inventory.posters)) {
+      return res.status(500).json({ error: 'Nieprawidłowy format inventory' });
+    }
+    const llm = body.promptLlm && typeof body.promptLlm === 'object' ? body.promptLlm : {};
+    let updated = 0;
+    for (const p of inventory.posters) {
+      const byId = idStr && p.id === idStr;
+      const byPath = imgNorm && normPosterImagePathForMatch(p.imagePath) === imgNorm;
+      if (!byId && !byPath) continue;
+      p.prompt = promptText;
+      if (llm.promptLlmProvider != null) p.promptLlmProvider = String(llm.promptLlmProvider);
+      if (llm.promptLlmModel != null) p.promptLlmModel = String(llm.promptLlmModel);
+      if (llm.promptLlmLabel != null) p.promptLlmLabel = String(llm.promptLlmLabel);
+      if (p.needsManualMetadata) p.needsManualMetadata = false;
+      updated += 1;
+    }
+    if (updated === 0) {
+      return res.status(404).json({ error: 'Nie znaleziono plakatu' });
+    }
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
+    res.json({ ok: true, updated, prompt: promptText });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Błąd zapisu' });
+  }
+});
+
 app.patch('/api/posters/approval', async (req, res) => {
   try {
     const body = req.body || {};
@@ -1021,12 +1152,149 @@ app.post('/api/posters/open-folder', (req, res) => {
   }
 });
 
+function remapPosterPathValue(value, pathMap) {
+  if (typeof value !== 'string') return value;
+  const key = value.replace(/\\/g, '/');
+  return pathMap.get(key) || value;
+}
+
+function remapPosterPathContainer(container, pathMap) {
+  if (Array.isArray(container)) {
+    return container.map((v) => remapPosterPathValue(v, pathMap));
+  }
+  if (container && typeof container === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(container)) {
+      out[k] = remapPosterPathValue(v, pathMap);
+    }
+    return out;
+  }
+  return container;
+}
+
+/** Ręczne przeniesienie plakatu do innej kategorii/stylu (metadata + pliki). */
+app.post('/api/posters/move', (req, res) => {
+  try {
+    if (!fs.existsSync(INVENTORY_PATH)) {
+      return res.status(404).json({ error: 'missing_inventory' });
+    }
+    const body = req.body || {};
+    const idStr = body.id != null ? String(body.id).trim() : '';
+    const imgNorm = body.imagePath != null ? normPosterImagePathForMatch(body.imagePath) : '';
+    const targetCategory = body.targetCategory != null ? String(body.targetCategory).trim() : '';
+    const targetStyle = body.targetStyle != null ? String(body.targetStyle).trim() : '';
+    if ((!idStr && !imgNorm) || !targetCategory || !targetStyle) {
+      return res.status(400).json({ error: 'Wymagane: id lub imagePath oraz targetCategory, targetStyle.' });
+    }
+    if (!Object.prototype.hasOwnProperty.call(config.categories || {}, targetCategory)) {
+      return res.status(400).json({ error: 'Nieznana kategoria docelowa.' });
+    }
+    const targetStyleError = validateStyleForCategory(targetCategory, targetStyle);
+    if (targetStyleError) {
+      return res.status(400).json({ error: targetStyleError });
+    }
+
+    const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    if (!Array.isArray(inventory.posters)) {
+      return res.status(500).json({ error: 'Nieprawidłowy format inventory' });
+    }
+
+    const primary = inventory.posters.find((p) => {
+      const byId = idStr && p.id === idStr;
+      const byPath = imgNorm && normPosterImagePathForMatch(p.imagePath) === imgNorm;
+      return byId || byPath;
+    });
+    if (!primary || !primary.imagePath) {
+      return res.status(404).json({ error: 'Nie znaleziono plakatu do przeniesienia.' });
+    }
+
+    const imageKey = normPosterImagePathForMatch(primary.imagePath);
+    const affected = inventory.posters.filter((p) => normPosterImagePathForMatch(p.imagePath) === imageKey);
+    if (affected.length === 0) {
+      return res.status(404).json({ error: 'Brak rekordów do przeniesienia.' });
+    }
+
+    const styleSeg = styleToFolderSegment(targetStyle);
+    const pathMap = new Map();
+    const toMove = [];
+    const conflicts = [];
+
+    for (const p of affected) {
+      const relPaths = collectPosterAssetRelPaths(p);
+      for (const rel0 of relPaths) {
+        const rel = String(rel0 || '').replace(/\\/g, '/');
+        if (!rel || !rel.toLowerCase().startsWith('posters/')) continue;
+        if (pathMap.has(rel)) continue;
+        const parts = rel.split('/').filter(Boolean);
+        if (parts.length < 3 || parts[0].toLowerCase() !== 'posters') continue;
+
+        const fileName = parts[parts.length - 1];
+        const nextRel = ['posters', targetCategory, styleSeg, fileName].join('/');
+        pathMap.set(rel, nextRel);
+
+        const srcAbs = path.resolve(__dirname, rel);
+        const dstAbs = path.resolve(__dirname, nextRel);
+        if (!fs.existsSync(srcAbs)) continue;
+        if (srcAbs === dstAbs) continue;
+        if (fs.existsSync(dstAbs)) {
+          conflicts.push(nextRel);
+          continue;
+        }
+        toMove.push({ srcAbs, dstAbs, fromRel: rel, toRel: nextRel });
+      }
+    }
+
+    if (conflicts.length > 0) {
+      return res.status(409).json({
+        error: 'Konflikt nazw: w katalogu docelowym istnieją już pliki o tych nazwach.',
+        conflicts: [...new Set(conflicts)].slice(0, 50),
+      });
+    }
+
+    let movedFiles = 0;
+    for (const mv of toMove) {
+      const dstDir = path.dirname(mv.dstAbs);
+      if (!fs.existsSync(dstDir)) fs.mkdirSync(dstDir, { recursive: true });
+      fs.renameSync(mv.srcAbs, mv.dstAbs);
+      movedFiles += 1;
+    }
+
+    for (const p of affected) {
+      p.category = targetCategory;
+      p.artStyle = targetStyle;
+      p.imagePath = remapPosterPathValue(p.imagePath, pathMap);
+      p.imagePathFramed = remapPosterPathValue(p.imagePathFramed, pathMap);
+      p.imagePathThumb = remapPosterPathValue(p.imagePathThumb, pathMap);
+      p.imagePathFramedThumb = remapPosterPathValue(p.imagePathFramedThumb, pathMap);
+      p.imagePathLifestyle = remapPosterPathValue(p.imagePathLifestyle, pathMap);
+      p.pdfPaths = remapPosterPathContainer(p.pdfPaths, pathMap);
+      p.pdfPathsFramed = remapPosterPathContainer(p.pdfPathsFramed, pathMap);
+      p.pdfPathsLifestyle = remapPosterPathContainer(p.pdfPathsLifestyle, pathMap);
+    }
+
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
+    return res.json({
+      ok: true,
+      updatedRows: affected.length,
+      movedFiles,
+      targetCategory,
+      targetStyle,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Nie udało się przenieść plakatu.' });
+  }
+});
+
 app.get('/api/generation-config', (req, res) => {
   const cg = new ContentGenerator();
   res.json({
     categories: Object.keys(config.categories),
     categoryHints: config.categories,
     artStyles: config.artStyles,
+    categoryStyles: config.categoryStyles || {},
+    roomCollections: config.roomCollections || [],
+    categoryRoomCollections: config.categoryRoomCollections || {},
+    allowedPairsCount: require('./src/categoryStyles').getAllAllowedCategoryStylePairs().length,
     llmProviders: cg.getAvailableLlmProviders(),
     defaultLlmProvider: cg.resolveLlmProvider(),
     openaiPromptModel: config.openaiPromptModel,
@@ -1036,13 +1304,33 @@ app.get('/api/generation-config', (req, res) => {
 /** Dashboard action: build Shopify import CSV from inventory. */
 app.post('/api/shopify/export', (req, res) => {
   try {
-    const all = !!(req.body && req.body.all === true);
+    const body = req.body || {};
+    const all = !!(body.all === true);
+    const onlyNew = !!(body.onlyNew === true);
+    const timestamped = !!(body.timestamped === true);
+    const saveSettings = !!(body.saveSettings === true);
+    const rawSizes = Array.isArray(body.sizes) ? body.sizes : [];
+    const sizes = rawSizes
+      .map((x) => String(x || '').trim())
+      .filter((x) => ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'].includes(x));
+    const prices = body.prices && typeof body.prices === 'object' ? body.prices : {};
     const scriptPath = path.join(__dirname, 'scripts', 'exportShopifyCsv.js');
     if (!fs.existsSync(scriptPath)) {
       return res.status(500).json({ error: 'Brak skryptu eksportu Shopify.' });
     }
     const args = [scriptPath];
     if (all) args.push('--all');
+    if (onlyNew) args.push('--only-new');
+    if (timestamped) args.push('--timestamped');
+    if (saveSettings) args.push('--save-settings');
+    if (sizes.length > 0) args.push('--sizes=' + sizes.join(','));
+    for (const [k, v] of Object.entries(prices)) {
+      const key = String(k || '').trim();
+      const val = String(v || '').trim();
+      if (!['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'].includes(key)) continue;
+      if (!val) continue;
+      args.push(`--price-${key}=${val}`);
+    }
     const child = spawn(process.execPath, args, {
       cwd: __dirname,
       env: process.env,
@@ -1066,8 +1354,19 @@ app.post('/api/shopify/export', (req, res) => {
           details: (err || out || '').trim(),
         });
       }
-      const csvRel = 'products_export_shopify.csv';
-      const csvAbs = path.join(__dirname, csvRel);
+      const lines = (out || '').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+      let exportedPath = '';
+      for (const ln of lines) {
+        if (ln.startsWith('Shopify CSV exported:')) {
+          exportedPath = ln.slice('Shopify CSV exported:'.length).trim();
+        }
+      }
+      const csvAbs = exportedPath
+        ? path.isAbsolute(exportedPath)
+          ? exportedPath
+          : path.join(__dirname, exportedPath)
+        : path.join(__dirname, 'shopify_csv', 'products_export_shopify.csv');
+      const csvRel = path.relative(__dirname, csvAbs).replace(/\\/g, '/');
       let bytes = 0;
       if (fs.existsSync(csvAbs)) {
         try {
@@ -1079,11 +1378,181 @@ app.post('/api/shopify/export', (req, res) => {
         csvPath: '/' + csvRel,
         bytes,
         all,
+        onlyNew,
+        sizes,
         output: out.trim(),
       });
     });
   } catch (e) {
     res.status(500).json({ error: e.message || 'Eksport Shopify nie powiódł się.' });
+  }
+});
+
+app.get('/api/shopify/export-settings', (req, res) => {
+  const defaults = {
+    prices: {
+      '13x18': '15.00',
+      '21x30': '25.00',
+      '30x40': '32.00',
+      '40x50': '54.00',
+      '50x70': '65.00',
+      '70x100': '90.00',
+    },
+    selectedSizes: ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'],
+  };
+  try {
+    if (!fs.existsSync(SHOPIFY_EXPORT_SETTINGS_PATH)) {
+      return res.json({ ok: true, ...defaults });
+    }
+    const raw = JSON.parse(fs.readFileSync(SHOPIFY_EXPORT_SETTINGS_PATH, 'utf-8'));
+    const prices = { ...defaults.prices };
+    for (const k of Object.keys(prices)) {
+      if (raw && raw.prices && raw.prices[k] != null) {
+        const v = String(raw.prices[k]).trim();
+        if (v) prices[k] = v;
+      }
+    }
+    const selectedSizes = Array.isArray(raw && raw.selectedSizes)
+      ? raw.selectedSizes.filter((x) => Object.prototype.hasOwnProperty.call(prices, String(x)))
+      : defaults.selectedSizes;
+    return res.json({
+      ok: true,
+      prices,
+      selectedSizes: selectedSizes.length ? selectedSizes : defaults.selectedSizes,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Nie udało się odczytać ustawień eksportu.' });
+  }
+});
+
+app.post('/api/shopify/export-settings', (req, res) => {
+  const allowedSizes = new Set(['13x18', '21x30', '30x40', '40x50', '50x70', '70x100']);
+  const defaults = {
+    prices: {
+      '13x18': '15.00',
+      '21x30': '25.00',
+      '30x40': '32.00',
+      '40x50': '54.00',
+      '50x70': '65.00',
+      '70x100': '90.00',
+    },
+    selectedSizes: ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'],
+  };
+  try {
+    const body = req.body || {};
+    const pricesIn = body.prices && typeof body.prices === 'object' ? body.prices : {};
+    const selectedIn = Array.isArray(body.selectedSizes) ? body.selectedSizes : [];
+    const prices = { ...defaults.prices };
+    for (const [k, v] of Object.entries(pricesIn)) {
+      const key = String(k || '').trim();
+      if (!allowedSizes.has(key)) continue;
+      const n = Number(String(v || '').replace(',', '.'));
+      if (!Number.isFinite(n) || n <= 0) {
+        return res.status(400).json({ error: `Nieprawidłowa cena dla rozmiaru ${key}.` });
+      }
+      prices[key] = n.toFixed(2);
+    }
+    const selectedSizes = selectedIn
+      .map((x) => String(x || '').trim())
+      .filter((x) => allowedSizes.has(x));
+    if (selectedSizes.length === 0) {
+      return res.status(400).json({ error: 'Wybierz minimum jeden rozmiar.' });
+    }
+    const out = { prices, selectedSizes };
+    fs.writeFileSync(SHOPIFY_EXPORT_SETTINGS_PATH, JSON.stringify(out, null, 2), 'utf-8');
+    return res.json({ ok: true, ...out });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Nie udało się zapisać ustawień eksportu.' });
+  }
+});
+
+function runSpawnCommand(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd || __dirname,
+      env: options.env || process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (d) => {
+      out += String(d || '');
+    });
+    child.stderr.on('data', (d) => {
+      err += String(d || '');
+    });
+    child.on('error', (e) => reject(e));
+    child.on('close', (code) => resolve({ code, stdout: out, stderr: err }));
+  });
+}
+
+app.post('/api/shopify/thumbs-sync-push', async (req, res) => {
+  try {
+    const syncStep = await runSpawnCommand(process.execPath, [path.join(__dirname, 'scripts', 'syncShopifyThumbs.js')], {
+      cwd: __dirname,
+    });
+    if (syncStep.code !== 0) {
+      return res.status(500).json({
+        error: 'syncShopifyThumbs zakończony błędem.',
+        details: (syncStep.stderr || syncStep.stdout || '').trim(),
+      });
+    }
+
+    const status = await runSpawnCommand('git', ['status', '--porcelain', '--', 'shopify_thumbs'], { cwd: __dirname });
+    if (status.code !== 0) {
+      return res.status(500).json({
+        error: 'Nie udało się odczytać statusu git dla shopify_thumbs.',
+        details: (status.stderr || status.stdout || '').trim(),
+      });
+    }
+
+    if (!String(status.stdout || '').trim()) {
+      return res.json({
+        ok: true,
+        pushed: false,
+        message: 'Sync wykonany, brak zmian w shopify_thumbs do push.',
+        syncOutput: String(syncStep.stdout || '').trim(),
+      });
+    }
+
+    const addStep = await runSpawnCommand('git', ['add', 'shopify_thumbs'], { cwd: __dirname });
+    if (addStep.code !== 0) {
+      return res.status(500).json({
+        error: 'git add shopify_thumbs nie powiódł się.',
+        details: (addStep.stderr || addStep.stdout || '').trim(),
+      });
+    }
+
+    const stamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    const msg = `chore: sync shopify thumbs ${stamp}`;
+    const commitStep = await runSpawnCommand('git', ['commit', '-m', msg], { cwd: __dirname });
+    if (commitStep.code !== 0) {
+      return res.status(500).json({
+        error: 'git commit dla thumbów nie powiódł się.',
+        details: (commitStep.stderr || commitStep.stdout || '').trim(),
+      });
+    }
+
+    const pushStep = await runSpawnCommand('git', ['push'], { cwd: __dirname });
+    if (pushStep.code !== 0) {
+      return res.status(500).json({
+        error: 'git push nie powiódł się.',
+        details: (pushStep.stderr || pushStep.stdout || '').trim(),
+      });
+    }
+
+    return res.json({
+      ok: true,
+      pushed: true,
+      message: 'Thumby zsynchronizowane i wypchnięte do zdalnego repo.',
+      syncOutput: String(syncStep.stdout || '').trim(),
+      commitOutput: String(commitStep.stdout || '').trim(),
+      pushOutput: String(pushStep.stdout || '').trim(),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: err.message || 'Nie udało się wykonać sync + push thumbów.',
+    });
   }
 });
 
@@ -1095,6 +1564,10 @@ app.post('/api/draft-image-prompt', async (req, res) => {
     }
     if (!Object.prototype.hasOwnProperty.call(config.categories, category)) {
       return res.status(400).json({ error: 'Nieznana kategoria' });
+    }
+    const styleError = validateStyleForCategory(category, style);
+    if (styleError) {
+      return res.status(400).json({ error: styleError });
     }
     const cg = new ContentGenerator();
     let llmProvider;
@@ -1129,6 +1602,32 @@ function parseAutoPdfsFromBody(body) {
   return false;
 }
 
+const {
+  getAllowedStylesForCategory,
+  isStyleAllowedForCategory,
+  assertCategoryStyleAllowed,
+  isKnownCategory,
+  GLOBAL_STYLES,
+} = require('./src/categoryStyles');
+
+function validateStyleForCategory(category, style) {
+  const cat = String(category || '').trim();
+  const st = String(style || '').trim();
+  if (!GLOBAL_STYLES.includes(st)) {
+    return `Nieznany styl. Dozwolone globalnie: ${GLOBAL_STYLES.join(', ')}`;
+  }
+  if (!isKnownCategory(cat)) {
+    return `Nieznana kategoria: ${cat}`;
+  }
+  if (!isStyleAllowedForCategory(cat, st)) {
+    return (
+      `Unsupported category/style combination: ${cat} + ${st}. ` +
+      `Allowed styles for ${cat}: ${getAllowedStylesForCategory(cat).join(', ')}`
+    );
+  }
+  return '';
+}
+
 /** full | uniform | gallery */
 function parsePrintLayoutFromBody(body) {
   if (!body || typeof body !== 'object') return 'full';
@@ -1151,13 +1650,17 @@ function validateStudioPayload(body) {
   if (!Object.prototype.hasOwnProperty.call(config.categories, category)) {
     return { error: 'Nieznana kategoria' };
   }
-  if (!config.artStyles.includes(style)) {
-    return { error: 'Nieznany styl' };
+  if (!GLOBAL_STYLES.includes(style)) {
+    return { error: `Nieznany styl. Dozwolone: ${GLOBAL_STYLES.join(', ')}` };
   }
-  const dalleMaxUser = DalleImageGenerator.USER_PROMPT_MAX;
-  if (trimmedPrompt.length > dalleMaxUser) {
+  const styleError = validateStyleForCategory(category, style);
+  if (styleError) {
+    return { error: styleError };
+  }
+  const imagePromptMaxUser = DalleImageGenerator.USER_PROMPT_MAX;
+  if (trimmedPrompt.length > imagePromptMaxUser) {
     return {
-      error: `Prompt jest za długi (max ${dalleMaxUser} znaków; serwer dokleja dopisek anty-ramka do DALL-E)`,
+      error: `Prompt jest za długi (max ${imagePromptMaxUser} znaków; serwer dokleja dopisek anty-ramka do generatora obrazów)`,
     };
   }
   return {
@@ -1188,7 +1691,7 @@ function decodeImageDataUrl(dataUrl) {
   return { mime, buffer: buf };
 }
 
-/** Studio: tylko DALL-E → plik w .preview-staging (nie zapisuje do biblioteki). */
+/** Studio: generator obrazów → plik w .preview-staging (nie zapisuje do biblioteki). */
 app.post('/api/studio/preview', async (req, res) => {
   try {
     const v = validateStudioPayload(req.body || {});
@@ -1207,7 +1710,7 @@ app.post('/api/studio/preview', async (req, res) => {
   }
 });
 
-/** Studio: ręczne zdjęcie → staging preview (bez DALL-E). */
+/** Studio: ręczne zdjęcie → staging preview (bez generatora obrazów). */
 app.post('/api/studio/preview-upload', async (req, res) => {
   try {
     const v = validateStudioPayload(req.body || {});
@@ -1272,7 +1775,7 @@ app.get('/api/studio/preview-variant/:previewId/:variant', async (req, res) => {
 });
 
 /**
- * Studio automatyczny: pełna ścieżka jak CLI (tytuły + prompty + DALL-E + 6× PDF + inventory), bez podglądu.
+ * Studio automatyczny: pełna ścieżka jak CLI (tytuły + prompty + generator obrazów + 6× PDF + inventory), bez podglądu.
  * Body: { all: boolean, category?: string, count: number, artStyle?: string } — count 1–50.
  * artStyle: pusty = wszystkie style (count = na każdy styl); znany styl = count = łącznie w tym stylu.
  */
@@ -1306,13 +1809,31 @@ app.post('/api/studio/batch-generate', async (req, res) => {
       return res.status(e.statusCode || 400).json({ error: e.message });
     }
     const artStyleRaw = body.artStyle != null ? String(body.artStyle).trim() : '';
-    const fixedStyle =
-      artStyleRaw && config.artStyles.includes(artStyleRaw) ? artStyleRaw : null;
+    const fixedStyle = artStyleRaw && GLOBAL_STYLES.includes(artStyleRaw) ? artStyleRaw : null;
     if (artStyleRaw && !fixedStyle) {
       studioBatchRunning = false;
       return res.status(400).json({
-        error: `Nieznany styl „${artStyleRaw}”. Dozwolone: ${config.artStyles.join(', ')}`,
+        error: `Nieznany styl „${artStyleRaw}”. Dozwolone: ${GLOBAL_STYLES.join(', ')}`,
       });
+    }
+
+    if (fixedStyle) {
+      if (all) {
+        const cats = Object.keys(config.categories || {});
+        for (const cat of cats) {
+          const styleError = validateStyleForCategory(cat, fixedStyle);
+          if (styleError) {
+            studioBatchRunning = false;
+            return res.status(400).json({ error: `${styleError} (tryb: wszystkie kategorie)` });
+          }
+        }
+      } else {
+        const styleError = validateStyleForCategory(category, fixedStyle);
+        if (styleError) {
+          studioBatchRunning = false;
+          return res.status(400).json({ error: styleError });
+        }
+      }
     }
 
     const batchOpts = { llmProvider, withPdf: false };
@@ -1325,7 +1846,12 @@ app.post('/api/studio/batch-generate', async (req, res) => {
       await gen.generateCategory(category, count, batchOpts);
     }
     const total = gen.db.posters.length;
-    const nSt = config.artStyles.length;
+    const nSt = all
+      ? Object.keys(config.categories || {}).reduce(
+          (acc, c) => acc + getAllowedStylesForCategory(c).length,
+          0
+        )
+      : getAllowedStylesForCategory(category).length;
     const perCat = fixedStyle ? count : count * nSt;
     const msg = all
       ? fixedStyle

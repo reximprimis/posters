@@ -1175,6 +1175,27 @@
       aspect-ratio: 7 / 10;
       background: var(--figure-bg);
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .poster-card--portrait figure {
+      aspect-ratio: 7 / 10;
+    }
+
+    .poster-card--landscape {
+      grid-column: span 2;
+    }
+
+    .poster-card--landscape figure {
+      aspect-ratio: 10 / 7;
+    }
+
+    @media (max-width: 980px) {
+      .poster-card--landscape {
+        grid-column: span 1;
+      }
     }
 
     .poster-status-badge {
@@ -1214,15 +1235,40 @@
       color: #f4faf6;
     }
 
+    .poster-orientation-badge {
+      position: absolute;
+      left: 0.5rem;
+      bottom: 0.5rem;
+      z-index: 2;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.24rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(8, 8, 10, 0.5);
+      color: #f5f1e8;
+      pointer-events: none;
+    }
+
+    .poster-orientation-badge--landscape {
+      background: rgba(40, 84, 122, 0.62);
+      border-color: rgba(113, 182, 235, 0.52);
+      color: #e8f4ff;
+    }
+
     .poster-card img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center center;
+      padding: 0.2rem;
       display: block;
       transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .poster-card:hover img { transform: scale(1.04); }
+    .poster-card:hover img { transform: scale(1.01); }
 
     .poster-card--marked-remove {
       outline: 2px solid rgba(196, 92, 38, 0.85);
@@ -2250,6 +2296,22 @@
       margin-top: 0;
     }
 
+    .modal-prompt-empty {
+      margin: 0.5rem 0 0;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .modal-draft-prompt-btn {
+      margin-top: 0.65rem;
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] .modal-tile--prompt.is-prompt-empty,
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] .modal-tile--prompt.is-prompt-empty {
+      min-height: 0;
+    }
+
     #modal.modal-backdrop .modal-tile--files .section-label:first-of-type {
       margin-top: 0.15rem;
     }
@@ -2941,6 +3003,40 @@
       border-radius: 4px;
     }
 
+    .modal-move-group {
+      margin-top: 0.65rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .modal-move-select {
+      min-height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      padding: 0.35rem 0.55rem;
+      font: inherit;
+    }
+
+    .modal-move-btn {
+      min-height: 36px;
+      border-radius: 9px;
+      border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: color-mix(in srgb, var(--accent) 20%, var(--bg-card));
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-move-btn:hover {
+      background: color-mix(in srgb, var(--accent) 32%, var(--bg-card));
+    }
+
     .modal-listing-block {
       margin: 0.5rem 0 0;
       padding: 0.85rem 0.95rem;
@@ -3402,6 +3498,50 @@
       align-items: center;
       justify-content: center;
       gap: 0.55rem;
+    }
+
+    .shopify-price-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      gap: 0.45rem;
+      margin-top: 0.25rem;
+    }
+
+    .shopify-price-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      font-size: 0.72rem;
+      color: var(--sp-muted);
+    }
+
+    .shopify-price-cell input {
+      width: 100%;
+      border: 1px solid var(--sp-border);
+      background: var(--sp-paper);
+      border-radius: 8px;
+      color: inherit;
+      padding: 0.32rem 0.45rem;
+      font-size: 0.79rem;
+    }
+
+    .shopify-size-row {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.55rem;
+      margin-top: 0.35rem;
+    }
+
+    .shopify-size-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      font-size: 0.76rem;
+      color: var(--sp-muted);
+      user-select: none;
     }
 
     .studio-shopify-export-note {
@@ -4330,14 +4470,36 @@
         <p class="studio-pro-eyebrow">Studio generowania</p>
         <h2 id="studio-heading" class="studio-pro-hero">Twórz plakaty z pomocą AI</h2>
         <p class="studio-pro-sub" id="studioSub">
-          OpenAI układa prompt (gdy jest <code>OPENAI_API_KEY</code>) → DALL-E generuje podgląd → po akceptacji zapis w bibliotece jako
+          OpenAI układa prompt (gdy jest <code>OPENAI_API_KEY</code>) → generator obrazów tworzy podgląd → po akceptacji zapis w bibliotece jako
           <strong>PNG pełna strona</strong> (bez PDF). Wersję z passe-partout dodasz w Bibliotece — przycisk pod siatką lub w szczegółach plakatu.
         </p>
         <div class="studio-shopify-export">
           <button type="button" class="studio-pro-chip" id="btnShopifyExportApproved">Eksport Shopify (zatwierdzone)</button>
           <button type="button" class="studio-pro-chip" id="btnShopifyExportAll">Eksport Shopify (wszystkie)</button>
+          <button type="button" class="studio-pro-chip" id="btnShopifyThumbsPush">Sync thumbs + push</button>
+          <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnShopifySaveSettings">Zapisz cennik</button>
+          <label class="shopify-size-check" for="shopifyOnlyNewToggle">
+            <input type="checkbox" id="shopifyOnlyNewToggle" />
+            tylko nowe (nieeksportowane wcześniej)
+          </label>
           <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnShopifyReadiness">Sprawdź gotowość Shopify</button>
-          <a href="/products_export_shopify.csv" target="_blank" rel="noopener" class="studio-shopify-export-link" id="shopifyCsvOpenLink">Otwórz aktualny CSV</a>
+          <a href="/shopify_csv/products_export_shopify.csv" target="_blank" rel="noopener" class="studio-shopify-export-link" id="shopifyCsvOpenLink">Otwórz aktualny CSV</a>
+          <div class="shopify-size-row" id="shopifySizeRow">
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="13x18" checked />13x18</label>
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="21x30" checked />21x30</label>
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="30x40" checked />30x40</label>
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="40x50" checked />40x50</label>
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="50x70" checked />50x70</label>
+            <label class="shopify-size-check"><input type="checkbox" class="shopify-size-toggle" value="70x100" checked />70x100</label>
+          </div>
+          <div class="shopify-price-grid" id="shopifyPriceGrid">
+            <label class="shopify-price-cell">13x18<input type="number" id="shopifyPrice13x18" step="0.01" min="0" /></label>
+            <label class="shopify-price-cell">21x30<input type="number" id="shopifyPrice21x30" step="0.01" min="0" /></label>
+            <label class="shopify-price-cell">30x40<input type="number" id="shopifyPrice30x40" step="0.01" min="0" /></label>
+            <label class="shopify-price-cell">40x50<input type="number" id="shopifyPrice40x50" step="0.01" min="0" /></label>
+            <label class="shopify-price-cell">50x70<input type="number" id="shopifyPrice50x70" step="0.01" min="0" /></label>
+            <label class="shopify-price-cell">70x100<input type="number" id="shopifyPrice70x100" step="0.01" min="0" /></label>
+          </div>
           <p class="studio-shopify-export-note" id="shopifyExportStatus" aria-live="polite"></p>
           <p class="studio-shopify-export-note" id="shopifyReadinessStatus" aria-live="polite"></p>
         </div>
@@ -4351,7 +4513,7 @@
         </div>
         <div id="studioPanelManual" class="studio-pro-panel">
           <div class="studio-pro-models" role="group" aria-label="Źródło podglądu">
-            <button type="button" class="studio-pro-model-pill is-active" id="studioSourceDalle" aria-pressed="true">DALL·E</button>
+            <button type="button" class="studio-pro-model-pill is-active" id="studioSourceDalle" aria-pressed="true">GPT Image</button>
             <button type="button" class="studio-pro-model-pill" id="studioSourceManual" aria-pressed="false">✋ RĘCZNY</button>
           </div>
           <div class="studio-pro-meta-grid">
@@ -4370,7 +4532,7 @@
             </div>
           </div>
           <div class="studio-pro-composer">
-            <label class="visually-hidden" for="studioPrompt">Prompt do DALL-E</label>
+            <label class="visually-hidden" for="studioPrompt">Prompt do generatora obrazów</label>
             <div class="studio-pro-composer-inner">
               <textarea
                 id="studioPrompt"
@@ -4628,6 +4790,12 @@
               </button>
             </div>
             <button type="button" class="modal-copy-combo-line" id="modalCopyMetaLine">Copy line: style · category</button>
+            <div class="modal-move-group">
+              <select id="modalMoveCategory" class="modal-move-select" aria-label="Docelowa kategoria"></select>
+              <select id="modalMoveStyle" class="modal-move-select" aria-label="Docelowy styl"></select>
+              <button type="button" class="modal-move-btn" id="modalMoveBtn">Przenieś plakat</button>
+            </div>
+            <p class="modal-approval-feedback" id="modalMoveFeedback" role="status" aria-live="polite"></p>
           </div>
         </div>
         <div class="modal-tile modal-tile--listing" data-modal-section="workflow">
@@ -4664,7 +4832,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-tile modal-tile--prompt" data-modal-section="workflow">
+        <div class="modal-tile modal-tile--prompt" id="modalPromptTile" data-modal-section="workflow">
           <div id="modalPromptBlock">
             <div class="modal-prompt-head">
               <div class="modal-prompt-head-text">
@@ -4678,7 +4846,11 @@
                 </svg>
               </button>
             </div>
-            <p class="modal-prompt" id="modalPrompt"></p>
+            <p class="modal-prompt" id="modalPrompt" hidden></p>
+            <p class="modal-prompt-empty field-hint" id="modalPromptEmpty" hidden>
+              Brak zapisanego promptu — ten plakat jest w bibliotece jako import z pliku PNG (bez historii studia).
+            </p>
+            <button type="button" class="btn btn-secondary modal-draft-prompt-btn" id="modalDraftPromptBtn" hidden>Ułóż i zapisz prompt</button>
             <p class="modal-copy-feedback" id="modalCopyFeedback" aria-live="polite"></p>
           </div>
         </div>
@@ -4866,6 +5038,10 @@
         modalTitle: document.getElementById('modalTitle'),
         modalCategoryValue: document.getElementById('modalCategoryValue'),
         modalStyleValue: document.getElementById('modalStyleValue'),
+        modalMoveCategory: document.getElementById('modalMoveCategory'),
+        modalMoveStyle: document.getElementById('modalMoveStyle'),
+        modalMoveBtn: document.getElementById('modalMoveBtn'),
+        modalMoveFeedback: document.getElementById('modalMoveFeedback'),
         modalCopyTitle: document.getElementById('modalCopyTitle'),
         modalCopyCategory: document.getElementById('modalCopyCategory'),
         modalCopyStyle: document.getElementById('modalCopyStyle'),
@@ -4878,6 +5054,9 @@
         modalPrompt: document.getElementById('modalPrompt'),
         modalPromptLlm: document.getElementById('modalPromptLlm'),
         modalPromptBlock: document.getElementById('modalPromptBlock'),
+        modalPromptTile: document.getElementById('modalPromptTile'),
+        modalPromptEmpty: document.getElementById('modalPromptEmpty'),
+        modalDraftPromptBtn: document.getElementById('modalDraftPromptBtn'),
         modalCopyPrompt: document.getElementById('modalCopyPrompt'),
         modalCopyFeedback: document.getElementById('modalCopyFeedback'),
         modalVisualOpenLightbox: document.getElementById('modalVisualOpenLightbox'),
@@ -4932,7 +5111,18 @@
         studioStatus: document.getElementById('studioStatus'),
         btnShopifyExportApproved: document.getElementById('btnShopifyExportApproved'),
         btnShopifyExportAll: document.getElementById('btnShopifyExportAll'),
+        btnShopifyThumbsPush: document.getElementById('btnShopifyThumbsPush'),
+        btnShopifySaveSettings: document.getElementById('btnShopifySaveSettings'),
+        shopifyOnlyNewToggle: document.getElementById('shopifyOnlyNewToggle'),
         btnShopifyReadiness: document.getElementById('btnShopifyReadiness'),
+        shopifySizeRow: document.getElementById('shopifySizeRow'),
+        shopifyPrice13x18: document.getElementById('shopifyPrice13x18'),
+        shopifyPrice21x30: document.getElementById('shopifyPrice21x30'),
+        shopifyPrice30x40: document.getElementById('shopifyPrice30x40'),
+        shopifyPrice40x50: document.getElementById('shopifyPrice40x50'),
+        shopifyPrice50x70: document.getElementById('shopifyPrice50x70'),
+        shopifyPrice70x100: document.getElementById('shopifyPrice70x100'),
+        shopifyCsvOpenLink: document.getElementById('shopifyCsvOpenLink'),
         shopifyExportStatus: document.getElementById('shopifyExportStatus'),
         shopifyReadinessStatus: document.getElementById('shopifyReadinessStatus'),
         studioPreviewModal: document.getElementById('studioPreviewModal'),
@@ -4978,7 +5168,7 @@
       const STUDIO_HEADING_MANUAL = 'Twórz plakaty z pomocą AI';
       const STUDIO_HEADING_AUTO = 'Generowanie automatyczne';
       const STUDIO_SUB_MANUAL_HTML =
-        'OpenAI układa prompt (gdy jest klucz) → DALL-E → podgląd → zapis <strong>tylko PNG</strong>. PDF wygenerujesz później z Biblioteki.';
+        'OpenAI układa prompt (gdy jest klucz) → generator obrazów → podgląd → zapis <strong>tylko PNG</strong>. PDF wygenerujesz później z Biblioteki.';
 
       function getStoredStudioMode() {
         try {
@@ -5111,6 +5301,10 @@
       let configArtStylesList = [];
       /** Kategorie z /api/generation-config (kanoniczna lista dla studio + filtrów biblioteki). */
       let configCategoriesList = [];
+      /** Mapa dozwolonych stylów per kategoria z /api/generation-config. */
+      let categoryStylesMap = {};
+      /** Kolekcje pomieszczeń (tagi sprzedażowe) per kategoria — nie są kategoriami generatora. */
+      let categoryRoomCollectionsMap = {};
       let categoryHints = {};
       /** Liczniki plakatów wg kategorii z API + __all */
       let categoryCountMap = { __all: 0 };
@@ -5276,6 +5470,8 @@
               createdAt: p.createdAt || null,
               prompt: p.prompt || '',
               promptLlmLabel: (p.promptLlmLabel || '').trim(),
+              promptLlmProvider: (p.promptLlmProvider || '').trim(),
+              needsManualMetadata: p.needsManualMetadata === true,
               shopDescription: typeof p.shopDescription === 'string' ? p.shopDescription : '',
               approvedForPrint: p.approvedForPrint === true,
             });
@@ -5462,17 +5658,25 @@
 
       function renderLibraryStyleFilterList() {
         if (!els.libraryStyleFilterListbox) return;
-        const counts = buildStyleCountMap(flatItems);
+        const byCategory =
+          draftCategory !== 'all'
+            ? flatItems.filter((it) => (it.category || '') === draftCategory)
+            : flatItems;
+        const counts = buildStyleCountMap(byCategory);
         const total = counts.__all || 0;
         const seen = new Set();
         const ordered = [];
-        for (const s of configArtStylesList) {
+        const categoryOrdered =
+          draftCategory !== 'all'
+            ? getAllowedStylesForCategoryUi(draftCategory)
+            : getUnionOfAllCategoryStyles();
+        for (const s of categoryOrdered) {
           if (s && !seen.has(s)) {
             seen.add(s);
             ordered.push(s);
           }
         }
-        for (const it of flatItems) {
+        for (const it of byCategory) {
           const s = it.style && String(it.style).trim();
           if (s && !seen.has(s)) {
             seen.add(s);
@@ -5505,8 +5709,22 @@
 
       function setDraftCategory(cat) {
         draftCategory = cat;
+        const allowed = new Set(
+          draftCategory === 'all'
+            ? getUnionOfAllCategoryStyles()
+            : getAllowedStylesForCategoryUi(draftCategory).length
+              ? getAllowedStylesForCategoryUi(draftCategory)
+              : flatItems
+                  .filter((it) => (it.category || '') === draftCategory)
+                  .map((it) => String(it.style || '').trim())
+                  .filter(Boolean)
+        );
+        if (draftStyleFilter !== 'all' && !allowed.has(draftStyleFilter)) {
+          draftStyleFilter = 'all';
+        }
         syncCategoryFilterTrigger();
         syncCategoryFilterSelection();
+        renderLibraryStyleFilterList();
         updatePendingHint();
       }
 
@@ -5606,9 +5824,18 @@
         updateStudioAutoCommand();
       }
 
+      function getStudioAutoAllowedStyles() {
+        const scope = els.studioAutoScope ? String(els.studioAutoScope.value || '') : '';
+        if (scope && scope !== '__all__') {
+          return getAllowedStylesForCategoryUi(scope);
+        }
+        return getUnionOfAllCategoryStyles();
+      }
+
       function fillStudioAutoStyleSelect(artStyles) {
         if (!els.studioAutoStyle) return;
-        const styles = Array.isArray(artStyles) ? artStyles : [];
+        if (Array.isArray(artStyles)) configArtStylesList = artStyles;
+        const styles = getStudioAutoAllowedStyles();
         const cur = els.studioAutoStyle.value;
         els.studioAutoStyle.innerHTML =
           '<option value="">Wszystkie style (liczba = na każdy styl osobno)</option>' +
@@ -5643,6 +5870,106 @@
         if (kind === 'ok') els.shopifyReadinessStatus.classList.add('is-ok');
       }
 
+      function getShopifySelectedSizes() {
+        const nodes = Array.from(document.querySelectorAll('.shopify-size-toggle'));
+        return nodes.filter((n) => n && n.checked).map((n) => String(n.value || '').trim()).filter(Boolean);
+      }
+
+      function getShopifyPricePayload() {
+        const map = {
+          '13x18': els.shopifyPrice13x18 && els.shopifyPrice13x18.value,
+          '21x30': els.shopifyPrice21x30 && els.shopifyPrice21x30.value,
+          '30x40': els.shopifyPrice30x40 && els.shopifyPrice30x40.value,
+          '40x50': els.shopifyPrice40x50 && els.shopifyPrice40x50.value,
+          '50x70': els.shopifyPrice50x70 && els.shopifyPrice50x70.value,
+          '70x100': els.shopifyPrice70x100 && els.shopifyPrice70x100.value,
+        };
+        const out = {};
+        for (const [k, v] of Object.entries(map)) {
+          const n = Number(String(v || '').replace(',', '.'));
+          if (Number.isFinite(n) && n > 0) out[k] = n.toFixed(2);
+        }
+        return out;
+      }
+
+      async function loadShopifyExportSettings() {
+        try {
+          const res = await fetch('/api/shopify/export-settings', { cache: 'no-store' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          const prices = data.prices || {};
+          if (els.shopifyPrice13x18) els.shopifyPrice13x18.value = prices['13x18'] || '15.00';
+          if (els.shopifyPrice21x30) els.shopifyPrice21x30.value = prices['21x30'] || '25.00';
+          if (els.shopifyPrice30x40) els.shopifyPrice30x40.value = prices['30x40'] || '32.00';
+          if (els.shopifyPrice40x50) els.shopifyPrice40x50.value = prices['40x50'] || '54.00';
+          if (els.shopifyPrice50x70) els.shopifyPrice50x70.value = prices['50x70'] || '65.00';
+          if (els.shopifyPrice70x100) els.shopifyPrice70x100.value = prices['70x100'] || '90.00';
+          const selected = Array.isArray(data.selectedSizes) ? new Set(data.selectedSizes) : new Set();
+          const nodes = Array.from(document.querySelectorAll('.shopify-size-toggle'));
+          for (const node of nodes) {
+            node.checked = selected.size ? selected.has(String(node.value || '')) : true;
+          }
+        } catch (e) {
+          setShopifyExportStatus(e.message || 'Nie udało się wczytać ustawień Shopify export.', 'error');
+        }
+      }
+
+      async function saveShopifyExportSettings() {
+        const sizes = getShopifySelectedSizes();
+        if (sizes.length === 0) {
+          setShopifyExportStatus('Wybierz minimum jeden rozmiar do zapisu.', 'error');
+          return;
+        }
+        const prices = getShopifyPricePayload();
+        if (Object.keys(prices).length === 0) {
+          setShopifyExportStatus('Podaj poprawne ceny (większe od 0).', 'error');
+          return;
+        }
+        if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = true;
+        setShopifyExportStatus('Zapisywanie cennika…');
+        try {
+          const res = await fetch('/api/shopify/export-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prices, selectedSizes: sizes }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          setShopifyExportStatus('Cennik zapisany.', 'ok');
+        } catch (e) {
+          setShopifyExportStatus(e.message || 'Nie udało się zapisać cennika.', 'error');
+        } finally {
+          if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = false;
+        }
+      }
+
+      async function runShopifyThumbsPush() {
+        setShopifyExportStatus('Sync thumbów i push do Git…');
+        if (els.btnShopifyThumbsPush) els.btnShopifyThumbsPush.disabled = true;
+        if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = true;
+        if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = true;
+        if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = true;
+        if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = true;
+        try {
+          const res = await fetch('/api/shopify/thumbs-sync-push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || data.details || res.statusText);
+          setShopifyExportStatus(data.message || 'Sync + push zakończone.', 'ok');
+        } catch (e) {
+          setShopifyExportStatus(e.message || 'Sync + push nie powiódł się.', 'error');
+        } finally {
+          if (els.btnShopifyThumbsPush) els.btnShopifyThumbsPush.disabled = false;
+          if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = false;
+          if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = false;
+          if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = false;
+          if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = false;
+        }
+      }
+
       async function refreshShopifyReadiness() {
         if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = true;
         setShopifyReadinessStatus('Sprawdzanie gotowości Shopify…');
@@ -5675,26 +6002,50 @@
 
       async function runShopifyExport(all) {
         const isAll = all === true;
+        const onlyNew = !!(els.shopifyOnlyNewToggle && els.shopifyOnlyNewToggle.checked);
+        const sizes = getShopifySelectedSizes();
+        if (sizes.length === 0) {
+          setShopifyExportStatus('Wybierz minimum jeden rozmiar do eksportu.', 'error');
+          return;
+        }
+        const prices = getShopifyPricePayload();
+        const timestamped = onlyNew || sizes.length < 6;
         setShopifyExportStatus('Generowanie CSV Shopify…');
         if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = true;
         if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = true;
+        if (els.btnShopifyThumbsPush) els.btnShopifyThumbsPush.disabled = true;
+        if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = true;
+        if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = true;
         try {
           const res = await fetch('/api/shopify/export', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ all: isAll }),
+            body: JSON.stringify({
+              all: isAll,
+              onlyNew,
+              sizes,
+              prices,
+              timestamped,
+              saveSettings: true,
+            }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);
           const bytes = Number(data.bytes || 0);
           const kb = bytes > 0 ? ` (${(bytes / 1024).toFixed(1)} KB)` : '';
-          setShopifyExportStatus(`CSV gotowy${kb} — otwórz link i importuj w Shopify.`, 'ok');
+          if (els.shopifyCsvOpenLink && data.csvPath) {
+            els.shopifyCsvOpenLink.href = data.csvPath;
+          }
+          setShopifyExportStatus(`CSV gotowy${kb} — zakres: ${sizes.join(', ')}${onlyNew ? ' · tylko nowe' : ''}.`, 'ok');
           await refreshShopifyReadiness();
         } catch (e) {
           setShopifyExportStatus(e.message || 'Eksport Shopify nie powiódł się.', 'error');
         } finally {
           if (els.btnShopifyExportApproved) els.btnShopifyExportApproved.disabled = false;
           if (els.btnShopifyExportAll) els.btnShopifyExportAll.disabled = false;
+          if (els.btnShopifyThumbsPush) els.btnShopifyThumbsPush.disabled = false;
+          if (els.btnShopifyReadiness) els.btnShopifyReadiness.disabled = false;
+          if (els.btnShopifySaveSettings) els.btnShopifySaveSettings.disabled = false;
         }
       }
 
@@ -5717,7 +6068,7 @@
           const s = sec % 60;
           const timeStr = m > 0 ? `${m} min ${s} s` : `${s} s`;
           els.studioAutoProgressMeta.textContent =
-            `Synchronizacja z API (DALL-E / LLM) — praca w toku… upłynęło ${timeStr} (czas zależy od liczby plakatów i API).`;
+            `Synchronizacja z API (generator obrazów / LLM) — praca w toku… upłynęło ${timeStr} (czas zależy od liczby plakatów i API).`;
         };
         tick();
         studioAutoProgressInterval = window.setInterval(tick, 400);
@@ -5761,7 +6112,7 @@
 
         filtered.forEach((item, i) => {
           const card = document.createElement('article');
-          card.className = 'poster-card';
+          card.className = 'poster-card poster-card--portrait';
           card.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
           card.setAttribute('role', 'listitem');
           card.tabIndex = 0;
@@ -5787,6 +6138,7 @@
             <figure class="poster-card-figure">
               <img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" />
               <span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+              <span class="poster-orientation-badge poster-orientation-badge--portrait" data-orientation-badge>Pion</span>
               <div class="poster-card-select poster-card-ctrl" role="group" aria-label="Zaznaczenia na karcie">
                 <label class="poster-card-cb poster-card-ctrl">
                   <input type="checkbox" class="lib-cb-remove" ${inRemove ? 'checked' : ''} />
@@ -5812,6 +6164,25 @@
               <button type="button" class="poster-open-folder-btn poster-card-ctrl" title="Otwórz folder plakatu" aria-label="Otwórz folder plakatu">📁</button>
             </div>
           `;
+
+          const cardImg = card.querySelector('figure img');
+          if (cardImg) {
+            const orientationBadge = card.querySelector('[data-orientation-badge]');
+            const applyOrientationClass = () => {
+              const nw = Number(cardImg.naturalWidth || 0);
+              const nh = Number(cardImg.naturalHeight || 0);
+              if (!nw || !nh) return;
+              const isLandscape = nw > nh;
+              card.classList.toggle('poster-card--landscape', isLandscape);
+              card.classList.toggle('poster-card--portrait', !isLandscape);
+              if (orientationBadge) {
+                orientationBadge.textContent = isLandscape ? 'Poziom' : 'Pion';
+                orientationBadge.classList.toggle('poster-orientation-badge--landscape', isLandscape);
+              }
+            };
+            if (cardImg.complete) applyOrientationClass();
+            cardImg.addEventListener('load', applyOrientationClass, { once: true });
+          }
 
           card.addEventListener('click', (e) => {
             if (e.target.closest('.poster-card-ctrl')) return;
@@ -6349,6 +6720,8 @@
         els.modalTitle.textContent = item.title;
         if (els.modalCategoryValue) els.modalCategoryValue.textContent = item.category || '—';
         if (els.modalStyleValue) els.modalStyleValue.textContent = item.style || '—';
+        syncModalMoveSelectors(item);
+        if (els.modalMoveFeedback) els.modalMoveFeedback.textContent = '';
         const listing = (item.shopDescription || '').trim();
         if (els.modalListingText) els.modalListingText.textContent = listing;
         if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = !!listing;
@@ -6364,24 +6737,44 @@
         }
         const pr = (item.prompt || '').trim();
         const llmLbl = (item.promptLlmLabel || '').trim();
+        const manualImport =
+          item.needsManualMetadata === true ||
+          item.promptLlmProvider === 'manual-import' ||
+          (!pr && /import/i.test(llmLbl));
         if (els.modalPromptLlm) {
-          if (pr && llmLbl) {
+          if (llmLbl) {
             els.modalPromptLlm.hidden = false;
-            els.modalPromptLlm.textContent = 'Prompt ułożył: ' + llmLbl;
+            els.modalPromptLlm.textContent = pr ? 'Prompt ułożył: ' + llmLbl : llmLbl;
           } else {
             els.modalPromptLlm.hidden = true;
             els.modalPromptLlm.textContent = '';
           }
         }
+        if (els.modalPromptBlock) els.modalPromptBlock.hidden = false;
+        if (els.modalPromptTile) els.modalPromptTile.classList.toggle('is-prompt-empty', !pr);
         if (pr) {
-          els.modalPromptBlock.hidden = false;
-          els.modalPrompt.textContent = pr;
+          if (els.modalPrompt) {
+            els.modalPrompt.hidden = false;
+            els.modalPrompt.textContent = pr;
+          }
+          if (els.modalPromptEmpty) els.modalPromptEmpty.hidden = true;
+          if (els.modalDraftPromptBtn) els.modalDraftPromptBtn.hidden = true;
           if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = false;
         } else {
-          els.modalPromptBlock.hidden = true;
-          els.modalPrompt.textContent = '';
+          if (els.modalPrompt) {
+            els.modalPrompt.hidden = true;
+            els.modalPrompt.textContent = '';
+          }
+          if (els.modalPromptEmpty) {
+            els.modalPromptEmpty.hidden = false;
+            els.modalPromptEmpty.textContent = manualImport
+              ? 'Brak zapisanego promptu — ten plakat jest w bibliotece jako import z pliku PNG (bez historii studia).'
+              : 'Brak zapisanego promptu w bibliotece.';
+          }
+          if (els.modalDraftPromptBtn) els.modalDraftPromptBtn.hidden = false;
           if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = true;
         }
+        if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
       }
 
       function openModal(item, previewVariant) {
@@ -6410,6 +6803,14 @@
           els.modalPromptLlm.hidden = true;
           els.modalPromptLlm.textContent = '';
         }
+        if (els.modalPrompt) {
+          els.modalPrompt.hidden = true;
+          els.modalPrompt.textContent = '';
+        }
+        if (els.modalPromptEmpty) els.modalPromptEmpty.hidden = true;
+        if (els.modalDraftPromptBtn) els.modalDraftPromptBtn.hidden = true;
+        if (els.modalPromptTile) els.modalPromptTile.classList.remove('is-prompt-empty');
+        if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
         if (els.modalTechnicalMetaDl) els.modalTechnicalMetaDl.innerHTML = '';
         if (els.modalListingText) els.modalListingText.textContent = '';
         if (els.modalListingEmptyHint) els.modalListingEmptyHint.hidden = true;
@@ -6448,6 +6849,7 @@
           updatePendingHint();
           renderGrid();
           syncSelectionBasketsWithLibrary();
+          await loadShopifyExportSettings();
           await refreshShopifyReadiness();
           els.updatedAt.textContent =
             'Zaktualizowano: ' +
@@ -6580,6 +6982,51 @@
             if (!res.ok) throw new Error(data.error || 'Nie udało się otworzyć folderu');
           } catch (err) {
             window.alert(err.message || 'Nie udało się otworzyć folderu');
+          }
+        });
+      }
+
+      if (els.modalMoveBtn) {
+        els.modalMoveBtn.addEventListener('click', async () => {
+          if (!modalPosterItem) return;
+          const targetCategory = els.modalMoveCategory ? String(els.modalMoveCategory.value || '').trim() : '';
+          const targetStyle = els.modalMoveStyle ? String(els.modalMoveStyle.value || '').trim() : '';
+          if (!targetCategory || !targetStyle) {
+            if (els.modalMoveFeedback) els.modalMoveFeedback.textContent = 'Wybierz kategorię i styl docelowy.';
+            return;
+          }
+          const sameCategory = String(modalPosterItem.category || '').trim() === targetCategory;
+          const sameStyle = String(modalPosterItem.style || '').trim() === targetStyle;
+          if (sameCategory && sameStyle) {
+            if (els.modalMoveFeedback) els.modalMoveFeedback.textContent = 'To już jest aktualna kategoria i styl.';
+            return;
+          }
+          if (els.modalMoveBtn) els.modalMoveBtn.disabled = true;
+          if (els.modalMoveFeedback) els.modalMoveFeedback.textContent = 'Przenoszenie plików i aktualizacja biblioteki…';
+          try {
+            const payload = {
+              targetCategory,
+              targetStyle,
+            };
+            if (modalPosterItem.id) payload.id = modalPosterItem.id;
+            else payload.imagePath = modalPosterItem.imagePath;
+            const res = await fetch('/api/posters/move', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Nie udało się przenieść plakatu');
+            if (els.modalMoveFeedback) {
+              const filesInfo = Number(data.movedFiles || 0);
+              els.modalMoveFeedback.textContent = `Przeniesiono. Zmieniono ${filesInfo} plików. Odświeżam widok…`;
+            }
+            await load();
+            closeModal();
+          } catch (err) {
+            if (els.modalMoveFeedback) els.modalMoveFeedback.textContent = err.message || 'Błąd przenoszenia.';
+          } finally {
+            if (els.modalMoveBtn) els.modalMoveBtn.disabled = false;
           }
         });
       }
@@ -6801,6 +7248,65 @@
         });
       }
 
+      if (els.modalDraftPromptBtn) {
+        els.modalDraftPromptBtn.addEventListener('click', async () => {
+          if (!modalPosterItem) return;
+          const title = (modalPosterItem.title || '').trim();
+          const category = modalPosterItem.category || '';
+          const style = modalPosterItem.style || '';
+          if (!title || !category || !style) {
+            if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = 'Brak tytułu, kategorii lub stylu.';
+            return;
+          }
+          els.modalDraftPromptBtn.disabled = true;
+          if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = 'Układam prompt…';
+          try {
+            const draftRes = await fetch('/api/draft-image-prompt', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, category, style }),
+            });
+            const draftData = await draftRes.json().catch(() => ({}));
+            if (!draftRes.ok) throw new Error(draftData.error || draftRes.statusText);
+            const promptText = (draftData.prompt || '').trim();
+            if (!promptText) throw new Error('Pusty prompt z serwera');
+            const saveBody = { prompt: promptText, promptLlm: draftData.promptLlm || {} };
+            if (modalPosterItem.id) saveBody.id = modalPosterItem.id;
+            else saveBody.imagePath = modalPosterItem.imagePath;
+            const saveRes = await fetch('/api/posters/prompt', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(saveBody),
+            });
+            const saveData = await saveRes.json().catch(() => ({}));
+            if (!saveRes.ok) throw new Error(saveData.error || saveRes.statusText);
+            const idKeep = modalPosterItem.id;
+            const pathKeep = modalPosterItem.imagePath;
+            modalPosterItem.prompt = promptText;
+            if (draftData.promptLlm && draftData.promptLlm.promptLlmLabel) {
+              modalPosterItem.promptLlmLabel = draftData.promptLlm.promptLlmLabel;
+              modalPosterItem.promptLlmProvider = draftData.promptLlm.promptLlmProvider || '';
+            }
+            modalPosterItem.needsManualMetadata = false;
+            populatePosterDetailModal(modalPosterItem, modalPreviewVariant);
+            if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = 'Prompt zapisany w bibliotece.';
+            await load();
+            const next =
+              (idKeep && flatItems.find((x) => x.id === idKeep)) ||
+              (pathKeep && flatItems.find((x) => x.imagePath === pathKeep)) ||
+              null;
+            if (next) modalPosterItem = next;
+          } catch (err) {
+            if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = err.message || 'Błąd';
+          } finally {
+            els.modalDraftPromptBtn.disabled = false;
+            window.setTimeout(() => {
+              if (els.modalCopyFeedback && els.modal && !els.modal.hidden) els.modalCopyFeedback.textContent = '';
+            }, 3200);
+          }
+        });
+      }
+
       if (els.modalGenerateListingBtn) {
         els.modalGenerateListingBtn.addEventListener('click', async () => {
           if (!modalPosterItem) return;
@@ -6857,6 +7363,11 @@
         const imagePrompt = els.studioPrompt.value.trim();
         if (!title || !imagePrompt) {
           setStudioStatus('Uzupełnij tytuł i prompt przed zatwierdzeniem.', 'error');
+          return;
+        }
+        const pairErrCommit = validateStudioCategoryStyle(category, style);
+        if (pairErrCommit) {
+          setStudioStatus(pairErrCommit, 'error');
           return;
         }
         const previewId = activeStudioPreviewId;
@@ -6963,9 +7474,115 @@
         if (kind === 'ok') els.studioStatus.classList.add('is-ok');
       }
 
-      function updateCategoryHint() {
-        const cat = els.studioCategory.value;
-        els.studioCategoryHint.textContent = categoryHints[cat] || '';
+      function updateStudioCategoryPanel() {
+        const cat = String(els.studioCategory.value || '').trim();
+        const hint = categoryHints[cat] || '';
+        const allowed = getAllowedStylesForCategoryUi(cat);
+        const rooms = Array.isArray(categoryRoomCollectionsMap[cat]) ? categoryRoomCollectionsMap[cat] : [];
+        const parts = [];
+        if (hint) parts.push(`<span>${escapeHtml(hint)}</span>`);
+        if (allowed.length) {
+          parts.push(
+            `<strong>Allowed styles (${allowed.length}):</strong> ${escapeHtml(allowed.join(', '))}`
+          );
+        }
+        if (rooms.length) {
+          parts.push(`<strong>Room collections:</strong> ${escapeHtml(rooms.join(', '))}`);
+        }
+        if (cat) {
+          parts.push(
+            `<strong>Output:</strong> <code>posters/${escapeHtml(cat)}/&lt;Styl&gt;/</code>`
+          );
+        }
+        els.studioCategoryHint.innerHTML = parts.join('<br>') || '';
+      }
+
+      function getAllowedStylesForCategoryUi(category) {
+        const cat = String(category || '').trim();
+        const list = categoryStylesMap && categoryStylesMap[cat];
+        return Array.isArray(list) ? list.filter(Boolean) : [];
+      }
+
+      function getUnionOfAllCategoryStyles() {
+        const seen = new Set();
+        const ordered = [];
+        for (const styles of Object.values(categoryStylesMap || {})) {
+          if (!Array.isArray(styles)) continue;
+          for (const s of styles) {
+            const st = String(s || '').trim();
+            if (st && !seen.has(st)) {
+              seen.add(st);
+              ordered.push(st);
+            }
+          }
+        }
+        return ordered.length ? ordered : (Array.isArray(configArtStylesList) ? configArtStylesList : []);
+      }
+
+      function validateStudioCategoryStyle(category, style) {
+        const cat = String(category || '').trim();
+        const st = String(style || '').trim();
+        const allowed = getAllowedStylesForCategoryUi(cat);
+        if (!allowed.length) {
+          return `Nieznana kategoria lub brak mapowania stylów dla „${cat}”.`;
+        }
+        if (!allowed.includes(st)) {
+          return (
+            `Niedozwolona para kategoria + styl: ${cat} + ${st}. ` +
+            `Dozwolone style: ${allowed.join(', ')}`
+          );
+        }
+        return '';
+      }
+
+      function rebuildStudioStyleOptionsForCategory(category) {
+        if (!els.studioStyle) return;
+        const allowed = getAllowedStylesForCategoryUi(category);
+        if (!allowed.length) {
+          els.studioStyle.innerHTML =
+            '<option value="">— wybierz kategorię —</option>';
+          return;
+        }
+        const prev = String(els.studioStyle.value || '').trim();
+        els.studioStyle.innerHTML = allowed
+          .map((s) => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`)
+          .join('');
+        if (allowed.includes(prev)) {
+          els.studioStyle.value = prev;
+        } else {
+          els.studioStyle.value = allowed[0];
+        }
+      }
+
+      function rebuildModalMoveStyleForCategory(category, preferredStyle) {
+        if (!els.modalMoveStyle) return;
+        const allowed = getAllowedStylesForCategoryUi(category);
+        if (!allowed.length) {
+          els.modalMoveStyle.innerHTML = '<option value="">—</option>';
+          return;
+        }
+        const prev = String(preferredStyle || els.modalMoveStyle.value || '').trim();
+        els.modalMoveStyle.innerHTML = allowed
+          .map((s) => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`)
+          .join('');
+        if (allowed.includes(prev)) {
+          els.modalMoveStyle.value = prev;
+        } else {
+          els.modalMoveStyle.value = allowed[0];
+        }
+      }
+
+      function syncModalMoveSelectors(item) {
+        if (!els.modalMoveCategory || !els.modalMoveStyle) return;
+        const categories = Array.isArray(configCategoriesList) && configCategoriesList.length
+          ? configCategoriesList
+          : Object.keys(categoryHints || {});
+        els.modalMoveCategory.innerHTML = categories
+          .map((c) => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
+          .join('');
+        const cat = item && item.category ? item.category : els.modalMoveCategory.value;
+        if (item && item.category) els.modalMoveCategory.value = item.category;
+        rebuildModalMoveStyleForCategory(cat, item && item.style ? item.style : '');
       }
 
       async function loadGenerationConfig() {
@@ -6975,27 +7592,39 @@
           const data = await res.json();
           categoryHints = data.categoryHints || {};
           configCategoriesList = Array.isArray(data.categories) ? [...data.categories] : [];
+          categoryStylesMap = data.categoryStyles && typeof data.categoryStyles === 'object' ? data.categoryStyles : {};
+          categoryRoomCollectionsMap =
+            data.categoryRoomCollections && typeof data.categoryRoomCollections === 'object'
+              ? data.categoryRoomCollections
+              : {};
           els.studioCategory.innerHTML = (data.categories || [])
             .map((c) => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
             .join('');
-          els.studioStyle.innerHTML = (data.artStyles || [])
-            .map((s) => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`)
-            .join('');
-          updateCategoryHint();
+          configArtStylesList = data.artStyles || [];
+          rebuildStudioStyleOptionsForCategory(els.studioCategory.value);
+          updateStudioCategoryPanel();
           fillStudioAutoScopeSelect(data.categories || []);
           fillStudioAutoStyleSelect(data.artStyles || []);
-          configArtStylesList = data.artStyles || [];
           renderLibraryStyleFilterList();
         } catch (e) {
           setStudioStatus('Nie wczytano konfiguracji kategorii (endpoint /api/generation-config).', 'error');
         }
       }
 
-      els.studioCategory.addEventListener('change', updateCategoryHint);
+      els.studioCategory.addEventListener('change', () => {
+        rebuildStudioStyleOptionsForCategory(els.studioCategory.value);
+        updateStudioCategoryPanel();
+      });
+
+      if (els.modalMoveCategory) {
+        els.modalMoveCategory.addEventListener('change', () => {
+          rebuildModalMoveStyleForCategory(els.modalMoveCategory.value, '');
+        });
+      }
 
       els.studioModeManual.addEventListener('click', () => setStudioMode('manual'));
       els.studioModeAuto.addEventListener('click', () => setStudioMode('auto'));
-      els.studioAutoScope.addEventListener('change', updateStudioAutoCommand);
+      els.studioAutoScope.addEventListener('change', () => fillStudioAutoStyleSelect());
       if (els.studioAutoStyle) els.studioAutoStyle.addEventListener('change', updateStudioAutoCommand);
       els.studioAutoCount.addEventListener('input', updateStudioAutoCommand);
       els.studioAutoCount.addEventListener('change', updateStudioAutoCommand);
@@ -7009,6 +7638,21 @@
         startStudioAutoProgressUi();
         try {
           const stylePick = els.studioAutoStyle && els.studioAutoStyle.value ? els.studioAutoStyle.value.trim() : '';
+          if (stylePick) {
+            if (all) {
+              const cats =
+                Array.isArray(configCategoriesList) && configCategoriesList.length
+                  ? configCategoriesList
+                  : Object.keys(categoryStylesMap || {});
+              for (const c of cats) {
+                const err = validateStudioCategoryStyle(c, stylePick);
+                if (err) throw new Error(`${err} (tryb: wszystkie kategorie)`);
+              }
+            } else {
+              const err = validateStudioCategoryStyle(scope, stylePick);
+              if (err) throw new Error(err);
+            }
+          }
           const res = await fetch('/api/studio/batch-generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -7075,6 +7719,16 @@
           await runShopifyExport(true);
         });
       }
+      if (els.btnShopifyThumbsPush) {
+        els.btnShopifyThumbsPush.addEventListener('click', async () => {
+          await runShopifyThumbsPush();
+        });
+      }
+      if (els.btnShopifySaveSettings) {
+        els.btnShopifySaveSettings.addEventListener('click', async () => {
+          await saveShopifyExportSettings();
+        });
+      }
       if (els.btnShopifyReadiness) {
         els.btnShopifyReadiness.addEventListener('click', async () => {
           await refreshShopifyReadiness();
@@ -7087,6 +7741,11 @@
         const style = els.studioStyle.value;
         if (!title) {
           setStudioStatus('Podaj tytuł plakatu.', 'error');
+          return;
+        }
+        const pairErrDraft = validateStudioCategoryStyle(category, style);
+        if (pairErrDraft) {
+          setStudioStatus(pairErrDraft, 'error');
           return;
         }
         setStudioStatus('Łączenie z API…');
@@ -7175,6 +7834,8 @@
           const style = els.studioStyle.value;
           const imagePrompt = els.studioPrompt.value.trim();
           if (!title) return setStudioStatus('Podaj tytuł plakatu.', 'error');
+          const pairErrUp = validateStudioCategoryStyle(category, style);
+          if (pairErrUp) return setStudioStatus(pairErrUp, 'error');
           if (!imagePrompt) return setStudioStatus('Najpierw ułóż lub wpisz prompt (ChatGPT/manual).', 'error');
           if (!studioUploadedImageDataUrl) return setStudioStatus('Najpierw wybierz plik obrazu.', 'error');
 
@@ -7235,8 +7896,13 @@
           setStudioStatus('Podaj tytuł plakatu.', 'error');
           return;
         }
+        const pairErr = validateStudioCategoryStyle(category, style);
+        if (pairErr) {
+          setStudioStatus(pairErr, 'error');
+          return;
+        }
         if (!imagePrompt) {
-          setStudioStatus('Wpisz lub wygeneruj prompt przed DALL-E.', 'error');
+          setStudioStatus('Wpisz lub wygeneruj prompt przed generatorem obrazów.', 'error');
           return;
         }
         if (activeStudioPreviewId) {
@@ -7251,7 +7917,7 @@
             });
           } catch (_) {}
         }
-        setStudioStatus('Generowanie podglądu (DALL-E) — bez zapisu do biblioteki…');
+        setStudioStatus('Generowanie podglądu (GPT Image) — bez zapisu do biblioteki…');
         els.btnDraftPrompt.disabled = true;
         els.btnGeneratePoster.disabled = true;
         try {

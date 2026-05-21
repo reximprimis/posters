@@ -52,40 +52,14 @@ const config = {
     '70x100': { cm: [70, 100], px: [8268, 11811] },
   },
 
-  // Categories (MVP launch set: 8 top-selling groups)
-  categories: {
-    'Botanika': 'botanical plants, flowers, stems, leaves, organic forms, natural calm',
-    'Abstrakcja': 'nonfigurative abstract composition, shape rhythm, color fields, texture',
-    'Natura i krajobrazy': 'nature landscapes, mountains, forests, water, scenic views, outdoor atmosphere',
-    'Zwierzęta': 'animals, pets, wildlife portraits, fur detail, natural light, expressive subjects',
-    'Mapy i miasta': 'city maps, skylines, urban geometry, travel-inspired graphics',
-    'Moda': 'fashion, garments, accessories, editorial styling, elegant composition',
-    'Plakaty dla dzieci': 'playful child-friendly illustrations, soft colors, whimsical themes',
-    'Kosmos i astronomia': 'space, stars, nebula, planets, cosmic scenes, deep sky',
-    'Retro': 'vintage nostalgia, analog textures, retro palettes, classic vibe',
-  },
+  // Generator categories (WHAT is on the poster) — src/categoryStyles.js
+  categories: require('./src/categoryStyles').buildCategoriesConfigObject(),
 
-  // Art Styles
-  artStyles: [
-    'Photography',
-    'Minimalism',
-    'Abstract',
-    'Illustration',
-    'Line art',
-  ],
-
-  // Allowed styles per category (MVP control matrix)
-  categoryStyles: {
-    'Botanika': ['Photography', 'Minimalism', 'Line art'],
-    'Abstrakcja': ['Abstract', 'Minimalism'],
-    'Natura i krajobrazy': ['Photography', 'Minimalism'],
-    'Zwierzęta': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
-    'Mapy i miasta': ['Photography', 'Minimalism', 'Abstract'],
-    'Moda': ['Photography', 'Minimalism', 'Line art'],
-    'Plakaty dla dzieci': ['Illustration', 'Minimalism'],
-    'Kosmos i astronomia': ['Abstract', 'Illustration', 'Photography'],
-    'Retro': ['Photography', 'Abstract'],
-  },
+  // Global styles (HOW) + allowed pairs + room collections — src/categoryStyles.js
+  artStyles: require('./src/categoryStyles').GLOBAL_STYLES,
+  categoryStyles: require('./src/categoryStyles').CATEGORY_STYLES,
+  roomCollections: require('./src/categoryStyles').ROOM_COLLECTIONS,
+  categoryRoomCollections: require('./src/categoryStyles').CATEGORY_ROOM_COLLECTIONS,
 };
 
 module.exports = config;

@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const sharp = require('sharp');
 
-const DEFAULT_MARGIN_RATIO = 0.116;
+const DEFAULT_MARGIN_RATIO = 0.05;
 const DEFAULT_BOTTOM_WEIGHT = 1.82;
 const DEFAULT_MAT_HEX = '#ffffff';
 
@@ -31,7 +31,7 @@ function resolveMarginRatio(opts) {
 /**
  * Passe-partout o równej grubości w pikselach ze wszystkich stron: M = round(min(W,H) × marginRatio).
  * (Poprzednia wersja skalowała innerW i innerH osobno — przy pionowym pliku góra/dół były wizualnie grubsze niż boki.)
- * Otwór ma inny aspect niż canvas; grafika: fit cover + centrum.
+ * Otwór ma inny aspect niż canvas; grafika: fit cover + centrum (idealnie równa ramka 5% z każdej strony).
  * @param {Buffer} input
  * @param {{ marginRatio?: number, matColor?: string }} opts
  */
@@ -49,7 +49,7 @@ async function composeUniformMat(input, opts) {
   const innerW = W - 2 * M;
   const innerH = H - 2 * M;
   if (innerW < 2 || innerH < 2) {
-    throw new Error('Za mały obraz na passe-partout — zmniejsz margines lub rozmiar DALL-E');
+    throw new Error('Za mały obraz na passe-partout — zmniejsz margines lub rozmiar generatora obrazu');
   }
 
   const resized = await sharp(input)
@@ -88,7 +88,7 @@ async function composeGalleryMat(input, opts) {
   const innerW = W - 2 * M;
   const innerH = H - M - B;
   if (innerW < 2 || innerH < 2) {
-    throw new Error('Za mały obraz na passe-partout — zmniejsz margines lub rozmiar DALL-E');
+    throw new Error('Za mały obraz na passe-partout — zmniejsz margines lub rozmiar generatora obrazu');
   }
 
   const resized = await sharp(input)

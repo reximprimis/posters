@@ -4,14 +4,17 @@
   "main": "index.js",
   "scripts": {
     "dev": "node preview.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/validateCategoryStyles.js",
+    "validate:styles": "node scripts/validateCategoryStyles.js",
     "generate-all": "node index.js generate-all 5",
     "generate-botanika": "node index.js generate Botanika 5",
     "stats": "node index.js stats",
     "shopify:reconcile": "node scripts/reconcileShopifyStates.js",
+    "shopify:headless:check": "node scripts/checkShopifyHeadless.js --limit=250",
     "shopify:thumbs": "node scripts/syncShopifyThumbs.js",
     "shopify:export": "node scripts/exportShopifyCsv.js",
     "shopify:export:all": "node scripts/exportShopifyCsv.js --all",
+    "shopify:export:missing-live": "node scripts/exportShopifyCsv.js --only-missing-on-store --timestamped",
     "start": "node index.js",
     "preview": "node preview.js"
   },

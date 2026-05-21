@@ -6,6 +6,12 @@
  * ChatGPT z samym krótkim opisem działa lepiej — stąd krótki tail + mocny PREFIX na start.
  */
 
+const {
+  SAFE_PRINT_FRAMING,
+  SAFE_PRINT_FRAMING_BOTANICAL,
+  resolveSafePrintFramingForCategory,
+} = require('./safePrintFraming');
+
 const DALLE3_PROMPT_MAX = 4000;
 
 const HARD_RULES = `
@@ -62,9 +68,9 @@ const CATEGORY_STYLE_LOCK_HINTS = {
   'Mapy i miasta|photography':
     'Hard lock: realistic city photography or architectural photography only. Use a physically plausible skyline, street canyon, or facade with editorial travel mood. No floating structures, impossible reflections, glossy CGI surfaces, or surreal mirrored floors unless the title explicitly asks for them.',
   'Retro|Photography':
-    'Hard lock: realistic retro-object photography or premium retro still life only. Use cassette, tape reel, or analog media as physically plausible objects with clean surfaces. No readable label text, no brand names, no packaging copy, no fake poster typography on objects.',
+    'Hard lock: realistic retro-object photography or premium retro still life only. The hero object must match the title literally — polaroid prints for polaroid titles, cassette only when the title names cassette, vinyl only when the title names vinyl. Unbranded blank surfaces, no readable label text, no brand names, no packaging copy. Do not substitute unrelated nostalgic props.',
   'Retro|photography':
-    'Hard lock: realistic retro-object photography or premium retro still life only. Use cassette, tape reel, or analog media as physically plausible objects with clean surfaces. No readable label text, no brand names, no packaging copy, no fake poster typography on objects.',
+    'Hard lock: realistic retro-object photography or premium retro still life only. The hero object must match the title literally — polaroid prints for polaroid titles, cassette only when the title names cassette, vinyl only when the title names vinyl. Unbranded blank surfaces, no readable label text, no brand names, no packaging copy. Do not substitute unrelated nostalgic props.',
 };
 
 function getStyleCanvasHint(style) {
@@ -78,6 +84,7 @@ const QUALITY_MANDATORY =
   'Ultra-detailed and print-ready.';
 const SUBJECT_PRIORITY_RULE =
   'Primary subject from TITLE must dominate the composition; category context is supporting only and must never replace or overpower the main subject.';
+
 const STYLE_PREMIUM = QUALITY_MANDATORY;
 
 const CATEGORY_ART_DIRECTION = {
@@ -97,10 +104,8 @@ const CATEGORY_ART_DIRECTION = {
     'Playful refined art: soft shapes, gentle colors, whimsical subjects; full-bleed single composition.',
   'Mapy i miasta':
     'Map-like abstraction, skyline silhouette, or travel graphic; stylized geography; artistic not infographic.',
-  Moda:
-    'Fashion-forward graphic or editorial still: garments, accessories, or abstract forms; elegant negative space.',
   Retro:
-    'Retro objects or mood (cassette, vinyl, analog textures); warm terracotta, amber, cream, muted teal; nostalgic gradients; no UI mockups.',
+    'Retro still life or object photography; hero object must follow the title literally (polaroid, cassette, vinyl, camera, etc.); warm terracotta, amber, cream, muted teal; unbranded surfaces; no UI mockups.',
   'Kultowe zdjęcia':
     'Iconic timeless mood—stylized classic photography or illustration; no celebrity likeness or trademarks.',
   'Złoto i srebro':
@@ -143,6 +148,8 @@ const CATEGORY_ART_DIRECTION = {
     'New-home welcoming mood: modern, interior-friendly, calm and premium.',
   Motoryzacja:
     'Automotive culture aesthetic: dynamic lines, engineering details, controlled motion energy.',
+  Pojazdy:
+    'Vehicle-focused poster direction: cars, motorcycles, aircraft, boats, or engineered transport forms; emphasize silhouette, motion, materials, reflections, and mechanical character while keeping one clear hero subject and no brand logos or readable markings.',
   Samochody:
     'Car-focused composition with sculpted body lines and reflective material quality.',
   Motocykle:
@@ -226,7 +233,6 @@ const SHORT_CATEGORY_HINTS = {
   'Natura i krajobrazy': 'TITLE-defined subject is primary; natural landscape is only supporting context with realistic atmosphere.',
   'Kosmos i astronomia': 'Cosmic subject with controlled realism and clean composition.',
   'Mapy i miasta': 'Urban/city subject in clean, structured visual language.',
-  Moda: 'Fashion subject with refined editorial simplicity.',
   'Plakaty dla dzieci': 'Child-friendly playful subject, simple and clear.',
   Retro: 'Retro mood with restrained vintage character.',
   Abstrakcja: 'Abstract subject with clean edge-to-edge flow.',
@@ -273,11 +279,13 @@ function getCategoryStyleLockHint(category, style) {
   return CATEGORY_STYLE_LOCK_HINTS[`${c}|${s}`] || '';
 }
 
-function buildDalleMandatorySuffix(category, style) {
+function buildDalleMandatorySuffix(category, style, options = {}) {
   const styleLock = getCategoryStyleLockHint(category, style);
   const c = String(category || '').trim();
   const categoryHint = SHORT_CATEGORY_HINTS[c] || getCategoryArtDirection(c);
-  return `${QUALITY_MANDATORY} ${SUBJECT_PRIORITY_RULE} Subject/mood: ${categoryHint} ${styleLock} ${NEGATIVE_TAIL}`;
+  const framing = resolveSafePrintFramingForCategory(c, style);
+  const safeBlock = options.skipSafePrintFraming || !framing ? '' : `${framing} `;
+  return `${safeBlock}${QUALITY_MANDATORY} ${SUBJECT_PRIORITY_RULE} Subject/mood: ${categoryHint} ${styleLock} ${NEGATIVE_TAIL}`;
 }
 
 /**
@@ -287,9 +295,10 @@ function buildDalleMandatorySuffix(category, style) {
 function buildFullDallePrompt(base, category, style) {
   const styleHint = getStyleCanvasHint(style);
   const prefix = PRINT_PREFIX + styleHint;
-  const suffix = buildDalleMandatorySuffix(category, style);
-  const overhead = prefix.length + 1 + suffix.length;
   let b = sanitizeCreativePrompt(base);
+  const hasSafeFraming = /SAFE PRINT FRAMING/i.test(b) || /SAFE PRINT FRAMING — BOTANICAL/i.test(b);
+  const suffix = buildDalleMandatorySuffix(category, style, { skipSafePrintFraming: hasSafeFraming });
+  const overhead = prefix.length + 1 + suffix.length;
   const maxBase = DALLE3_PROMPT_MAX - overhead;
   if (b.length > maxBase) {
     b = `${b.slice(0, Math.max(0, maxBase - 1))}…`;
@@ -318,6 +327,9 @@ const MAX_DALLE_OVERHEAD_CHARS = computeMaxOverheadLength();
 module.exports = {
   DALLE3_PROMPT_MAX,
   HARD_RULES,
+  SAFE_PRINT_FRAMING,
+  SAFE_PRINT_FRAMING_BOTANICAL,
+  resolveSafePrintFramingForCategory,
   QUALITY_MANDATORY,
   STYLE_PREMIUM,
   CATEGORY_ART_DIRECTION,

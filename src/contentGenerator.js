@@ -1,97 +1,18 @@
 const OpenAI = require('openai');
 const config = require('../config');
 const { resolveDesignMdUrl, fetchDesignMdBody } = require('./designMd');
-const { getCategoryArtDirection, STYLE_PREMIUM, sanitizeCreativePrompt } = require('./posterPromptLayers');
-
-const CORE_PROMPT_TEMPLATE = `Subject brief based on title "{TITLE}", interpret semantically and never render the words as typography, label text, logo, or caption.
-{CATEGORY_LOGIC}
-{STYLE_LOGIC}
-Single cohesive composition with one clear focal subject.
-No readable text, letters, numbers, logos, labels, or packaging copy anywhere in the image.
-Physically plausible scene, believable materials, and natural depth.
-Background integrated naturally behind the subject.`;
-
-const CATEGORY_CORE_OVERRIDE = {
-  'Kosmos i astronomia': `Show a calm cosmic scene or celestial landscape with one dominant focal subject, such as a planet, moon, nebula, or horizon. Keep the space composition clean, spacious, and premium rather than chaotic sci-fi clutter.`,
-  'Mapy i miasta': `Show one physically plausible urban hero subject: skyline, street canyon, architectural facade, or city detail. Keep perspective realistic, composition structured, and lighting editorial. Avoid surreal mirror reflections, floating structures, impossible architecture, or infographic-style map graphics unless the title explicitly asks for them.`,
-};
-
-const CATEGORY_LOGIC_MAP = {
-  Botanika:
-    'Botanical sales mode: blossom-led natural branch or stem subject, such as magnolia, cherry blossom, wild flower stem, single bloom, or delicate spring branch. Natural growth flow, not a decorative product arrangement. Avoid fern-heavy motifs, product-shot eucalyptus styling, rigid symmetry, and geometric botanical layouts.',
-  'Kosmos i astronomia':
-    'Cosmic subject: stars, planets, nebulae. Deep space atmosphere, controlled light, not sci-fi clutter.',
-  'Dla pary': 'Symbolic connection: intertwined elements, soft romance, subtle emotion, not kitsch.',
-  Moda: 'Fashion subject: garments, fabrics, accessories. Editorial composition, refined styling.',
-};
-
-const STYLE_LOGIC_MAP = {
-  Photography:
-    'Realistic photography with natural or editorial light, believable lens detail, grounded color, and a physically plausible scene. Avoid CGI, fantasy glow, plastic texture, and staged product-shot composition.',
-  photography:
-    'Realistic photography with natural or editorial light, believable lens detail, grounded color, and a physically plausible scene. Avoid CGI, fantasy glow, plastic texture, and staged product-shot composition.',
-  Illustration: 'Refined illustration with controlled detail, clear shape hierarchy, and premium print finish.',
-  illustration: 'Refined illustration with controlled detail, clear shape hierarchy, and premium print finish.',
-  'Abstract art':
-    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
-  'abstract art':
-    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
-  Abstract:
-    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
-  abstract:
-    'Abstract composition with flowing forms, disciplined color harmony, and structured energy across the full frame.',
-  Minimalism: 'Minimal composition with restrained forms, quiet luxury mood, and intentional negative space used as part of the artwork.',
-  minimalism: 'Minimal composition with restrained forms, quiet luxury mood, and intentional negative space used as part of the artwork.',
-  'Line art': 'Delicate line drawing with refined contours, elegant simplicity, and clean premium restraint.',
-  'line art': 'Delicate line drawing with refined contours, elegant simplicity, and clean premium restraint.',
-};
-
-function resolveCategoryLogic(category) {
-  const c = String(category || '').trim();
-  if (CATEGORY_LOGIC_MAP[c]) return CATEGORY_LOGIC_MAP[c];
-  return `${getCategoryArtDirection(c)} Keep category identity clear and consistent with the title.`;
-}
-
-function resolveStyleLogic(style) {
-  const s = String(style || '').trim();
-  if (STYLE_LOGIC_MAP[s]) return STYLE_LOGIC_MAP[s];
-  return `Style must remain strictly "${s || 'Photography'}" with clear visual discipline and no mixed-style drift.`;
-}
+const {
+  getCategoryArtDirection,
+  STYLE_PREMIUM,
+  sanitizeCreativePrompt,
+} = require('./posterPromptLayers');
+const { buildTitleBriefBlock } = require('./titleSubjectConsistency');
+const { routePromptBuildResult, usesStructuredPrompt } = require('./promptRouter');
+const { assertCategoryStyleAllowed } = require('./categoryStyles');
+const { PROMPT_BUILDER_VERSION } = require('./posterMetadata');
 
 function buildCoreCreativePrompt({ title, category, style }) {
-  const titleText = String(title || '').trim();
-  const categoryKey = String(category || '').trim();
-  const styleKey = String(style || '').trim();
-  const categoryStyleKey = `${categoryKey}|${styleKey}`;
-
-  if (categoryStyleKey === 'Retro|Photography' || categoryStyleKey === 'Retro|photography') {
-    return `Premium fine-art artwork for print.
-
-TITLE BRIEF — "${titleText}" defines the exact subject; interpret literally.
-A vintage cassette tape placed naturally on a soft surface, capturing nostalgic 80s mood.
-
-Photography style — analog realism, subtle film grain, slight imperfections.
-Warm faded tones: beige, brown, muted orange.
-
-Soft natural light with gentle shadows.
-Clean composition, single subject in focus.
-
-Full-bleed, no frame, no text, no modern elements.
-Ultra-detailed, print-ready.`.trim();
-  }
-
-  const override = CATEGORY_CORE_OVERRIDE[categoryKey];
-  if (override) {
-    return `Subject brief based on title "${titleText}", interpret semantically and never render the words as typography, label text, logo, or caption. ${override} Style direction: ${resolveStyleLogic(style)}`
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  return CORE_PROMPT_TEMPLATE.replace('{TITLE}', titleText)
-    .replace('{CATEGORY_LOGIC}', resolveCategoryLogic(category))
-    .replace('{STYLE_LOGIC}', resolveStyleLogic(style))
-    .replace(/\s+/g, ' ')
-    .trim();
+  return routePromptBuildResult({ category, style, title });
 }
 
 /** When no LLM API is configured, still produce a real DALL-E poster prompt (not a raw keyword list from config). */
@@ -178,9 +99,10 @@ function buildOfflinePosterPrompt(title, category, style, categoryThemes, design
     : `Soft diffused studio light; seamless muted neutral backdrop (cream, warm gray, or soft paper) with intentional negative space inside the artwork only — not a white band around the image.`;
 
   const catDir = getCategoryArtDirection(category);
+  const titleBrief = buildTitleBriefBlock(title, { literal: true, category, style });
   let body =
     `Flat 2D artwork as a print reproduction file only—not a mockup, not a photo of a print on a surface or in a room. ` +
-    `PRIMARY BRIEF — title "${title}" defines the subject; interpret literally. ` +
+    `${titleBrief} ` +
     `Category direction: ${catDir} ` +
     `Category tags (${mood}) are secondary mood hints only—do not contradict the title. ` +
     `${categorySeasonalNote} ` +
@@ -242,6 +164,18 @@ function getTitleGenerationExtraRules(category, count) {
     `Do not reuse the same opening word or metaphor family twice (e.g. only one "Garden…", one "Nature's…").`,
   ].join('\n');
 
+  if (String(category).trim() === 'Kawa i herbata') {
+    return (
+      `${base}\n` +
+      `Kawa i herbata: titles must suggest coffee, tea, cups, steam, beans, café calm, or morning ritual — no brand names or menu words in the title.`
+    );
+  }
+  if (String(category).trim() === 'Kuchnia i jedzenie') {
+    return (
+      `${base}\n` +
+      `Kuchnia i jedzenie: titles must name food or kitchen subjects (lemon, pasta, olive oil, herbs, bread) — Mediterranean editorial tone.`
+    );
+  }
   if (String(category).trim() === 'Botanika') {
     return (
       `${base}\n` +
@@ -363,7 +297,6 @@ class ContentGenerator {
       'Zwierzęta': ['Wild & Free', 'Animal Magic', 'Safari Life', 'Pet Love', 'Natural Beauty'],
       'Plakaty dla dzieci': ['Happy Times', 'Fun Adventure', 'Colorful Dreams', 'Play Zone', 'Joy Ride'],
       'Mapy i miasta': ['City Lights', 'Urban Life', 'World Travel', 'City Love', 'Map Quest'],
-      'Moda': ['Fashion Forward', 'Style Icon', 'Trendy Look', 'Fashion Vibes', 'Style Goals'],
       'Retro': ['Vintage Vibes', 'Retro Cool', 'Classic Style', '80s Vibes', 'Nostalgia'],
       'Kultowe zdjęcia': ['Iconic Moment', 'Unforgettable', 'Legend Status', 'Historic', 'Timeless'],
       'Złoto i srebro': ['Golden Hour', 'Luxury Life', 'Shine Bright', 'Premium', 'Precious'],
@@ -386,6 +319,119 @@ class ContentGenerator {
       'Na rocznicę': ['Anniversary Glow', 'Enduring Harmony', 'Quiet Romance', 'Timeless Pair Study', 'Golden Memory'],
       'Na parapetówkę': ['New Home Calm', 'Housewarming Light', 'Fresh Start Palette', 'Modern Welcome', 'Cozy Minimal Scene'],
       Motoryzacja: ['Engineered Motion', 'Velocity Lines', 'Mechanical Elegance', 'Road Energy', 'Automotive Pulse'],
+      Pojazdy: ['Coastal Grand Tourer', 'Midnight Motorcycle', 'Aviation Silverline', 'Harbor Speedform', 'Desert Rally Shape'],
+      'Kawa i herbata': [
+        'Morning Espresso Ritual',
+        'Soft Coffee Steam',
+        'Quiet Café Corner',
+        'Minimal Coffee Cup',
+        'Tea Leaves in Morning Light',
+      ],
+      'Kuchnia i jedzenie': [
+        'Lemon Still Life',
+        'Tomatoes on Linen',
+        'Olive Oil and Rosemary',
+        'Fresh Pasta Moment',
+        'Mediterranean Kitchen',
+      ],
+      'Morze i plaża': [
+        'Quiet Shoreline',
+        'Soft Dune Morning',
+        'Calm Sea Horizon',
+        'Shells in Pale Light',
+        'Misty Coastal Silence',
+      ],
+      'Sport i hobby': [
+        'Minimal Tennis Court',
+        'Quiet Bicycle Morning',
+        'Soft Golf Green',
+        'Surf Curve Study',
+        'Vintage Running Form',
+      ],
+      'Gaming i e-sport': [
+        'Neon Gaming Setup',
+        'Retro Arcade Night',
+        'Minimal Game Controller',
+        'Pixel Victory Mood',
+        'Late Night Match',
+        'Cyber Arena Glow',
+        'Quiet Controller Study',
+        'Arcade Energy Field',
+        'Game Room After Dark',
+        'Minimal Victory Screen',
+      ],
+      'AI i technologia': [
+        'Neural Silence',
+        'Artificial Dream Field',
+        'Soft Circuit Mind',
+        'Future Thinking',
+        'Digital Consciousness',
+        'Minimal Neural Network',
+        'Data Flow Memory',
+        'Synthetic Calm',
+        'Quiet Machine Thought',
+        'Soft Algorithm Field',
+      ],
+      'Humor i memy': [
+        'Cat Judging Everything',
+        'Monday Mood',
+        'Tiny Chaos Energy',
+        'Overthinking Duck',
+        'Confused Office Plant',
+        'Lazy Weekend Monster',
+        'Small Drama Moment',
+        'Awkward Silence Club',
+        'Dramatic Houseplant',
+        'Tired Little Cloud',
+      ],
+      'Cyberpunk i neon': [
+        'Neon Rain District',
+        'Cyber Night Geometry',
+        'Electric City Silence',
+        'Purple Future Alley',
+        'Digital Neon Horizon',
+        'Soft Neon Grid',
+        'Midnight Data Street',
+        'Violet Rain Signal',
+        'Futuristic Alley Glow',
+        'Electric Urban Dream',
+      ],
+      'Muzyka i dźwięk': [
+        'Soft Jazz Evening',
+        'Minimal Guitar Lines',
+        'Vinyl Sound Wave',
+        'Quiet Piano Shadow',
+        'Analog Sound Memory',
+        'Studio Silence',
+        'Warm Bass Line',
+        'Golden Saxophone Mood',
+        'Soft Drum Rhythm',
+        'Minimal Sound Field',
+      ],
+      'Wellness i joga': [
+        'Soft Yoga Morning',
+        'Quiet Meditation Pose',
+        'Calm Breath Ritual',
+        'Gentle Wellness Light',
+        'Neutral Yoga Flow',
+        'Peaceful Spa Moment',
+        'Slow Living Balance',
+        'Morning Stretch Silence',
+        'Soft Linen Meditation',
+        'Warm Wellness Ritual',
+      ],
+      'Symbole i harmonia': [
+        'Soft Yin Yang Balance',
+        'Minimal Harmony Circle',
+        'Quiet Mandala Energy',
+        'Gentle Zen Symbol',
+        'Organic Balance Forms',
+        'Calm Spiritual Geometry',
+        'Moon and Sun Harmony',
+        'Inner Balance Study',
+        'Neutral Energy Field',
+        'Sacred Circle Calm',
+      ],
       Samochody: ['Sculpted Bodyline', 'Urban Speed Form', 'Chrome and Light', 'Roadside Elegance', 'Car Silhouette Study'],
       Motocykle: ['Two-Wheel Momentum', 'Steel and Asphalt', 'Rider Spirit', 'Chrome Torque', 'Motor Rhythm'],
       'Klasyczne auta': ['Vintage Grand Tourer', 'Classic Chrome Glow', 'Timeless Car Profile', 'Heritage Drive', 'Retro Road Elegance'],
@@ -406,16 +452,25 @@ class ContentGenerator {
 
     const provider = this.resolveLlmProvider(options.llmProvider);
     if (!provider) {
-      const titles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
-      return titles.slice(0, count);
+      const baseTitles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
+      const titles = [];
+      for (let i = 0; i < count; i++) {
+        const base = baseTitles[i % baseTitles.length] || `${category} ${i + 1}`;
+        titles.push(i < baseTitles.length ? base : `${base} ${Math.floor(i / baseTitles.length) + 1}`);
+      }
+      return { titles, titlePrompt: null };
     }
 
     const categoryDesc = config.categories[category] || category;
     const extraRules = getTitleGenerationExtraRules(category, count);
+    const styleHint = typeof options.artStyle === 'string' && options.artStyle.trim()
+      ? `\nSelected art style: ${options.artStyle.trim()}\nTitles must naturally fit this exact style while staying visually distinct from each other.`
+      : '';
 
     const prompt = `Generate ${count} unique poster titles for the "${category}" category.
 
 Category focus: ${categoryDesc}
+${styleHint}
 
 Hard requirements:
 - 2–5 words per title, Title Case, English (for image model consistency).
@@ -433,21 +488,34 @@ Generate now:`;
     try {
       const content = await this.llmComplete(prompt, 500, provider, { temperature: 0.65 });
       const titles = parseTitlesFromLlmResponse(content);
-      return titles.slice(0, count);
+      return { titles: titles.slice(0, count), titlePrompt: prompt };
     } catch (error) {
       console.error('Error generating titles:', error.message);
-      return Array.from({ length: count }, (_, i) => `Poster ${i + 1}`);
+      const baseTitles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
+      const titles = [];
+      for (let i = 0; i < count; i++) {
+        const base = baseTitles[i % baseTitles.length] || `${category} ${i + 1}`;
+        titles.push(i < baseTitles.length ? base : `${base} ${Math.floor(i / baseTitles.length) + 1}`);
+      }
+      return { titles, titlePrompt: prompt };
     }
   }
 
   async generateImagePrompt(title, category, style, options = {}) {
-    const deterministic = buildCoreCreativePrompt({ title, category, style });
+    assertCategoryStyleAllowed(category, style);
+    const routed = buildCoreCreativePrompt({ title, category, style });
+    const preserveStructure = usesStructuredPrompt(category, style);
+    const text = preserveStructure
+      ? routed.imagePrompt
+      : sanitizeCreativePrompt(routed.imagePrompt) || routed.imagePrompt;
     return {
-      text: sanitizeCreativePrompt(deterministic) || deterministic,
+      text,
+      routingPath: routed.routingPath,
+      usedFallbackPromptBuilder: routed.usedFallbackPromptBuilder,
       promptLlm: {
         promptLlmProvider: 'template',
-        promptLlmModel: 'master-prompt-v1',
-        promptLlmLabel: 'Master Prompt v1',
+        promptLlmModel: PROMPT_BUILDER_VERSION,
+        promptLlmLabel: `Master prompt (${PROMPT_BUILDER_VERSION})`,
       },
     };
   }
