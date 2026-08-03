@@ -29,6 +29,7 @@ const {
   assertMasterPathAvailable,
   assertHandleGloballyUnique,
 } = require('./posterNameGuard');
+const { createAestheticRotation, resolveAestheticForPoster } = require('./aesthetics');
 const DALLE_RATIO_PORTRAIT = 2 / 3;
 const DALLE_RATIO_LANDSCAPE = 3 / 2;
 const DALLE_RATIO_TOLERANCE = 0.015;
@@ -682,7 +683,10 @@ class PosterBatchGenerator {
       throw new Error(`Unknown category: ${categoryKey}`);
     }
 
-    const { llmProvider: llmProviderOpt, artStyle: fixedArtStyle } = options;
+    const { llmProvider: llmProviderOpt, artStyle: fixedArtStyle, aesthetic: aestheticOpt } = options;
+    // Jedna rotacja na wywolanie generateCategory — dzieki temu rozklad estetyk
+    // jest rowny w obrebie serii, a nie losowany od nowa przy kazdym plakacie.
+    const aestheticRotation = createAestheticRotation();
     const allowedStyles = getAllowedStylesForCategory(categoryKey);
     const fixedTrimmed =
       typeof fixedArtStyle === 'string' && fixedArtStyle.trim() ? fixedArtStyle.trim() : '';
@@ -740,9 +744,14 @@ class PosterBatchGenerator {
         promptLlm,
         routingPath,
         usedFallbackPromptBuilder,
+        aesthetic: usedAesthetic,
       } = await this.contentGen.generateImagePrompt(title, categoryKey, style, {
         llmProvider: llmProviderOpt,
+        // 'mix' pobiera kolejna estetyke z przetasowanej rotacji, wiec seria
+        // dostaje rozne palety zamiast jednej powtarzanej.
+        aesthetic: resolveAestheticForPoster(aestheticOpt, aestheticRotation),
       });
+      if (usedAesthetic) console.log(`  → Aesthetic: ${usedAesthetic}`);
       console.log(`  → Prompt: ${imagePrompt}`);
 
       console.log(`  → Generating image...`);

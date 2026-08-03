@@ -5022,17 +5022,26 @@
 
     // Estetyki w generatorze — ladowane raz przy starcie, lista jest stala.
     function loadGeneratorAesthetics() {
-      var sel = document.getElementById('studioAesthetic');
-      if (!sel) return;
+      var targets = ['studioAesthetic', 'studioAutoAesthetic'].map(function(id) {
+        return document.getElementById(id);
+      }).filter(Boolean);
+      if (!targets.length) return;
       fetch('/api/aesthetics', { cache: 'no-store' })
         .then(function(r) { return r.json(); })
         .then(function(d) {
-          var current = sel.value;
-          sel.innerHTML = '<option value="">— bez estetyki —</option>' +
-            (d.aesthetics || []).map(function(a) {
-              return '<option value="' + a.id + '"' + (a.id === current ? ' selected' : '') + '>' +
-                a.label + (a.badge ? ' · ' + a.badge : '') + '</option>';
+          var opcje = (d.aesthetics || []).map(function(a) {
+            return { v: a.id, t: a.label + (a.badge ? ' · ' + a.badge : '') };
+          });
+          targets.forEach(function(sel) {
+            var current = sel.value;
+            var lista = [{ v: '', t: '— bez estetyki —' }]
+              // Mieszanie ma sens tylko w serii, wiec tylko w trybie automatycznym.
+              .concat(sel.id === 'studioAutoAesthetic' ? [{ v: 'mix', t: '🎲 Mieszaj automatycznie' }] : [])
+              .concat(opcje);
+            sel.innerHTML = lista.map(function(o) {
+              return '<option value="' + o.v + '"' + (o.v === current ? ' selected' : '') + '>' + o.t + '</option>';
             }).join('');
+          });
         })
         .catch(function() {});
     }
@@ -6171,6 +6180,11 @@
                 <p class="field-hint">Bez wyboru stylu = pełna lista stylów z konfiguracji. Znaczenie pola „Liczba” zależy od trybu — patrz podpowiedź pod liczbą.</p>
               </div>
               <div class="studio-pro-field">
+                <label for="studioAutoAesthetic">Estetyka (trend)</label>
+                <select id="studioAutoAesthetic"></select>
+                <p class="field-hint">„Mieszaj automatycznie” rozdaje kolejne estetyki po równo w całej serii — bez powtórek pod rząd.</p>
+              </div>
+              <div class="studio-pro-field">
                 <label for="studioAutoCount" id="studioAutoCountLabel">Liczba plakatów</label>
                 <input
                   type="number"
@@ -6753,6 +6767,7 @@
         studioSub: document.getElementById('studioSub'),
         studioAutoScope: document.getElementById('studioAutoScope'),
         studioAutoStyle: document.getElementById('studioAutoStyle'),
+        studioAutoAesthetic: document.getElementById('studioAutoAesthetic'),
         studioAutoCount: document.getElementById('studioAutoCount'),
         studioAutoCommand: document.getElementById('studioAutoCommand'),
         studioAutoNpmHint: document.getElementById('studioAutoNpmHint'),
@@ -9478,6 +9493,9 @@
               ...(all ? {} : { category: scope }),
               count: n,
               ...(stylePick ? { artStyle: stylePick } : {}),
+              ...(els.studioAutoAesthetic && els.studioAutoAesthetic.value
+                ? { aesthetic: els.studioAutoAesthetic.value }
+                : {}),
             }),
           });
           const data = await res.json().catch(() => ({}));

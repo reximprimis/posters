@@ -107,6 +107,59 @@ check('kazda estetyka daje niepusty i rozny blok', () => {
   expectEqual(new Set(blocks).size, blocks.length, 'wszystkie bloki rozne');
 });
 
+console.log('\nROTACJA (MIESZANIE):');
+
+check('rotacja rozdaje kazda estetyke zanim cokolwiek powtorzy', () => {
+  const n = ae.AESTHETICS.length;
+  const rot = ae.createAestheticRotation();
+  const pierwszaTura = Array.from({ length: n }, () => rot.next());
+  expectEqual(new Set(pierwszaTura).size, n, 'unikalnych w pierwszej turze');
+});
+
+check('rotacja nie wyczerpuje sie po pelnej turze', () => {
+  const n = ae.AESTHETICS.length;
+  const rot = ae.createAestheticRotation();
+  const dwieTury = Array.from({ length: n * 2 }, () => rot.next());
+  expectEqual(dwieTury.filter(Boolean).length, n * 2, 'wszystkie niepuste');
+  expectEqual(new Set(dwieTury.slice(n)).size, n, 'druga tura tez pelna');
+});
+
+check('rotacja nigdy nie powtarza estetyki pod rzad, takze na styku tur', () => {
+  // 200 losowan przez wiele tur — styk tur jest jedynym miejscem, gdzie
+  // powtorka moglaby wystapic, wiec test musi obejmowac wiele cykli.
+  for (let proba = 0; proba < 40; proba++) {
+    const rot = ae.createAestheticRotation();
+    let prev = '';
+    for (let i = 0; i < 200; i++) {
+      const cur = rot.next();
+      if (cur === prev) throw new Error(`powtorka pod rzad: ${cur} na pozycji ${i}`);
+      prev = cur;
+    }
+  }
+});
+
+check('rotacja zwraca wylacznie znane estetyki', () => {
+  const rot = ae.createAestheticRotation();
+  for (let i = 0; i < 20; i++) {
+    expectTrue(ae.isKnownAesthetic(rot.next()), 'znana estetyka');
+  }
+});
+
+check('mix bez rotacji nie wysadza sie, tylko oddaje brak estetyki', () => {
+  expectEqual(ae.resolveAestheticForPoster('mix', null), '', 'brak rotacji');
+});
+
+check('konkretna estetyka omija rotacje', () => {
+  const rot = ae.createAestheticRotation();
+  expectEqual(ae.resolveAestheticForPoster('boho', rot), 'boho', 'wybor uzytkownika');
+});
+
+check('pusta i nieznana wartosc daja brak estetyki', () => {
+  const rot = ae.createAestheticRotation();
+  expectEqual(ae.resolveAestheticForPoster('', rot), '', 'pusta');
+  expectEqual(ae.resolveAestheticForPoster('nieistnieje', rot), '', 'nieznana');
+});
+
 console.log('\nKATEGORIE UZYTKOWNIKA:');
 
 check('kategorie wbudowane nie dostaja bloku CATEGORY FOCUS', () => {

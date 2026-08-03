@@ -2486,6 +2486,15 @@ app.post('/api/studio/batch-generate', async (req, res) => {
     const batchOpts = { llmProvider, withPdf: false };
     if (fixedStyle) batchOpts.artStyle = fixedStyle;
 
+    // 'mix' = kazdy plakat dostaje kolejna estetyke z przetasowanej rotacji.
+    const { AESTHETIC_MIX, isKnownAesthetic: knownAesthetic } = require('./src/aesthetics');
+    const aestheticRaw = String(body.aesthetic || '').trim();
+    if (aestheticRaw && aestheticRaw !== AESTHETIC_MIX && !knownAesthetic(aestheticRaw)) {
+      studioBatchRunning = false;
+      return res.status(400).json({ error: `Nieznana estetyka „${aestheticRaw}”.` });
+    }
+    if (aestheticRaw) batchOpts.aesthetic = aestheticRaw;
+
     const gen = getBatchGenerator();
     if (all) {
       await gen.generateAllCategories(count, batchOpts);

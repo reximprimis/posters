@@ -151,8 +151,67 @@ function describeAestheticForTitles(aestheticId) {
   return `Aesthetic direction: ${a.label} — ${a.mood}.`;
 }
 
+/** Wartosc oznaczajaca automatyczne mieszanie estetyk. */
+const AESTHETIC_MIX = 'mix';
+
+function shuffled(list) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/**
+ * Rotacja estetyk dla serii generowania.
+ *
+ * Swiadomie NIE czyste losowanie: przy losowaniu latwo o trzy japandi z rzedu.
+ * Tasujemy pelna liste i idziemy po kolei, przetasowujac dopiero po wyczerpaniu.
+ * Dzieki temu partia 6 plakatow dostaje 6 roznych estetyk — ta sama zasada,
+ * co "jeden tytul na motyw" w pulach tytulow.
+ *
+ * @returns {{ next: () => string }}
+ */
+function createAestheticRotation() {
+  let queue = [];
+  let last = '';
+  return {
+    next() {
+      if (!queue.length) {
+        queue = shuffled(AESTHETICS.map((a) => a.id));
+        // Na styku dwoch tur pierwsza pozycja moze trafic w ostatnio wydana.
+        // Przestawiamy ja, zeby "bez powtorek pod rzad" bylo prawda zawsze,
+        // a nie tylko wewnatrz jednej tury.
+        if (queue.length > 1 && queue[0] === last) {
+          [queue[0], queue[1]] = [queue[1], queue[0]];
+        }
+      }
+      last = queue.shift();
+      return last;
+    },
+  };
+}
+
+/**
+ * Rozstrzyga, jaka estetyke zastosowac dla pojedynczego plakatu.
+ *
+ * @param {string} requested 'mix', konkretne id, albo pusty string
+ * @param {{ next: () => string }} [rotation] wymagane tylko przy 'mix'
+ * @returns {string} id estetyki lub '' gdy brak
+ */
+function resolveAestheticForPoster(requested, rotation) {
+  const req = String(requested || '').trim();
+  if (!req) return '';
+  if (req === AESTHETIC_MIX) return rotation ? rotation.next() : '';
+  return isKnownAesthetic(req) ? req : '';
+}
+
 module.exports = {
   AESTHETICS,
+  AESTHETIC_MIX,
+  createAestheticRotation,
+  resolveAestheticForPoster,
   isKnownAesthetic,
   getAesthetic,
   listAestheticsForUi,
