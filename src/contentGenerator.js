@@ -10,6 +10,11 @@ const { buildTitleBriefBlock } = require('./titleSubjectConsistency');
 const { routePromptBuildResult, usesStructuredPrompt } = require('./promptRouter');
 const { assertCategoryStyleAllowed } = require('./categoryStyles');
 const { PROMPT_BUILDER_VERSION } = require('./posterMetadata');
+const {
+  pickCategoryTitles,
+  hasCuratedTitlePool,
+  filterValidCategoryTitles,
+} = require('./categoryTitlePools');
 
 function buildCoreCreativePrompt({ title, category, style }) {
   return routePromptBuildResult({ category, style, title });
@@ -186,6 +191,46 @@ function getTitleGenerationExtraRules(category, count) {
       `Do NOT generate titles focused on: fern, geometric botanical, symmetric leaves, decorative object motifs, clean product-like eucalyptus.`
     );
   }
+  if (String(category).trim() === 'Kuchnia i jedzenie') {
+    return (
+      `${base}\n` +
+      `Kuchnia i jedzenie: titles must name concrete food or kitchen subjects (lemon, pasta, olive oil, herbs, bread, tomato, fig, spice) — Mediterranean editorial still-life tone. No generic "kitchen goals" slogans.`
+    );
+  }
+  if (String(category).trim() === 'Zwierzęta') {
+    return (
+      `${base}\n` +
+      `Zwierzęta: each title names ONE specific animal species or portrait (golden retriever, arctic fox, barn owl, elephant) — wildlife or domestic, not vague "animal magic" slogans.`
+    );
+  }
+  if (String(category).trim() === 'Natura i krajobrazy') {
+    return (
+      `${base}\n` +
+      `Natura i krajobrazy: each title names a concrete landscape element (misty mountain, forest path, lake reflection, alpine meadow) — not vague "nature dreams".`
+    );
+  }
+  if (String(category).trim() === 'Plakaty dla dzieci') {
+    const needAnimals = Math.min(n, Math.max(2, Math.ceil(n * 0.5)));
+    const needMotifs = Math.min(n, Math.max(1, Math.floor(n * 0.3)));
+    return (
+      `${base}\n` +
+      `Plakaty dla dzieci (Boho-Scandi nursery): titles must name ONE concrete visual subject — never generic slogans like "Happy Times", "Fun Adventure", "Colorful Dreams".\n` +
+      `At least ${needAnimals} of ${n} titles: cute nursery animal with visual noun (watercolor lion cub, gentle giraffe, sleeping bear, forest fox, bunny, elephant, koala, sloth, owl, deer, penguin, whale).\n` +
+      `At least ${needMotifs} of ${n} titles: boho nursery motifs (boho rainbow, smiling sun and cloud, moon and stars, hot air balloon, starry sky).\n` +
+      `Muted Etsy/Pinterest nursery tone — no ABC alphabet titles, no numbers charts, no superhero names.`
+    );
+  }
+  if (String(category).trim() === 'Sport i hobby') {
+    const needSports = Math.min(n, Math.max(2, Math.ceil(n * 0.5)));
+    const needHobbies = Math.min(n, Math.max(1, Math.floor(n * 0.3)));
+    return (
+      `${base}\n` +
+      `Sport i hobby: spread titles across DIFFERENT sports and hobbies — at most ONE tennis-themed title in this batch.\n` +
+      `At least ${needSports} of ${n} titles must name a popular sport with a concrete visual noun: football/soccer, basketball, volleyball, tennis, cycling, running, swimming, golf, skiing, surfing, skateboarding, climbing.\n` +
+      `At least ${needHobbies} of ${n} titles must name a calm hobby subject: chess board, open book, film camera, hiking boots, fishing rod, knitting yarn, paint palette, acoustic guitar, camping tent, gardening tools.\n` +
+      `Do NOT generate five tennis/racket/court/serve titles. Vary the sport or hobby in every title.`
+    );
+  }
   return base;
 }
 
@@ -287,6 +332,23 @@ class ContentGenerator {
   }
 
   async generatePosterTitles(category, count = 5, options = {}) {
+    const categoryKey = String(category || '').trim();
+    const excludeTitles = Array.isArray(options.excludeTitles)
+      ? options.excludeTitles.map((t) => String(t || '').trim()).filter(Boolean)
+      : [];
+
+    if (hasCuratedTitlePool(categoryKey)) {
+      let titles = pickCategoryTitles(categoryKey, count, excludeTitles);
+      while (titles.length < count) {
+        const more = pickCategoryTitles(categoryKey, count - titles.length, [...excludeTitles, ...titles]);
+        if (!more.length) break;
+        titles = titles.concat(more);
+      }
+      titles = titles.slice(0, count);
+      console.log(`  ✓ Titles from curated pool (${categoryKey}): ${titles.join(', ')}`);
+      return { titles, titlePrompt: `curated-pool:${categoryKey}` };
+    }
+
     // Fallback titles for demo mode (when API key not set)
     const fallbackTitles = {
       'Botanika': ['Summer Garden', 'Botanical Beauty', 'Green Vibes', 'Nature\'s Art', 'Plant Love'],
@@ -295,7 +357,18 @@ class ContentGenerator {
       'Obrazy do kuchni': ['Fresh & Tasty', 'Kitchen Goals', 'Culinary Art', 'Food Love', 'Recipe Magic'],
       'Plakaty z napisami': ['Dream Big', 'Be Yourself', 'Stay Strong', 'Live Laugh', 'You Got This'],
       'Zwierzęta': ['Wild & Free', 'Animal Magic', 'Safari Life', 'Pet Love', 'Natural Beauty'],
-      'Plakaty dla dzieci': ['Happy Times', 'Fun Adventure', 'Colorful Dreams', 'Play Zone', 'Joy Ride'],
+      'Plakaty dla dzieci': [
+        'Watercolor Lion Cub',
+        'Gentle Giraffe Portrait',
+        'Boho Rainbow Arc',
+        'Sleeping Bear Cub',
+        'Moon and Stars Night',
+        'Forest Fox Friend',
+        'Smiling Sun and Cloud',
+        'Koala on Branch',
+        'Hot Air Balloon Journey',
+        'Bunny in Meadow',
+      ],
       'Mapy i miasta': ['City Lights', 'Urban Life', 'World Travel', 'City Love', 'Map Quest'],
       'Retro': ['Vintage Vibes', 'Retro Cool', 'Classic Style', '80s Vibes', 'Nostalgia'],
       'Kultowe zdjęcia': ['Iconic Moment', 'Unforgettable', 'Legend Status', 'Historic', 'Timeless'],
@@ -342,11 +415,18 @@ class ContentGenerator {
         'Misty Coastal Silence',
       ],
       'Sport i hobby': [
-        'Minimal Tennis Court',
+        'Soccer Ball on Grass',
+        'Basketball Court Lines',
+        'Volleyball on Sand',
         'Quiet Bicycle Morning',
-        'Soft Golf Green',
-        'Surf Curve Study',
-        'Vintage Running Form',
+        'Running Track Dawn',
+        'Chess Board Still Life',
+        'Open Book and Coffee',
+        'Hiking Boots on Trail',
+        'Fishing Rod at Lake',
+        'Acoustic Guitar Corner',
+        'Swimming Goggles Poolside',
+        'Camping Tent at Dusk',
       ],
       'Gaming i e-sport': [
         'Neon Gaming Setup',
@@ -452,6 +532,10 @@ class ContentGenerator {
 
     const provider = this.resolveLlmProvider(options.llmProvider);
     if (!provider) {
+      if (hasCuratedTitlePool(categoryKey)) {
+        const titles = pickCategoryTitles(categoryKey, count, excludeTitles).slice(0, count);
+        if (titles.length) return { titles, titlePrompt: null };
+      }
       const baseTitles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
       const titles = [];
       for (let i = 0; i < count; i++) {
@@ -463,6 +547,9 @@ class ContentGenerator {
 
     const categoryDesc = config.categories[category] || category;
     const extraRules = getTitleGenerationExtraRules(category, count);
+    const excludeBlock = excludeTitles.length
+      ? `\nForbidden — do NOT reuse or closely imitate these existing library titles:\n${excludeTitles.map((t) => `- ${t}`).join('\n')}`
+      : '';
     const styleHint = typeof options.artStyle === 'string' && options.artStyle.trim()
       ? `\nSelected art style: ${options.artStyle.trim()}\nTitles must naturally fit this exact style while staying visually distinct from each other.`
       : '';
@@ -471,6 +558,7 @@ class ContentGenerator {
 
 Category focus: ${categoryDesc}
 ${styleHint}
+${excludeBlock}
 
 Hard requirements:
 - 2–5 words per title, Title Case, English (for image model consistency).
@@ -485,20 +573,42 @@ Example format: ["Title One", "Title Two", "Title Three"]
 
 Generate now:`;
 
-    try {
-      const content = await this.llmComplete(prompt, 500, provider, { temperature: 0.65 });
-      const titles = parseTitlesFromLlmResponse(content);
-      return { titles: titles.slice(0, count), titlePrompt: prompt };
-    } catch (error) {
-      console.error('Error generating titles:', error.message);
-      const baseTitles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
-      const titles = [];
+    const maxAttempts = hasCuratedTitlePool(categoryKey) ? 2 : 1;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      try {
+        const temp = 0.65;
+        const content = await this.llmComplete(prompt, 500, provider, { temperature: temp });
+        let titles = hasCuratedTitlePool(categoryKey)
+          ? filterValidCategoryTitles(categoryKey, parseTitlesFromLlmResponse(content), excludeTitles)
+          : parseTitlesFromLlmResponse(content);
+        if (hasCuratedTitlePool(categoryKey) && titles.length < count) {
+          const topUp = pickCategoryTitles(categoryKey, count - titles.length, [...excludeTitles, ...titles]);
+          titles = titles.concat(topUp);
+        }
+        if (titles.length >= count) {
+          return { titles: titles.slice(0, count), titlePrompt: prompt };
+        }
+      } catch (error) {
+        if (attempt === maxAttempts - 1) {
+          console.error('Error generating titles:', error.message);
+        }
+      }
+    }
+
+    const baseTitles = fallbackTitles[category] || Array.from({ length: count }, (_, i) => `${category} ${i + 1}`);
+    let titles = hasCuratedTitlePool(categoryKey)
+      ? pickCategoryTitles(categoryKey, count, excludeTitles)
+      : [];
+    if (titles.length < count) {
       for (let i = 0; i < count; i++) {
         const base = baseTitles[i % baseTitles.length] || `${category} ${i + 1}`;
-        titles.push(i < baseTitles.length ? base : `${base} ${Math.floor(i / baseTitles.length) + 1}`);
+        const candidate = i < baseTitles.length ? base : `${base} ${Math.floor(i / baseTitles.length) + 1}`;
+        if (!excludeTitles.some((x) => x.toLowerCase() === candidate.toLowerCase())) {
+          titles.push(candidate);
+        }
       }
-      return { titles, titlePrompt: prompt };
     }
+    return { titles: titles.slice(0, count), titlePrompt: prompt };
   }
 
   async generateImagePrompt(title, category, style, options = {}) {

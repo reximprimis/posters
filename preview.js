@@ -6,16 +6,83 @@ const { spawn } = require('child_process');
 const config = require('./config');
 const ContentGenerator = require('./src/contentGenerator');
 const DalleImageGenerator = require('./src/dalleImageGenerator');
+const MockupGenerator = require('./src/mockupGenerator');
 const { applyMatFrameFromBuffer } = require('./src/posterMatFrame');
-const { reconcileInventoryShopifyStates, evaluatePosterShopifyState } = require('./src/shopifyState');
+const {
+  reconcileInventoryShopifyStates,
+  evaluatePosterShopifyState,
+  summarizeApprovedShopifyStates,
+} = require('./src/shopifyState');
+const { humanizePosterTitle, titleFromFileName, isFilenameStyleTitle } = require('./src/posterTitle');
+const {
+  masterExistsAt,
+  collisionErrorMessage,
+  PosterNameCollisionError,
+} = require('./src/posterNameGuard');
 const sharp = require('sharp');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
+// ── Live log broadcaster (SSE) ───────────────────────────────────────────────
+const _logClients = new Set();
+
+function broadcastLog(level, args) {
+  if (_logClients.size === 0) return;
+  const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+  const payload = JSON.stringify({ level, msg, ts: Date.now() });
+  for (const res of _logClients) {
+    try { res.write(`data: ${payload}\n\n`); } catch (_) { _logClients.delete(res); }
+  }
+}
+
+// Intercept console so all server logs are forwarded to connected SSE clients
+const _origLog = console.log;
+const _origWarn = console.warn;
+const _origError = console.error;
+console.log   = (...a) => { _origLog(...a);   broadcastLog('log',   a); };
+console.warn  = (...a) => { _origWarn(...a);  broadcastLog('warn',  a); };
+console.error = (...a) => { _origError(...a); broadcastLog('error', a); };
+// ─────────────────────────────────────────────────────────────────────────────
+
 const INVENTORY_PATH = path.join(__dirname, 'posters_inventory.json');
 const PREVIEW_STAGING_DIR = path.join(__dirname, '.preview-staging');
 const SHOPIFY_EXPORT_SETTINGS_PATH = path.join(__dirname, 'shopify_export_settings.json');
+const USER_SETTINGS_PATH = path.join(__dirname, 'user_settings.json');
+
+/**
+ * Ceny zsynchronizowane ze sklepem reximprimis.com (PLN, Storefront API, 2026-08-03).
+ * 70x100 nie istnieje na sklepie — cena orientacyjna, rozmiar domyślnie poza eksportem.
+ * Muszą się zgadzać z SIZE_DEFS w scripts/exportShopifyCsv.js.
+ */
+const SHOPIFY_EXPORT_DEFAULTS = {
+  prices: {
+    '13x18': '16.00',
+    '21x30': '26.00',
+    '30x40': '43.00',
+    '40x50': '57.00',
+    '50x70': '71.00',
+    '70x100': '99.00',
+  },
+  selectedSizes: ['13x18', '21x30', '30x40', '40x50', '50x70'],
+  compareAtMultiplier: 2,
+};
+
+function readUserSettings() {
+  try {
+    if (fs.existsSync(USER_SETTINGS_PATH)) {
+      return JSON.parse(fs.readFileSync(USER_SETTINGS_PATH, 'utf-8'));
+    }
+  } catch (e) {}
+  return {};
+}
+
+function writeUserSettings(data) {
+  const current = readUserSettings();
+  const merged = Object.assign({}, current, data);
+  fs.writeFileSync(USER_SETTINGS_PATH, JSON.stringify(merged, null, 2), 'utf-8');
+  return merged;
+}
 
 if (!fs.existsSync(PREVIEW_STAGING_DIR)) {
   fs.mkdirSync(PREVIEW_STAGING_DIR, { recursive: true });
@@ -79,6 +146,64 @@ async function autoFillMissingShopListingsByImageKeys(imageKeys) {
   }
 }
 
+/**
+ * Auto-generate mockups during the approval pipeline.
+ * Skips posters that already have both mockup files on disk.
+ * Skips silently if OPENAI_API_KEY is not set.
+ * INFO-DOC: When mockup logic changes, update #itab-mockups in public/index.html.
+ */
+async function generateMockupsForPosterIds(posterIds) {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log('  [mockup-auto] Skipping — OPENAI_API_KEY not set');
+    return;
+  }
+  if (!fs.existsSync(INVENTORY_PATH)) return;
+  const inventoryData = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+  const posters = Array.isArray(inventoryData) ? inventoryData : (inventoryData.posters || []);
+  let changed = false;
+  for (const id of posterIds) {
+    const poster = posters.find((p) => p && p.id === id);
+    if (!poster) continue;
+    // Skip if both mockup files already exist on disk
+    if (poster.mockups && poster.mockups.frame && poster.mockups.interior) {
+      const frameAbs = path.isAbsolute(poster.mockups.frame)
+        ? poster.mockups.frame
+        : path.join(__dirname, poster.mockups.frame);
+      if (fs.existsSync(frameAbs)) {
+        console.log(`  [mockup-auto] Already exists, skipping: ${poster.title}`);
+        continue;
+      }
+    }
+    const relPath = poster.imagePath || '';
+    if (!relPath) continue;
+    const masterAbs = path.isAbsolute(relPath) ? relPath : path.join(__dirname, relPath);
+    if (!fs.existsSync(masterAbs)) continue;
+    try {
+      const outputDir = path.dirname(masterAbs);
+      const titleSlug = (poster.title || '').trim().replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+      console.log(`  [mockup-auto] Generating for: ${poster.title}`);
+      const mg = new MockupGenerator();
+      const { frame, interior } = await mg.generate(masterAbs, outputDir, titleSlug, {
+        category: poster.category,
+        title: poster.title,
+      });
+      const toRel = (abs) => path.relative(__dirname, abs).replace(/\\/g, '/');
+      poster.mockups = {
+        frame: toRel(frame),
+        interior: toRel(interior),
+        generatedAt: new Date().toISOString(),
+      };
+      changed = true;
+      console.log(`  [mockup-auto] Done: ${poster.title}`);
+    } catch (err) {
+      console.warn(`  [mockup-auto] Failed for ${poster.title || id}: ${err.message}`);
+    }
+  }
+  if (changed) {
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventoryData, null, 2), 'utf-8');
+  }
+}
+
 function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
   for (const k of imageKeys || []) {
     if (k) approvalAssetsQueue.add(String(k));
@@ -107,6 +232,8 @@ function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
       await gen.applyShopThumbnailsForPosterIds(posterIds);
       await gen.applyFullPrintPdfsForPosterIds(posterIds);
       await gen.applyFramedPrintPdfsForPosterIds(posterIds);
+      // Mockupy generowane na końcu (wymagają OpenAI API, ~30-60s/plakat)
+      await generateMockupsForPosterIds(posterIds);
     } catch (e) {
       console.error('approval background generation failed:', e && e.message ? e.message : e);
     } finally {
@@ -171,6 +298,25 @@ function fileExistsAtRelative(relativePath) {
   try {
     const abs = absProjectPath(relativePath);
     return fs.existsSync(abs) && fs.statSync(abs).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/** Ramka musi być nowsza lub równoległa do mastera — inaczej to stary plik z poprzedniej generacji. */
+function derivedFramedAssetIsFresh(masterCleanPath, framedRelativePath) {
+  try {
+    const masterRel = `posters/${cleanPosterSubPath(masterCleanPath)}`;
+    let framedRel = String(framedRelativePath || '').replace(/\\/g, '/').replace(/^\//, '');
+    if (!framedRel.startsWith('posters/')) {
+      framedRel = `posters/${cleanPosterSubPath(framedRel)}`;
+    }
+    const masterAbs = absProjectPath(masterRel);
+    const framedAbs = absProjectPath(framedRel);
+    if (!fs.existsSync(masterAbs) || !fs.existsSync(framedAbs)) return false;
+    const masterMtime = fs.statSync(masterAbs).mtimeMs;
+    const framedMtime = fs.statSync(framedAbs).mtimeMs;
+    return framedMtime >= masterMtime - 2000;
   } catch {
     return false;
   }
@@ -272,12 +418,18 @@ function styleToFolderSegment(style) {
   return String(style || '').trim() || 'Photography';
 }
 
-function titleFromFileName(fileName) {
-  const base = String(fileName || '')
-    .replace(/\.[^.]+$/, '')
-    .replace(/_/g, ' ')
-    .trim();
-  return base || 'Manual Import';
+function repairFilenameStyleTitles(inventory) {
+  if (!inventory || !Array.isArray(inventory.posters)) return false;
+  let changed = false;
+  for (const p of inventory.posters) {
+    if (!p || !isFilenameStyleTitle(p.title)) continue;
+    const next = humanizePosterTitle(p.title);
+    if (next && next !== p.title) {
+      p.title = next;
+      changed = true;
+    }
+  }
+  return changed;
 }
 
 function collectImageFilesRecursively(rootDir) {
@@ -306,6 +458,7 @@ function collectImageFilesRecursively(rootDir) {
       if (lower.endsWith('_master.png') || lower.includes('.gen.tmp.')) continue;
       if (lower.includes('_thumb.')) continue;
       if (lower.includes('_lifestyle.')) continue;
+      if (lower.startsWith('mockup_') || lower.includes('_mockup_frame.') || lower.includes('_mockup_interior.')) continue;
       out.push(abs);
     }
   }
@@ -380,6 +533,9 @@ app.get('/api/posters', (req, res) => {
 
   const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
   let inventoryChanged = false;
+  if (repairFilenameStyleTitles(inventory)) {
+    inventoryChanged = true;
+  }
   if (syncManualImageImports(inventory)) {
     inventoryChanged = true;
   }
@@ -425,6 +581,9 @@ app.get('/api/posters', (req, res) => {
     let pdfLinks = items[0].pdfLinks;
     let pdfLinksFramed = buildPdfLinksFromRaw(primary.pdfPathsFramed);
     let imagePathFramed = primary.imagePathFramed || '';
+    if (imagePathFramed && !derivedFramedAssetIsFresh(cleanImagePath, imagePathFramed)) {
+      imagePathFramed = '';
+    }
     let imagePathLifestyle = primary.imagePathLifestyle || '';
     let imagePathThumb = primary.imagePathThumb || '';
     let imagePathFramedThumb = primary.imagePathFramedThumb || '';
@@ -432,6 +591,7 @@ app.get('/api/posters', (req, res) => {
     let promptLlmLabel = primary.promptLlmLabel || '';
     let promptLlmProvider = primary.promptLlmProvider || '';
     let promptLlmModel = primary.promptLlmModel || '';
+    let shopDescriptionMerged = typeof primary.shopDescription === 'string' ? primary.shopDescription.trim() : '';
     for (const row of items) {
       const cand = String(row.poster.prompt || '').trim();
       if (cand && (!prompt || cand.length > prompt.length)) {
@@ -440,6 +600,9 @@ app.get('/api/posters', (req, res) => {
         promptLlmProvider = row.poster.promptLlmProvider || promptLlmProvider;
         promptLlmModel = row.poster.promptLlmModel || promptLlmModel;
       }
+      if (!shopDescriptionMerged && typeof row.poster.shopDescription === 'string' && row.poster.shopDescription.trim()) {
+        shopDescriptionMerged = row.poster.shopDescription.trim();
+      }
     }
 
     for (let i = 1; i < items.length; i++) {
@@ -447,7 +610,9 @@ app.get('/api/posters', (req, res) => {
         pdfLinks = items[i].pdfLinks;
       }
       const cand = items[i].poster.imagePathFramed;
-      if (cand && !imagePathFramed) imagePathFramed = cand;
+      if (cand && !imagePathFramed && derivedFramedAssetIsFresh(cleanImagePath, cand)) {
+        imagePathFramed = cand;
+      }
       const candFr = buildPdfLinksFromRaw(items[i].poster.pdfPathsFramed);
       if (candFr.length > pdfLinksFramed.length) {
         pdfLinksFramed = candFr;
@@ -465,10 +630,15 @@ app.get('/api/posters', (req, res) => {
 
     let framedHref;
     if (imagePathFramed && fileExistsAtRelative(imagePathFramed)) {
-      framedHref = '/' + cleanPosterSubPath(String(imagePathFramed).replace(/\\/g, '/'));
-    } else {
+      const cand = '/' + cleanPosterSubPath(String(imagePathFramed).replace(/\\/g, '/'));
+      if (derivedFramedAssetIsFresh(cleanImagePath, imagePathFramed)) {
+        framedHref = cand;
+      }
+    }
+    if (!framedHref) {
       const fallbackFramed = withFramedSuffix('/' + cleanImagePath);
-      if (fallbackFramed && fileExistsAtRelative('posters/' + cleanPosterSubPath(fallbackFramed))) {
+      const fallbackRel = fallbackFramed ? 'posters/' + cleanPosterSubPath(fallbackFramed) : '';
+      if (fallbackRel && fileExistsAtRelative(fallbackRel) && derivedFramedAssetIsFresh(cleanImagePath, fallbackRel)) {
         framedHref = fallbackFramed;
       }
     }
@@ -498,6 +668,22 @@ app.get('/api/posters', (req, res) => {
       lifestyleHref = '/' + cleanPosterSubPath(String(imagePathLifestyle).replace(/\\/g, '/'));
     }
 
+    let mockupsOut;
+    {
+      const toHref = (p) => {
+        if (!p) return '';
+        const rel = String(p).replace(/\\/g, '/');
+        return fileExistsAtRelative(rel) ? '/' + cleanPosterSubPath(rel.replace(/^posters\//, '')) : '';
+      };
+      // Search all items in group for mockups (primary may not have them if deduped)
+      const srcMockups = items.map(x => x.poster.mockups).find(m => m && (m.frame || m.interior));
+      if (srcMockups) {
+        const fh = toHref(srcMockups.frame);
+        const ih = toHref(srcMockups.interior);
+        if (fh || ih) mockupsOut = { frame: fh, interior: ih, generatedAt: srcMockups.generatedAt };
+      }
+    }
+
     const cat = primary.category;
     if (!posters[cat]) {
       posters[cat] = [];
@@ -516,7 +702,7 @@ app.get('/api/posters', (req, res) => {
       promptLlmProvider,
       promptLlmModel,
       needsManualMetadata: primary.needsManualMetadata === true,
-      shopDescription: typeof primary.shopDescription === 'string' ? primary.shopDescription : '',
+      shopDescription: shopDescriptionMerged,
       approvedForPrint: primary.approvedForPrint === true,
       shopifyState: typeof primary.shopifyState === 'string' ? primary.shopifyState : 'pending_assets',
       shopifyIssues: Array.isArray(primary.shopifyIssues) ? primary.shopifyIssues : [],
@@ -525,6 +711,7 @@ app.get('/api/posters', (req, res) => {
       ...(framedThumbHref ? { imagePathFramedThumb: framedThumbHref } : {}),
       ...(lifestyleHref ? { imagePathLifestyle: lifestyleHref } : {}),
       ...(pdfLinksFramed.length ? { pdfLinksFramed } : {}),
+      ...(mockupsOut ? { mockups: mockupsOut } : {}),
     });
   }
 
@@ -556,11 +743,23 @@ app.get('/api/shopify/readiness', (req, res) => {
     fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
   }
 
+  const approvedSummary = summarizeApprovedShopifyStates(__dirname, inventory);
+  const blocked = [];
   const posters = Array.isArray(inventory.posters) ? inventory.posters : [];
   const approved = posters.filter((p) => p && p.approvedForPrint === true);
-  const blocked = [];
-
+  const byImage = new Map();
   for (const p of approved) {
+    const k = String(p.imagePath || '')
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '')
+      .toLowerCase();
+    if (!k) continue;
+    const t = Date.parse(p.createdAt || '') || 0;
+    const prev = byImage.get(k);
+    if (!prev || t >= prev._t) byImage.set(k, { poster: p, _t: t });
+  }
+
+  for (const { poster: p } of byImage.values()) {
     const evalState = evaluatePosterShopifyState(__dirname, p);
     if (evalState.state !== 'ready') {
       blocked.push({
@@ -579,11 +778,11 @@ app.get('/api/shopify/readiness', (req, res) => {
   res.json({
     ok: true,
     summary: {
-      total: reconcile.total,
-      approved: approved.length,
-      ready: reconcile.ready,
-      pending_assets: reconcile.pending_assets,
-      legacy_blocked: reconcile.legacy_blocked,
+      approved: approvedSummary.uniqueApproved,
+      ready: approvedSummary.ready,
+      pending_assets: approvedSummary.pending_assets,
+      legacy_blocked: approvedSummary.legacy_blocked,
+      duplicates: approvedSummary.duplicates,
       blockedApproved: blocked.length,
     },
     blockedApproved: blocked.slice(0, 60),
@@ -1287,10 +1486,27 @@ app.post('/api/posters/move', (req, res) => {
 
 app.get('/api/generation-config', (req, res) => {
   const cg = new ContentGenerator();
+  const us = readUserSettings();
+
+  // Merge user-added categories with base config
+  const baseCategories = Object.keys(config.categories);
+  const extraCategories = Array.isArray(us.extraCategories) ? us.extraCategories : [];
+  const allCategoryNames = [...baseCategories, ...extraCategories.map(c => c.name).filter(n => !baseCategories.includes(n))];
+
+  const categoryHints = Object.assign({}, config.categories);
+  for (const ec of extraCategories) {
+    if (ec.name && !categoryHints[ec.name]) categoryHints[ec.name] = ec.hint || '';
+  }
+
+  // Merge user-added styles
+  const baseStyles = config.artStyles || [];
+  const extraStyles = Array.isArray(us.extraStyles) ? us.extraStyles : [];
+  const allStyles = [...baseStyles, ...extraStyles.filter(s => !baseStyles.includes(s))];
+
   res.json({
-    categories: Object.keys(config.categories),
-    categoryHints: config.categories,
-    artStyles: config.artStyles,
+    categories: allCategoryNames,
+    categoryHints,
+    artStyles: allStyles,
     categoryStyles: config.categoryStyles || {},
     roomCollections: config.roomCollections || [],
     categoryRoomCollections: config.categoryRoomCollections || {},
@@ -1298,7 +1514,183 @@ app.get('/api/generation-config', (req, res) => {
     llmProviders: cg.getAvailableLlmProviders(),
     defaultLlmProvider: cg.resolveLlmProvider(),
     openaiPromptModel: config.openaiPromptModel,
+    extraCategories,
+    extraStyles,
+    defaults: {
+      category: us.defaultCategory || '',
+      style: us.defaultStyle || '',
+    },
   });
+});
+
+/** Read full user settings */
+app.get('/api/user-settings', (req, res) => {
+  res.json(readUserSettings());
+});
+
+/** Save user settings (partial patch) */
+app.post('/api/user-settings', (req, res) => {
+  try {
+    const body = req.body || {};
+    const saved = writeUserSettings(body);
+    res.json({ ok: true, settings: saved });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/** Add a new category */
+app.post('/api/user-settings/categories/add', (req, res) => {
+  try {
+    const { name, hint } = req.body || {};
+    if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Brak nazwy kategorii' });
+    const us = readUserSettings();
+    const extras = Array.isArray(us.extraCategories) ? us.extraCategories : [];
+    if (config.categories[name.trim()] || extras.find(c => c.name === name.trim())) {
+      return res.status(409).json({ ok: false, error: 'Kategoria już istnieje' });
+    }
+    extras.push({ name: name.trim(), hint: (hint || '').trim() });
+    writeUserSettings({ extraCategories: extras });
+    res.json({ ok: true, category: { name: name.trim(), hint: (hint || '').trim() } });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/** Remove a user-added category */
+app.delete('/api/user-settings/categories/:name', (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    const us = readUserSettings();
+    const extras = (us.extraCategories || []).filter(c => c.name !== name);
+    writeUserSettings({ extraCategories: extras });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/** Add a new style */
+app.post('/api/user-settings/styles/add', (req, res) => {
+  try {
+    const { name } = req.body || {};
+    if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Brak nazwy stylu' });
+    const us = readUserSettings();
+    const extras = Array.isArray(us.extraStyles) ? us.extraStyles : [];
+    if ((config.artStyles || []).includes(name.trim()) || extras.includes(name.trim())) {
+      return res.status(409).json({ ok: false, error: 'Styl już istnieje' });
+    }
+    extras.push(name.trim());
+    writeUserSettings({ extraStyles: extras });
+    res.json({ ok: true, style: name.trim() });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/** Remove a user-added style */
+app.delete('/api/user-settings/styles/:name', (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    const us = readUserSettings();
+    const extras = (us.extraStyles || []).filter(s => s !== name);
+    writeUserSettings({ extraStyles: extras });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/** SSE: stream server logs to browser in real time. */
+app.get('/api/logs/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  _logClients.add(res);
+
+  // Send a hello so client knows it's connected
+  res.write(`data: ${JSON.stringify({ level: 'system', msg: '── Połączono z serwerem ──', ts: Date.now() })}\n\n`);
+
+  const keepAlive = setInterval(() => {
+    try { res.write(': ping\n\n'); } catch (_) { clearInterval(keepAlive); }
+  }, 20000);
+
+  req.on('close', () => {
+    clearInterval(keepAlive);
+    _logClients.delete(res);
+  });
+});
+
+/** Settings: read-only system config snapshot (masked secrets). */
+app.get('/api/settings', (req, res) => {
+  const key = config.openaiKey || '';
+  const maskedKey = key.length > 8
+    ? key.slice(0, 4) + '••••••••' + key.slice(-4)
+    : key ? '••••••••' : '(brak klucza)';
+  const imageModel = String(process.env.IMAGE_GENERATION_MODEL || 'gpt-image-2').trim();
+  res.json({
+    openaiKeyMasked: maskedKey,
+    openaiKeySet: !!key,
+    imageModel,
+    promptModel: config.openaiPromptModel || 'gpt-4o-mini',
+    llmProviders: new (require('./src/contentGenerator'))().getAvailableLlmProviders(),
+    nodeVersion: process.version,
+    appVersion: '2.0',
+  });
+});
+
+/** Generate product mockups (frame packshot + interior lifestyle) for a poster. */
+app.post('/api/posters/:id/generate-mockups', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const raw = fs.readFileSync(INVENTORY_PATH, 'utf-8');
+    const inventoryData = JSON.parse(raw);
+    const posters = Array.isArray(inventoryData) ? inventoryData : (inventoryData.posters || []);
+    const poster = posters.find((p) => p.id === id);
+    if (!poster) return res.status(404).json({ ok: false, error: `Poster not found: ${id}` });
+
+    // Resolve master PNG path
+    const relPath = poster.imagePath || '';
+    if (!relPath) return res.status(400).json({ ok: false, error: 'Poster has no imagePath' });
+    const masterAbs = path.isAbsolute(relPath) ? relPath : path.join(__dirname, relPath);
+    if (!fs.existsSync(masterAbs)) return res.status(400).json({ ok: false, error: `Master PNG not found: ${relPath}` });
+
+    const outputDir = path.dirname(masterAbs);
+    const titleSlug = (poster.title || '').trim().replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+    const mg = new MockupGenerator();
+    const { frame, interior } = await mg.generate(masterAbs, outputDir, titleSlug, {
+      category: poster.category,
+      title: poster.title,
+    });
+
+    // Convert abs paths → relative paths for inventory
+    const toRel = (abs) => path.relative(__dirname, abs).replace(/\\/g, '/');
+    poster.mockups = {
+      frame: toRel(frame),
+      interior: toRel(interior),
+      generatedAt: new Date().toISOString(),
+    };
+
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventoryData, null, 2), 'utf-8');
+
+    res.json({
+      ok: true,
+      mockups: poster.mockups,
+    });
+  } catch (err) {
+    console.error('[mockup]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/** Serve mockup images statically (frame / interior). */
+app.get('/mockups/:category/:title/:file', (req, res) => {
+  const filePath = path.join(__dirname, 'posters', req.params.category, req.params.title, req.params.file);
+  if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+  res.sendFile(filePath);
 });
 
 /** Dashboard action: build Shopify import CSV from inventory. */
@@ -1389,17 +1781,7 @@ app.post('/api/shopify/export', (req, res) => {
 });
 
 app.get('/api/shopify/export-settings', (req, res) => {
-  const defaults = {
-    prices: {
-      '13x18': '15.00',
-      '21x30': '25.00',
-      '30x40': '32.00',
-      '40x50': '54.00',
-      '50x70': '65.00',
-      '70x100': '90.00',
-    },
-    selectedSizes: ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'],
-  };
+  const defaults = { ...SHOPIFY_EXPORT_DEFAULTS };
   try {
     if (!fs.existsSync(SHOPIFY_EXPORT_SETTINGS_PATH)) {
       return res.json({ ok: true, ...defaults });
@@ -1415,10 +1797,16 @@ app.get('/api/shopify/export-settings', (req, res) => {
     const selectedSizes = Array.isArray(raw && raw.selectedSizes)
       ? raw.selectedSizes.filter((x) => Object.prototype.hasOwnProperty.call(prices, String(x)))
       : defaults.selectedSizes;
+    let compareAtMultiplier = defaults.compareAtMultiplier;
+    if (raw && raw.compareAtMultiplier != null) {
+      const m = Number(String(raw.compareAtMultiplier).replace(',', '.'));
+      if (Number.isFinite(m) && m >= 1) compareAtMultiplier = m;
+    }
     return res.json({
       ok: true,
       prices,
       selectedSizes: selectedSizes.length ? selectedSizes : defaults.selectedSizes,
+      compareAtMultiplier,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Nie udało się odczytać ustawień eksportu.' });
@@ -1427,17 +1815,7 @@ app.get('/api/shopify/export-settings', (req, res) => {
 
 app.post('/api/shopify/export-settings', (req, res) => {
   const allowedSizes = new Set(['13x18', '21x30', '30x40', '40x50', '50x70', '70x100']);
-  const defaults = {
-    prices: {
-      '13x18': '15.00',
-      '21x30': '25.00',
-      '30x40': '32.00',
-      '40x50': '54.00',
-      '50x70': '65.00',
-      '70x100': '90.00',
-    },
-    selectedSizes: ['13x18', '21x30', '30x40', '40x50', '50x70', '70x100'],
-  };
+  const defaults = { ...SHOPIFY_EXPORT_DEFAULTS };
   try {
     const body = req.body || {};
     const pricesIn = body.prices && typeof body.prices === 'object' ? body.prices : {};
@@ -1458,7 +1836,22 @@ app.post('/api/shopify/export-settings', (req, res) => {
     if (selectedSizes.length === 0) {
       return res.status(400).json({ error: 'Wybierz minimum jeden rozmiar.' });
     }
-    const out = { prices, selectedSizes };
+    // Zachowaj mnożnik ceny przekreślonej — UI go nie wysyła, a nadpisanie skasowałoby promocję w eksporcie.
+    let compareAtMultiplier = defaults.compareAtMultiplier;
+    if (body.compareAtMultiplier != null) {
+      const m = Number(String(body.compareAtMultiplier).replace(',', '.'));
+      if (!Number.isFinite(m) || m < 1) {
+        return res.status(400).json({ error: 'Mnożnik ceny przekreślonej musi być liczbą >= 1.' });
+      }
+      compareAtMultiplier = m;
+    } else if (fs.existsSync(SHOPIFY_EXPORT_SETTINGS_PATH)) {
+      try {
+        const prev = JSON.parse(fs.readFileSync(SHOPIFY_EXPORT_SETTINGS_PATH, 'utf-8'));
+        const m = Number(String(prev && prev.compareAtMultiplier).replace(',', '.'));
+        if (Number.isFinite(m) && m >= 1) compareAtMultiplier = m;
+      } catch (_) {}
+    }
+    const out = { prices, selectedSizes, compareAtMultiplier };
     fs.writeFileSync(SHOPIFY_EXPORT_SETTINGS_PATH, JSON.stringify(out, null, 2), 'utf-8');
     return res.json({ ok: true, ...out });
   } catch (err) {
@@ -1663,6 +2056,12 @@ function validateStudioPayload(body) {
       error: `Prompt jest za długi (max ${imagePromptMaxUser} znaków; serwer dokleja dopisek anty-ramka do generatora obrazów)`,
     };
   }
+  if (masterExistsAt(category, style, title)) {
+    return {
+      error: collisionErrorMessage(category, style, title),
+      code: 'POSTER_NAME_COLLISION',
+    };
+  }
   return {
     title,
     category,
@@ -1671,6 +2070,14 @@ function validateStudioPayload(body) {
     matFrame: parseMatFrameFromBody(body),
     printLayout: parsePrintLayoutFromBody(body),
   };
+}
+
+function studioPayloadErrorStatus(v) {
+  return v && v.code === 'POSTER_NAME_COLLISION' ? 409 : 400;
+}
+
+function isPosterNameCollision(err) {
+  return Boolean(err && (err.code === 'POSTER_NAME_COLLISION' || err.name === 'PosterNameCollisionError'));
 }
 
 function decodeImageDataUrl(dataUrl) {
@@ -1696,7 +2103,7 @@ app.post('/api/studio/preview', async (req, res) => {
   try {
     const v = validateStudioPayload(req.body || {});
     if (v.error) {
-      return res.status(400).json({ error: v.error });
+      return res.status(studioPayloadErrorStatus(v)).json({ error: v.error, code: v.code || undefined });
     }
     const gen = getBatchGenerator();
     const { previewId } = await gen.generateStagingPreview(v.category, v.title, v.style, v.trimmedPrompt);
@@ -1715,7 +2122,7 @@ app.post('/api/studio/preview-upload', async (req, res) => {
   try {
     const v = validateStudioPayload(req.body || {});
     if (v.error) {
-      return res.status(400).json({ error: v.error });
+      return res.status(studioPayloadErrorStatus(v)).json({ error: v.error, code: v.code || undefined });
     }
     const body = req.body || {};
     const decoded = decodeImageDataUrl(body.imageDataUrl);
@@ -1874,7 +2281,7 @@ app.post('/api/studio/commit', async (req, res) => {
     const { previewId } = req.body || {};
     const v = validateStudioPayload(req.body || {});
     if (v.error) {
-      return res.status(400).json({ error: v.error });
+      return res.status(studioPayloadErrorStatus(v)).json({ error: v.error, code: v.code || undefined });
     }
     if (!previewId || typeof previewId !== 'string') {
       return res.status(400).json({ error: 'Wymagane previewId' });
@@ -1929,7 +2336,11 @@ app.post('/api/studio/commit', async (req, res) => {
       pdfCount: pdfKeys.length,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Zapis do biblioteki nie powiódł się' });
+    const status = isPosterNameCollision(err) ? 409 : 500;
+    res.status(status).json({
+      error: err.message || 'Zapis do biblioteki nie powiódł się',
+      ...(isPosterNameCollision(err) ? { code: 'POSTER_NAME_COLLISION' } : {}),
+    });
   }
 });
 
@@ -1937,7 +2348,7 @@ app.post('/api/generate-poster', async (req, res) => {
   try {
     const v = validateStudioPayload(req.body || {});
     if (v.error) {
-      return res.status(400).json({ error: v.error });
+      return res.status(studioPayloadErrorStatus(v)).json({ error: v.error, code: v.code || undefined });
     }
     const generatePdf = req.body.generatePdf === true;
     const gen = getBatchGenerator();
@@ -1948,15 +2359,34 @@ app.post('/api/generate-poster', async (req, res) => {
       generatePrintPdfs: parseAutoPdfsFromBody(req.body || {}),
     });
     const relImage = result.imagePath.replace(/\\/g, '/');
+
+    // Auto-generate shop thumbnail immediately so the library card has a fast-loading image
+    let thumbPath = '';
+    try {
+      const thumbResults = await gen.applyShopThumbnailsForPosterIds([result.id]);
+      const tr = thumbResults && thumbResults[0];
+      if (tr && tr.ok && tr.imagePathThumb) {
+        thumbPath = '/' + cleanPosterSubPath(String(tr.imagePathThumb).replace(/\\/g, '/'));
+        console.log(`✓ Thumbnail created: ${tr.imagePathThumb}`);
+      }
+    } catch (thumbErr) {
+      console.warn(`⚠ Thumbnail generation failed (non-fatal): ${thumbErr.message}`);
+    }
+
     res.json({
       ok: true,
       id: result.id,
       imagePath: '/' + cleanPosterSubPath(relImage),
+      thumbPath: thumbPath || '',
       previewOnly: result.previewOnly,
       pdfCount: generatePdf ? Object.keys(result.pdfPaths || {}).length : 0,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Generowanie nie powiodło się' });
+    const status = isPosterNameCollision(err) ? 409 : 500;
+    res.status(status).json({
+      error: err.message || 'Generowanie nie powiodło się',
+      ...(isPosterNameCollision(err) ? { code: 'POSTER_NAME_COLLISION' } : {}),
+    });
   }
 });
 

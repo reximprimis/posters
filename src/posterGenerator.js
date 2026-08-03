@@ -10,7 +10,8 @@ const projectRoot = path.join(__dirname, '..');
 const { applyMatFrameFromBuffer } = require('./posterMatFrame');
 const { compositeLifestyleMockupFromBuffer } = require('./lifestyleMockup');
 const sharp = require('sharp');
-const { getSafeFramingMeta, validateSafeEdges, tempGenerationPathFromFinal } = require('./safePrintFraming');
+const { getSafeFramingMeta, validateSafeEdges, tempGenerationPathFromFinal, getSafeFramingMaxRetries } = require('./safePrintFraming');
+const { resizeToPrintCanvas } = require('./printCanvasResize');
 const {
   getAllowedStylesForCategory,
   assertCategoryStyleAllowed,
@@ -21,10 +22,15 @@ const {
 const { getPosterOutputDir } = require('./posterPaths');
 const { buildPosterMetadataRecord, writePosterMetadataFile } = require('./posterMetadata');
 const { getRoutingPathLabel, getPromptRouteKind } = require('./promptRouter');
+const {
+  makeSafeFileBase,
+  collectExcludeTitles,
+  assertMasterPathAvailable,
+} = require('./posterNameGuard');
 const DALLE_RATIO_PORTRAIT = 2 / 3;
 const DALLE_RATIO_LANDSCAPE = 3 / 2;
 const DALLE_RATIO_TOLERANCE = 0.015;
-const PRINT_UPSCALE_SHORT_EDGE = 5906;
+const PRINT_UPSCALE_SHORT_EDGE = 5512;
 const PRINT_UPSCALE_LONG_EDGE = 8268;
 
 function isPrintUpscaleEnabled() {
@@ -58,16 +64,6 @@ function resolveMatStyleFromOptions(options) {
 
 function posterOutputDir(category, style) {
   return getPosterOutputDir(category, style);
-}
-
-function makeSafeFileBase(title) {
-  const raw = String(title || '').trim();
-  const slug = raw
-    .replace(/\s+/g, '_')
-    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
-  return slug || 'poster';
 }
 
 class PosterBatchGenerator {
@@ -239,15 +235,129 @@ class PosterBatchGenerator {
   }
 
   /**
+   * Generate image + validate safe margins; retry when subject is clipped at edges.
+   */
+  async generateImageWithFramingGuard(title, category, style, tempPath, imagePath, imageGenOptions = {}) {
+    const maxRetries = getSafeFramingMaxRetries();
+    let gen;
+    let printFinalize;
+    let lastFramingErr = null;
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      if (attempt > 0) {
+        console.log(`    → Safe framing regeneration ${attempt}/${maxRetries}…`);
+        try {
+          if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        } catch (_) {}
+      }
+      gen = await this.imageGen.generateImage(title, category, style, tempPath, {
+        ...imageGenOptions,
+        framingRetryAttempt: attempt,
+      });
+      try {
+        printFinalize = await this.finalizeMasterImageForPrint(tempPath, imagePath, { category, style });
+        return { gen, printFinalize };
+      } catch (err) {
+        if (err.code !== 'SAFE_FRAMING_FAIL') throw err;
+        lastFramingErr = err;
+        console.warn(`    → ${err.message}`);
+        if (attempt >= maxRetries) break;
+      }
+    }
+    // Soft-accept last attempt: do not burn more API calls / leave user with nothing.
+    console.warn(
+      `    → Safe framing still FAIL after ${maxRetries} retries — accepting last image with warning` +
+        (lastFramingErr ? `: ${lastFramingErr.message}` : '')
+    );
+    printFinalize = await this.finalizeMasterImageForPrint(tempPath, imagePath, {
+      category,
+      style,
+      skipEdgeValidation: true,
+    });
+    return { gen, printFinalize };
+  }
+
+  /**
+   * Usuwa pochodne pliki (ramka, miniatury, PDF ramki) gdy master jest nadpisywany — stary _ramka.png
+   * inaczej zostaje z poprzedniej generacji i UI pokazuje dwie różne fotografie.
+   * @param {string} masterAbsOrRel
+   */
+  invalidateDerivedAssetsForMaster(masterAbsOrRel) {
+    if (!masterAbsOrRel) return;
+    const masterAbs = path.isAbsolute(masterAbsOrRel)
+      ? masterAbsOrRel
+      : path.join(projectRoot, String(masterAbsOrRel).replace(/\\/g, '/'));
+    const parsed = path.parse(masterAbs);
+    const derivedFiles = [
+      path.join(parsed.dir, `${parsed.name}_ramka${parsed.ext}`),
+      path.join(parsed.dir, `${parsed.name}_thumb.jpg`),
+      path.join(parsed.dir, `${parsed.name}_ramka_thumb.jpg`),
+    ];
+    try {
+      const dirEntries = fs.readdirSync(parsed.dir);
+      for (const name of dirEntries) {
+        if (name.startsWith(`${parsed.name}_ramka_`) && name.toLowerCase().endsWith('.pdf')) {
+          derivedFiles.push(path.join(parsed.dir, name));
+        }
+      }
+    } catch (_) {}
+    for (const abs of derivedFiles) {
+      try {
+        if (fs.existsSync(abs)) fs.unlinkSync(abs);
+      } catch (_) {}
+    }
+
+    const key = this.normInventoryImageKey(path.relative(projectRoot, masterAbs).replace(/\\/g, '/'));
+    if (!key) return;
+    let dbChanged = false;
+    for (const p of this.db.posters) {
+      if (this.normInventoryImageKey(p.imagePath) !== key) continue;
+      if (p.imagePathFramed) {
+        delete p.imagePathFramed;
+        dbChanged = true;
+      }
+      if (p.imagePathThumb) {
+        delete p.imagePathThumb;
+        dbChanged = true;
+      }
+      if (p.imagePathFramedThumb) {
+        delete p.imagePathFramedThumb;
+        dbChanged = true;
+      }
+      if (p.pdfPathsFramed && Object.keys(p.pdfPathsFramed).length > 0) {
+        delete p.pdfPathsFramed;
+        dbChanged = true;
+      }
+      if (p.mockups) {
+        delete p.mockups;
+        dbChanged = true;
+      }
+      if (p.shopifyState === 'ready') {
+        p.shopifyState = 'pending_assets';
+        dbChanged = true;
+      }
+    }
+    if (dbChanged) this.saveDatabase();
+  }
+
+  /**
    * Tymczasowy PNG z API → validate safe edges → upscale → jeden finalny PNG w bibliotece; temp usuwany.
    */
   async finalizeMasterImageForPrint(tempAbs, finalAbs, logCtx = {}) {
-    const { category, style } = logCtx;
+    const { category, style, skipEdgeValidation } = logCtx;
+    if (finalAbs) {
+      this.invalidateDerivedAssetsForMaster(finalAbs);
+    }
     const framing = getSafeFramingMeta(category, style);
     const preDims = await this.readImageDimensions(tempAbs);
 
-    if (framing.enabled) {
-      await validateSafeEdges(tempAbs);
+    if (framing.enabled && !skipEdgeValidation) {
+      const edge = await validateSafeEdges(tempAbs, style);
+      if (edge.status === 'FAIL') {
+        const err = new Error(`Subject clipped at print margins: ${edge.reasons.join('; ')}`);
+        err.code = 'SAFE_FRAMING_FAIL';
+        err.edgeValidation = edge;
+        throw err;
+      }
     }
 
     console.log(`    → Generated temporary image for upscale`);
@@ -305,13 +415,8 @@ class PosterBatchGenerator {
     }
 
     const tmpAbs = `${outAbs}.upscale.tmp.png`;
-    await sharp(sourceAbs)
-      .rotate()
-      .resize(target.width, target.height, {
-        fit: 'cover',
-        position: 'centre',
-        kernel: sharp.kernel.lanczos3,
-      })
+    const upscaled = await resizeToPrintCanvas(sourceAbs, target.width, target.height);
+    await sharp(upscaled)
       .sharpen({
         sigma: 0.7,
         m1: 0.35,
@@ -351,7 +456,10 @@ class PosterBatchGenerator {
     const safeFileBase = makeSafeFileBase(title);
     const finalAbs = path.join(outputDir, `${safeFileBase}.png`);
 
+    assertMasterPathAvailable(category, style, title, commitOpts);
+
     if (fs.existsSync(finalAbs)) {
+      this.invalidateDerivedAssetsForMaster(finalAbs);
       fs.unlinkSync(finalAbs);
     }
 
@@ -457,6 +565,8 @@ class PosterBatchGenerator {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
+    assertMasterPathAvailable(category, style, title, options);
+
     const safeFileBase = makeSafeFileBase(title);
     const imagePath = path.join(outputDir, `${safeFileBase}.png`);
     const tempPath = tempGenerationPathFromFinal(imagePath);
@@ -464,14 +574,20 @@ class PosterBatchGenerator {
     const startedAt = new Date();
     const routingMeta = this.resolveRoutingMeta(category, style, options);
     const matStyle = resolveMatStyleFromOptions(options);
-    const gen = await this.imageGen.generateImage(title, category, style, tempPath, {
-      customPrompt: imagePrompt,
+    const { gen, printFinalize } = await this.generateImageWithFramingGuard(
+      title,
       category,
       style,
-      ...(matStyle ? { matStyle } : {}),
-    });
+      tempPath,
+      imagePath,
+      {
+        customPrompt: imagePrompt,
+        category,
+        style,
+        ...(matStyle ? { matStyle } : {}),
+      }
+    );
     const framingMeta = getSafeFramingMeta(category, style);
-    const printFinalize = await this.finalizeMasterImageForPrint(tempPath, imagePath, { category, style });
     const completedAt = new Date();
     const imagePathForDbEarly = path.relative(projectRoot, path.resolve(imagePath));
     this.writePosterSidecarMetadata({
@@ -608,6 +724,8 @@ class PosterBatchGenerator {
     const generateOneInCategory = async (title, style, idx, total, runOpts = {}) => {
       console.log(`[${idx}/${total}] "${title}" · ${style}`);
 
+      assertMasterPathAvailable(categoryKey, style, title, options);
+
       const outputDir = posterOutputDir(categoryKey, style);
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
@@ -630,17 +748,20 @@ class PosterBatchGenerator {
       const imagePath = path.join(outputDir, `${safeFileBase}.png`);
       const tempPath = tempGenerationPathFromFinal(imagePath);
       const matStyle = resolveMatStyleFromOptions(options);
-      const gen = await this.imageGen.generateImage(title, categoryKey, style, tempPath, {
-        customPrompt: imagePrompt,
-        category: categoryKey,
+      const { gen, printFinalize } = await this.generateImageWithFramingGuard(
+        title,
+        categoryKey,
         style,
-        ...(matStyle ? { matStyle } : {}),
-      });
+        tempPath,
+        imagePath,
+        {
+          customPrompt: imagePrompt,
+          category: categoryKey,
+          style,
+          ...(matStyle ? { matStyle } : {}),
+        }
+      );
       const framingMeta = getSafeFramingMeta(categoryKey, style);
-      const printFinalize = await this.finalizeMasterImageForPrint(tempPath, imagePath, {
-        category: categoryKey,
-        style,
-      });
       const completedAt = new Date();
 
       const imagePathForDb = path.relative(projectRoot, path.resolve(imagePath));
@@ -705,27 +826,59 @@ class PosterBatchGenerator {
 
     if (useFixedStyle) {
       console.log(`📝 Generating ${count} poster title(s)...`);
+      const excludeTitles = collectExcludeTitles(categoryKey, fixedTrimmed, this.db.posters);
       const { titles, titlePrompt } = await this.contentGen.generatePosterTitles(categoryKey, count, {
         llmProvider: llmProviderOpt,
         artStyle: fixedTrimmed,
+        excludeTitles,
       });
-      console.log(`✓ Titles: ${titles.join(', ')}\n`);
-      for (let i = 0; i < titles.length; i++) {
-        await generateOneInCategory(titles[i], fixedTrimmed, i + 1, titles.length, { titlePrompt });
+      const plannedTitles = titles.filter((t) => {
+        try {
+          assertMasterPathAvailable(categoryKey, fixedTrimmed, t, options);
+          return true;
+        } catch (e) {
+          console.warn(`  ⚠ Pomijam zajęty tytuł: "${t}" — ${e.message}`);
+          return false;
+        }
+      });
+      if (!plannedTitles.length) {
+        console.warn(`✓ Brak wolnych tytułów dla ${categoryKey} / ${fixedTrimmed} — wszystkie nazwy zajęte.\n`);
+        return;
+      }
+      console.log(`✓ Titles: ${plannedTitles.join(', ')}\n`);
+      for (let i = 0; i < plannedTitles.length; i++) {
+        await generateOneInCategory(plannedTitles[i], fixedTrimmed, i + 1, plannedTitles.length, { titlePrompt });
+        this.reloadDatabase();
       }
     } else {
       console.log(`📝 All allowed styles: ${nStyles} separate title batches × ${count} title(s) each\n`);
       let globalIdx = 0;
       for (const style of stylesForCategory) {
         console.log(`—— Styl: ${style} ——`);
+        const excludeTitles = collectExcludeTitles(categoryKey, style, this.db.posters);
         const { titles, titlePrompt } = await this.contentGen.generatePosterTitles(categoryKey, count, {
           llmProvider: llmProviderOpt,
           artStyle: style,
+          excludeTitles,
         });
-        console.log(`✓ Titles: ${titles.join(', ')}\n`);
-        for (const title of titles) {
+        const plannedTitles = titles.filter((t) => {
+          try {
+            assertMasterPathAvailable(categoryKey, style, t, options);
+            return true;
+          } catch (e) {
+            console.warn(`  ⚠ Pomijam zajęty tytuł: "${t}" — ${e.message}`);
+            return false;
+          }
+        });
+        if (!plannedTitles.length) {
+          console.warn(`✓ Brak wolnych tytułów dla ${categoryKey} / ${style} — pomijam styl.\n`);
+          continue;
+        }
+        console.log(`✓ Titles: ${plannedTitles.join(', ')}\n`);
+        for (const title of plannedTitles) {
           globalIdx += 1;
           await generateOneInCategory(title, style, globalIdx, totalPlanned, { titlePrompt });
+          this.reloadDatabase();
         }
       }
     }

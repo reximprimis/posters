@@ -133,7 +133,7 @@ function buildPosterMetadataRecord({
     safeFramingValidation: {
       enabled: isSafeFramingEnabled(),
       status: 'NOT_CHECKED',
-      note: 'Prompt-level safe framing only; visual edge validation not implemented yet.',
+      note: 'Prompt-level safe framing + pixel margin validation on save (validateSafeEdges).',
     },
     upscale: {
       temporaryMasterBeforeUpscale: true,

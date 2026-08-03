@@ -1,7 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
-const { normalizeRelPath, evaluatePosterShopifyState, reconcileInventoryShopifyStates } = require('../src/shopifyState');
+const {
+  normalizeRelPath,
+  evaluatePosterShopifyState,
+  reconcileInventoryShopifyStates,
+  resolveShopifyThumbsRel,
+  summarizeApprovedShopifyStates,
+} = require('../src/shopifyState');
+const { humanizePosterTitle } = require('../src/posterTitle');
 const { fetchShopifyProductHandles, getHeadlessConfig } = require('../src/shopifyHeadless');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -67,14 +74,27 @@ const DEFAULT_HEADERS = [
   'Status',
 ];
 
+// Ceny zsynchronizowane ze sklepem reximprimis.com (PLN, Storefront API, 2026-08-03).
+// 70x100 nie istnieje na sklepie — cena orientacyjna, rozmiar poza selectedSizes.
 const SIZE_DEFS = [
-  { key: '13x18', label: '13 × 18 cm (Small)', price: '15.00' },
-  { key: '21x30', label: '21 × 30 cm (A4)', price: '25.00' },
-  { key: '30x40', label: '30 × 40 cm (Medium)', price: '32.00' },
-  { key: '40x50', label: '40 × 50 cm (Large)', price: '54.00' },
-  { key: '50x70', label: '50 × 70 cm (Large)', price: '65.00' },
-  { key: '70x100', label: '70 × 100 cm (Extra Large)', price: '90.00' },
+  { key: '13x18', label: '13 × 18 cm (Small)', price: '16.00' },
+  { key: '21x30', label: '21 × 30 cm (A4)', price: '26.00' },
+  { key: '30x40', label: '30 × 40 cm (Medium)', price: '43.00' },
+  { key: '40x50', label: '40 × 50 cm (Large)', price: '57.00' },
+  { key: '50x70', label: '50 × 70 cm (Large)', price: '71.00' },
+  { key: '70x100', label: '70 × 100 cm (Extra Large)', price: '99.00' },
 ];
+
+/** Cena przekreślona = cena × mnożnik. Sklep prowadzi promocję −50%, więc 2. */
+const DEFAULT_COMPARE_AT_MULTIPLIER = 2;
+
+/** @returns {string} cena porównawcza sformatowana lub '' gdy mnożnik <= 1. */
+function compareAtFor(price, multiplier) {
+  const p = Number(String(price).replace(',', '.'));
+  const m = Number(multiplier);
+  if (!Number.isFinite(p) || p <= 0 || !Number.isFinite(m) || m <= 1) return '';
+  return (p * m).toFixed(2);
+}
 
 const PRINT_STYLES = [
   { label: 'Full Bleed', code: 'full' },
@@ -156,7 +176,8 @@ function toPublicUrl(relPath) {
   if (/^https?:\/\//i.test(p)) return p;
   const base = String(process.env.SHOPIFY_IMAGE_BASE_URL || '').trim().replace(/\/+$/, '');
   if (!base) return '';
-  const cleaned = p.startsWith('posters/') ? p.slice('posters/'.length) : p;
+  const shopRel = resolveShopifyThumbsRel(projectRoot, p);
+  const cleaned = shopRel || (p.startsWith('posters/') ? p.slice('posters/'.length) : p);
   return `${base}/${encodeURI(cleaned)}`;
 }
 
@@ -228,7 +249,11 @@ function parseArgs(argv) {
 }
 
 function loadSettings() {
-  const base = { prices: { ...DEFAULT_PRICES }, selectedSizes: [...SIZE_KEYS] };
+  const base = {
+    prices: { ...DEFAULT_PRICES },
+    selectedSizes: [...SIZE_KEYS],
+    compareAtMultiplier: DEFAULT_COMPARE_AT_MULTIPLIER,
+  };
   if (!fs.existsSync(settingsPath)) return base;
   try {
     const raw = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
@@ -242,7 +267,16 @@ function loadSettings() {
     const selectedSizes = Array.isArray(raw && raw.selectedSizes)
       ? raw.selectedSizes.filter((k) => SIZE_KEYS.includes(k))
       : base.selectedSizes;
-    return { prices, selectedSizes: selectedSizes.length ? selectedSizes : [...SIZE_KEYS] };
+    let compareAtMultiplier = base.compareAtMultiplier;
+    if (raw && raw.compareAtMultiplier != null) {
+      const m = Number(String(raw.compareAtMultiplier).replace(',', '.'));
+      if (Number.isFinite(m) && m >= 1) compareAtMultiplier = m;
+    }
+    return {
+      prices,
+      selectedSizes: selectedSizes.length ? selectedSizes : [...SIZE_KEYS],
+      compareAtMultiplier,
+    };
   } catch (_) {
     return base;
   }
@@ -281,11 +315,15 @@ async function main() {
 
   const prices = { ...settings.prices, ...cli.prices };
   const selectedSizes = (cli.sizes && cli.sizes.length ? cli.sizes : settings.selectedSizes).filter((k) => SIZE_KEYS.includes(k));
-  const sizeDefs = SIZE_DEFS.filter((s) => selectedSizes.includes(s.key)).map((s) => ({ ...s, price: prices[s.key] || s.price }));
+  const compareAtMultiplier = settings.compareAtMultiplier;
+  const sizeDefs = SIZE_DEFS.filter((s) => selectedSizes.includes(s.key)).map((s) => {
+    const price = prices[s.key] || s.price;
+    return { ...s, price, compareAtPrice: compareAtFor(price, compareAtMultiplier) };
+  });
   if (sizeDefs.length === 0) throw new Error('Brak wybranych rozmiarów do eksportu.');
 
   if (cli.saveSettings || Object.keys(cli.prices).length > 0 || (cli.sizes && cli.sizes.length > 0)) {
-    saveSettings({ prices, selectedSizes });
+    saveSettings({ prices, selectedSizes, compareAtMultiplier });
   }
 
   const inv = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
@@ -328,7 +366,7 @@ async function main() {
       skippedOnStore += 1;
       continue;
     }
-    const title = String(p.title || '').trim();
+    const title = humanizePosterTitle(p.title);
     const body = htmlDescription(p.shopDescription || p.prompt || '');
     const categoryTag = slugifyTag(p.category || '');
     const styleTag = slugifyTag(p.artStyle || '');
@@ -351,11 +389,23 @@ async function main() {
 
     const imageMaster = toPublicUrl(masterThumbRel);
     const imageFramed = toPublicUrl(framedThumbRel || masterThumbRel);
+
+    // Mockup images (generated via GPT Image 2 edit API) — optional
+    const mockupFrameRel = p.mockups && p.mockups.frame && fileExists(p.mockups.frame)
+      ? normalizeRelPath(p.mockups.frame) : '';
+    const mockupInteriorRel = p.mockups && p.mockups.interior && fileExists(p.mockups.interior)
+      ? normalizeRelPath(p.mockups.interior) : '';
+    const imageMockupFrame = mockupFrameRel ? toPublicUrl(mockupFrameRel) : '';
+    const imageMockupInterior = mockupInteriorRel ? toPublicUrl(mockupInteriorRel) : '';
+
+    // Image slots (Shopify gallery order): 1=master thumb, 2=packshot, 3=salon, 4=ramka thumb
+    const IMAGE_SLOTS = [imageMaster, imageMockupFrame, imageMockupInterior, imageFramed].filter(Boolean);
+
     let rowIndex = 0;
     for (const printStyle of PRINT_STYLES) {
       for (const size of sizeDefs) {
         const firstRowForProduct = rowIndex === 0;
-        const imageSrcCell = firstRowForProduct ? imageMaster : rowIndex === 1 ? imageFramed : '';
+        const imageSrcCell = rowIndex < IMAGE_SLOTS.length ? IMAGE_SLOTS[rowIndex] : '';
         const variantImageCell = imageSrcCell || (printStyle.code === 'ramka' ? imageFramed : imageMaster) || '';
         const row = {
           Handle: handle,
@@ -382,7 +432,7 @@ async function main() {
           'Variant Inventory Policy': 'deny',
           'Variant Fulfillment Service': 'manual',
           'Variant Price': size.price,
-          'Variant Compare At Price': '',
+          'Variant Compare At Price': size.compareAtPrice || '',
           'Variant Requires Shipping': 'true',
           'Variant Taxable': 'true',
           'Unit Price Total Measure': '',
@@ -391,7 +441,7 @@ async function main() {
           'Unit Price Base Measure Unit': '',
           'Variant Barcode': '',
           'Image Src': imageSrcCell,
-          'Image Position': imageSrcCell ? (firstRowForProduct ? '1' : rowIndex === 1 ? '2' : '') : '',
+          'Image Position': imageSrcCell ? String(rowIndex + 1) : '',
           'Image Alt Text': '',
           'Gift Card': firstRowForProduct ? 'false' : '',
           'SEO Title': firstRowForProduct ? seoTitle : '',

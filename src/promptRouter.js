@@ -1,4 +1,5 @@
 const { assertCategoryStyleAllowed } = require('./categoryStyles');
+const { CATEGORY_PROMPT_MODES } = require('./categoryPromptModes');
 const builders = require('./promptBuilders');
 const {
   COMPOSITION_GENERAL,
@@ -31,10 +32,20 @@ const DEDICATED_CATEGORY_STYLE = new Set([
   'Kuchnia i jedzenie|Photography',
   'Architektura|Photography',
   'Morze i plaża|Photography',
+  'Plakaty dla dzieci|Illustration',
+  'Plakaty dla dzieci|Minimalism',
 ]);
 
+function wouldUseCategoryStylePrompt(categoryKey, styleKey) {
+  if (!CATEGORY_PROMPT_MODES[categoryKey]) return false;
+  if (CATEGORY_HARD_OVERRIDES.has(categoryKey)) return false;
+  if (CATEGORY_DEDICATED.has(categoryKey)) return false;
+  if (DEDICATED_CATEGORY_STYLE.has(`${categoryKey}|${styleKey}`)) return false;
+  return ['Minimalism', 'Abstract', 'Illustration', 'Line art', 'Photography'].includes(styleKey);
+}
+
 /**
- * @returns {'category_override'|'category_dedicated'|'category_style_dedicated'|'style_generic'|'core_fallback'}
+ * @returns {'category_override'|'category_dedicated'|'category_style_dedicated'|'category_style_prompt'|'style_generic'|'core_fallback'}
  */
 function getPromptRouteKind(category, style) {
   const categoryKey = String(category || '').trim();
@@ -42,6 +53,7 @@ function getPromptRouteKind(category, style) {
   if (CATEGORY_HARD_OVERRIDES.has(categoryKey)) return 'category_override';
   if (CATEGORY_DEDICATED.has(categoryKey)) return 'category_dedicated';
   if (DEDICATED_CATEGORY_STYLE.has(`${categoryKey}|${styleKey}`)) return 'category_style_dedicated';
+  if (wouldUseCategoryStylePrompt(categoryKey, styleKey)) return 'category_style_prompt';
   if (['Minimalism', 'Abstract', 'Illustration', 'Line art', 'Photography'].includes(styleKey)) {
     return 'style_generic';
   }
@@ -65,6 +77,9 @@ function getRoutingPathLabel(category, style) {
   }
   if (kind === 'category_style_dedicated') {
     return `CATEGORY_STYLE_DEDICATED / ${categoryKey} + ${styleKey}`;
+  }
+  if (kind === 'category_style_prompt') {
+    return `CATEGORY_STYLE_PROMPT / ${categoryKey} + ${styleKey}`;
   }
   if (kind === 'style_generic') {
     return `STYLE_GENERIC / ${styleKey}`;
@@ -131,6 +146,12 @@ function buildImagePromptForRoute({ category, style, title }) {
   if (categoryKey === 'Morze i plaża' && styleKey === 'Photography') {
     return builders.buildSeaBeachPhotographyPrompt(opts);
   }
+  if (categoryKey === 'Plakaty dla dzieci' && styleKey === 'Illustration') {
+    return builders.buildChildrenIllustrationPrompt(opts);
+  }
+  if (categoryKey === 'Plakaty dla dzieci' && styleKey === 'Minimalism') {
+    return builders.buildChildrenMinimalismPrompt(opts);
+  }
 
   if (categoryKey === 'Gaming i e-sport') {
     console.log('    → Routing: CATEGORY_DEDICATED / Gaming i e-sport');
@@ -159,6 +180,11 @@ function buildImagePromptForRoute({ category, style, title }) {
   if (categoryKey === 'Symbole i harmonia') {
     console.log('    → Routing: CATEGORY_DEDICATED / Symbole i harmonia');
     return builders.buildSymbolsHarmonyPrompt(opts);
+  }
+
+  const categoryStyled = builders.buildCategoryStylePrompt(opts);
+  if (categoryStyled) {
+    return categoryStyled;
   }
 
   if (styleKey === 'Minimalism') {

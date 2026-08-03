@@ -43,6 +43,8 @@ function main() {
 
   let masterCopied = 0;
   let framedCopied = 0;
+  let mockupFrameCopied = 0;
+  let mockupInteriorCopied = 0;
   let skipped = 0;
   let skippedNotReady = 0;
 
@@ -58,6 +60,13 @@ function main() {
     if (master) masterCopied += 1;
     if (framed) framedCopied += 1;
     if (!master) skipped += 1;
+    // Mockupy Shopify — kopiowane tak samo jak thumby
+    if (p.mockups && p.mockups.frame) {
+      if (copyIfExists(p.mockups.frame)) mockupFrameCopied += 1;
+    }
+    if (p.mockups && p.mockups.interior) {
+      if (copyIfExists(p.mockups.interior)) mockupInteriorCopied += 1;
+    }
   }
 
   if (reconcileSummary.changed > 0) {
@@ -66,6 +75,8 @@ function main() {
 
   console.log(`Master thumbs copied: ${masterCopied}`);
   console.log(`Framed thumbs copied: ${framedCopied}`);
+  console.log(`Mockup frame copied: ${mockupFrameCopied}`);
+  console.log(`Mockup interior copied: ${mockupInteriorCopied}`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
   console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
   console.log(

@@ -113,7 +113,12 @@ function buildSeaBeachPhotographyPrompt(opts) {
 }
 
 const SPORT_HOBBY_MODE = `
-Sport & hobby category mode: tennis, football, bicycle, skiing, surfing, running, golf, climbing, active lifestyle objects or scenes.
+Sport & hobby category mode — rotate across distinct subjects, not only tennis or rackets.
+
+Popular sports (pick one hero subject per artwork): football/soccer ball on grass, basketball on court, volleyball net or ball, tennis racket OR court (not every image), cycling, running shoes on track, swimming goggles, golf club, ski poles, surfboard, skateboard, climbing rope.
+
+Hobbies (calm editorial still-life or lifestyle, no logos): open book, chess board, film camera, hiking boots on trail, fishing rod by water, knitting yarn, paint palette, acoustic guitar, camping tent, gardening gloves with herbs, vinyl records player without labels.
+
 Forbidden: club logos, famous brands, jersey numbers and text, celebrity athlete faces, stadium signage, advertising.
 `.trim();
 

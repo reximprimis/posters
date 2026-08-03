@@ -4,7 +4,8 @@ const https = require('https');
 const OpenAI = require('openai');
 const sharp = require('sharp');
 const { buildFullDallePrompt, DALLE3_PROMPT_MAX, MAX_DALLE_OVERHEAD_CHARS } = require('./posterPromptLayers');
-const { resolveSafePrintFramingForCategory, getSafeFramingMeta } = require('./safePrintFraming');
+const { resolveSafePrintFramingForCategory, getSafeFramingMeta, FRAMING_RETRY_PROMPT_SUFFIX } = require('./safePrintFraming');
+const { resizePngFileToPrintCanvas } = require('./printCanvasResize');
 const { resolveConcreteSubject, logStyleSubjectResolution } = require('./titleSubjectConsistency');
 const { applyMatFrameToPngFile } = require('./posterMatFrame');
 
@@ -83,20 +84,11 @@ class DalleImageGenerator {
 
   async normalizeOutputSize(outputPath) {
     const targetW = parseInt(process.env.IMAGE_TARGET_WIDTH || process.env.DALLE_TARGET_WIDTH || '2000', 10);
-    const targetH = parseInt(process.env.IMAGE_TARGET_HEIGHT || process.env.DALLE_TARGET_HEIGHT || '2857', 10);
+    const targetH = parseInt(process.env.IMAGE_TARGET_HEIGHT || process.env.DALLE_TARGET_HEIGHT || '3000', 10);
     if (!Number.isFinite(targetW) || !Number.isFinite(targetH) || targetW < 256 || targetH < 256) {
       return;
     }
-    const src = await fs.promises.readFile(outputPath);
-    const normalized = await sharp(src)
-      .trim({ threshold: 12 })
-      .resize(targetW, targetH, {
-        fit: 'cover',
-        position: 'centre',
-      })
-      .png()
-      .toBuffer();
-    await fs.promises.writeFile(outputPath, normalized);
+    await resizePngFileToPrintCanvas(outputPath, outputPath, targetW, targetH);
   }
 
   buildImagePrompt(title, category, style) {
@@ -216,6 +208,11 @@ class DalleImageGenerator {
       const safeBlock = resolveSafePrintFramingForCategory(categoryKey, styleKey);
       if (safeBlock && !/SAFE PRINT FRAMING/i.test(prompt)) {
         prompt = `${prompt.trim()} ${safeBlock}`.replace(/\s{2,}/g, ' ').trim();
+      }
+      const retryAttempt = Number(options.framingRetryAttempt) || 0;
+      if (retryAttempt > 0) {
+        prompt = `${prompt.trim()} ${FRAMING_RETRY_PROMPT_SUFFIX}`.replace(/\s{2,}/g, ' ').trim();
+        console.log(`    -> Safe framing retry #${retryAttempt}: extra margin instructions appended`);
       }
       console.log(`    -> Prompt: ${prompt.substring(0, 80)}...`);
 

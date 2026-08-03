@@ -6,7 +6,8 @@
   <title>Plakaty — panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
   <style>
     :root {
       color-scheme: dark;
@@ -2238,7 +2239,8 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.8rem 0.95rem;
-      padding: 0.4rem 1.25rem 1.25rem 1.45rem;
+      padding: 0.4rem 1.25rem 1.5rem 1.45rem;
+      align-items: start;
       align-content: start;
     }
 
@@ -2248,6 +2250,8 @@
       background: color-mix(in srgb, var(--bg-card) 90%, var(--bg-elevated));
       padding: 0.95rem 1.05rem;
       min-width: 0;
+      overflow: visible;
+      align-self: start;
     }
 
     #modal.modal-backdrop .modal-tile--span-2 {
@@ -2317,7 +2321,11 @@
     }
 
     #modal.modal-backdrop .modal-tile--files {
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    #modal.modal-backdrop .modal-file-variants {
+      overflow: visible;
     }
 
     #modal.modal-backdrop .modal-tile-files-pdf {
@@ -2382,6 +2390,42 @@
       border: 1px solid var(--border);
       border-radius: 0.42rem;
       padding: 0.34rem 0.42rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-col--mockups {
+      margin-top: 0.6rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variants-mockups-rows {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-col--mockups .modal-mockups-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-col--mockups .modal-mockups-hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.72rem;
+    }
+
+    #modal.modal-backdrop .modal-file-variant-col--mockups .modal-mockups-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 0.08rem 0.4rem;
+      vertical-align: middle;
+      margin-left: 0.35rem;
     }
 
     #modal.modal-backdrop .modal-copy-combo-line.modal-copy-combo-line--compact {
@@ -3006,7 +3050,7 @@
     .modal-move-group {
       margin-top: 0.65rem;
       display: grid;
-      grid-template-columns: 1fr 1fr auto;
+      grid-template-columns: 1fr 1fr;
       gap: 0.45rem;
       align-items: center;
     }
@@ -3022,6 +3066,7 @@
     }
 
     .modal-move-btn {
+      grid-column: 1 / -1;
       min-height: 36px;
       border-radius: 9px;
       border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
@@ -4251,10 +4296,10 @@
 
     .modal-top-premium-menu {
       grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.75rem;
-      padding: 0.7rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.65rem 0.8rem;
       border-radius: 14px;
       border: 1px solid color-mix(in srgb, var(--border) 75%, var(--accent));
       background:
@@ -4265,9 +4310,9 @@
 
     .modal-top-premium-filters {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.35rem;
     }
 
     .modal-premium-chip {
@@ -4275,13 +4320,14 @@
       background: color-mix(in srgb, var(--bg-card) 88%, var(--bg-elevated));
       color: var(--text);
       border-radius: 999px;
-      padding: 0.42rem 0.85rem;
+      padding: 0.36rem 0.7rem;
       font-family: inherit;
-      font-size: 0.76rem;
+      font-size: 0.71rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.035em;
       text-transform: uppercase;
       cursor: pointer;
+      white-space: nowrap;
       transition: transform 0.12s ease, filter 0.18s ease, border-color 0.18s ease;
     }
 
@@ -4299,10 +4345,10 @@
 
     .modal-top-premium-actions {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      justify-content: flex-end;
-      gap: 0.55rem;
+      justify-content: flex-start;
+      gap: 0.45rem;
     }
 
     .modal-premium-action {
@@ -4310,11 +4356,12 @@
       background: color-mix(in srgb, var(--bg-card) 86%, var(--bg-elevated));
       color: var(--text);
       border-radius: 11px;
-      padding: 0.48rem 0.7rem;
+      padding: 0.42rem 0.65rem;
       font-family: inherit;
-      font-size: 0.74rem;
+      font-size: 0.71rem;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
       transition: transform 0.12s ease, filter 0.18s ease;
     }
 
@@ -4369,22 +4416,25 @@
       }
     }
 
-    @media (max-width: 980px) {
-      .modal-top-premium-menu {
-        grid-template-columns: 1fr;
-      }
-
-      .modal-top-premium-actions {
-        justify-content: flex-start;
-      }
-    }
-
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      align-content: start;
     }
 
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] .modal-tile--prompt {
       min-height: clamp(220px, 30dvh, 460px);
+      max-height: clamp(220px, 30dvh, 460px);
+      overflow-y: auto;
+      grid-column: 1 / -1;
+    }
+
+    #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] .modal-tile--files {
+      grid-column: 1 / -1;
+      overflow: visible;
+      min-height: 0;
+      height: auto;
+      max-height: none;
     }
 
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] {
@@ -4404,23 +4454,31 @@
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'],
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] {
       grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      align-content: start;
     }
 
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'] .modal-tile,
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-tile {
       grid-column: 1;
+      align-self: start;
+      overflow: visible;
+      height: auto;
+      max-height: none;
     }
 
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='print'] .modal-tile--files,
     #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='files'] .modal-tile--files {
-      min-height: clamp(320px, 56dvh, 760px);
+      min-height: 0;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1300px) {
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'],
       #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] {
         grid-template-columns: 1fr;
       }
 
+      #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='all'] .modal-tile--prompt,
       #modal.modal-backdrop .modal-detail.modal-detail--tiled[data-modal-view='workflow'] .modal-tile--prompt {
         grid-column: 1;
       }
@@ -4428,6 +4486,1151 @@
   </style>
 </head>
 <body>
+  <script>
+  // Figma nav + tab restructuring — runs before DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. Create top nav
+    var nav = document.createElement('nav');
+    nav.className = 'figma-nav';
+    nav.setAttribute('aria-label', 'Główna nawigacja');
+    nav.innerHTML =
+      '<div class="figma-nav-inner">' +
+        '<div class="figma-nav-brand">' +
+          '<span class="figma-nav-wordmark">Plakaty</span>' +
+          '<span class="figma-nav-version">v2.0</span>' +
+        '</div>' +
+        '<div class="figma-nav-tabs">' +
+          '<div class="figma-tab-group" role="tablist">' +
+            '<button class="figma-tab is-active" role="tab" aria-selected="true" data-tab="dashboard"><span class="step-num">1</span>Generator plakatów</button>' +
+            '<span class="figma-tab-arrow" aria-hidden="true">→</span>' +
+            '<button class="figma-tab" role="tab" aria-selected="false" data-tab="library"><span class="step-num">2</span>Biblioteka</button>' +
+            '<span class="figma-tab-arrow" aria-hidden="true">→</span>' +
+            '<button class="figma-tab" role="tab" aria-selected="false" data-tab="export"><span class="step-num">3</span>Eksport</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="figma-nav-actions" id="figmaNavActions">' +
+          '<button class="figma-settings-btn" id="btnOpenInfo" title="Jak to działa?" aria-label="Dokumentacja i flow">' +
+            '<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M7.5 6.5v4M7.5 4.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' +
+          '</button>' +
+          '<button class="figma-settings-btn" id="btnOpenSettings" title="Ustawienia" aria-label="Otwórz ustawienia">' +
+            '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+              '<path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="currentColor"/>' +
+              '<path fill-rule="evenodd" clip-rule="evenodd" d="M6.56 1.27a1.5 1.5 0 0 1 2.88 0l.14.55a.5.5 0 0 0 .68.33l.52-.22a1.5 1.5 0 0 1 2.04 2.04l-.22.52a.5.5 0 0 0 .33.68l.55.14a1.5 1.5 0 0 1 0 2.88l-.55.14a.5.5 0 0 0-.33.68l.22.52a1.5 1.5 0 0 1-2.04 2.04l-.52-.22a.5.5 0 0 0-.68.33l-.14.55a1.5 1.5 0 0 1-2.88 0l-.14-.55a.5.5 0 0 0-.68-.33l-.52.22a1.5 1.5 0 0 1-2.04-2.04l.22-.52a.5.5 0 0 0-.33-.68l-.55-.14a1.5 1.5 0 0 1 0-2.88l.55-.14a.5.5 0 0 0 .33-.68l-.22-.52A1.5 1.5 0 0 1 5.22 1.93l.52.22a.5.5 0 0 0 .68-.33l.14-.55ZM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" fill="currentColor"/>' +
+            '</svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    document.body.prepend(nav);
+
+    // ── Settings modal ────────────────────────────────────────
+    var settingsModal = document.createElement('div');
+    settingsModal.id = 'settingsModal';
+    settingsModal.className = 'settings-modal-overlay';
+    settingsModal.hidden = true;
+    settingsModal.innerHTML =
+      '<div class="settings-modal">' +
+        '<div class="settings-modal-header">' +
+          '<div>' +
+            '<p class="settings-modal-eyebrow">System</p>' +
+            '<h2 class="settings-modal-title">Ustawienia</h2>' +
+          '</div>' +
+          '<button class="settings-modal-close" id="btnCloseSettings" aria-label="Zamknij">✕</button>' +
+        '</div>' +
+
+        // Tab nav inside modal
+        '<div class="settings-tabs">' +
+          '<button class="settings-tab is-active" data-stab="api">API & Modele</button>' +
+          '<button class="settings-tab" data-stab="categories">Kategorie</button>' +
+          '<button class="settings-tab" data-stab="styles">Style</button>' +
+          '<button class="settings-tab" data-stab="export">Eksport</button>' +
+        '</div>' +
+
+        '<div class="settings-modal-body">' +
+
+          // ─── Tab: API & Modele ───
+          '<div class="settings-tab-panel is-active" data-stab-panel="api">' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">API & Modele</h3>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">OpenAI API Key</span><span class="settings-row-desc">Klucz do GPT Image 2 i promptów</span></div>' +
+                '<div class="settings-row-value" id="settingApiKey"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Model obrazów</span><span class="settings-row-desc">IMAGE_GENERATION_MODEL</span></div>' +
+                '<div class="settings-row-value" id="settingImageModel"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Model promptów</span><span class="settings-row-desc">OPENAI_PROMPT_MODEL</span></div>' +
+                '<div class="settings-row-value" id="settingPromptModel"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Node.js</span></div>' +
+                '<div class="settings-row-value" id="settingNodeVersion"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">LLM Providers</span><span class="settings-row-desc">Aktywni dostawcy AI</span></div>' +
+                '<div class="settings-row-value" id="settingLlmProviders"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+            '</section>' +
+            '<section class="settings-section settings-section--info">' +
+              '<h3 class="settings-section-title">Konfiguracja przez .env</h3>' +
+              '<div class="settings-env-preview">' +
+                '<code class="settings-env-line">OPENAI_API_KEY=sk-…</code>' +
+                '<code class="settings-env-line">IMAGE_GENERATION_MODEL=gpt-image-2</code>' +
+                '<code class="settings-env-line">OPENAI_PROMPT_MODEL=gpt-4o-mini</code>' +
+              '</div>' +
+            '</section>' +
+          '</div>' +
+
+          // ─── Tab: Kategorie ───
+          '<div class="settings-tab-panel" data-stab-panel="categories" hidden>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Kategorie plakatów</h3>' +
+              '<p class="settings-info-text">Wbudowane kategorie są stałe. Możesz dodawać własne — pojawią się w Generatorze i filtrach Biblioteki natychmiast.</p>' +
+              '<div id="settingCategoriesList" class="settings-tag-list"><span class="settings-skeleton">Ładowanie…</span></div>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Dodaj kategorię</h3>' +
+              '<div class="settings-add-form">' +
+                '<input id="newCategoryName" class="settings-input" type="text" placeholder="Nazwa kategorii (np. Śluby i uroczystości)" />' +
+                '<input id="newCategoryHint" class="settings-input" type="text" placeholder="Opis dla AI (po angielsku, opcjonalnie)" />' +
+                '<button id="btnAddCategory" class="settings-add-btn">Dodaj kategorię</button>' +
+              '</div>' +
+              '<p class="settings-add-feedback" id="categoryFeedback"></p>' +
+            '</section>' +
+          '</div>' +
+
+          // ─── Tab: Style ───
+          '<div class="settings-tab-panel" data-stab-panel="styles" hidden>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Style artystyczne</h3>' +
+              '<p class="settings-info-text">Style determinują jak wygląda plakat. Wbudowane są stałe, możesz dodać własne.</p>' +
+              '<div id="settingStylesList" class="settings-tag-list"><span class="settings-skeleton">Ładowanie…</span></div>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Dodaj styl</h3>' +
+              '<div class="settings-add-form">' +
+                '<input id="newStyleName" class="settings-input" type="text" placeholder="Nazwa stylu (np. Watercolor)" />' +
+                '<button id="btnAddStyle" class="settings-add-btn">Dodaj styl</button>' +
+              '</div>' +
+              '<p class="settings-add-feedback" id="styleFeedback"></p>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Domyślne w Generatorze</h3>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Domyślna kategoria</span></div>' +
+                '<div class="settings-row-value"><select id="settingDefaultCategory" class="settings-select"><option value="">— brak —</option></select></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Domyślny styl</span></div>' +
+                '<div class="settings-row-value"><select id="settingDefaultStyle" class="settings-select"><option value="">— brak —</option></select></div>' +
+              '</div>' +
+              '<button id="btnSaveDefaults" class="settings-save-btn">Zapisz domyślne</button>' +
+              '<p class="settings-add-feedback" id="defaultsFeedback"></p>' +
+            '</section>' +
+          '</div>' +
+
+          // ─── Tab: Eksport ───
+          '<div class="settings-tab-panel" data-stab-panel="export" hidden>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Szybki eksport</h3>' +
+              '<div class="settings-export-actions">' +
+                '<button class="settings-export-btn" id="settingBtnExportApproved">📦 Eksport Shopify (zatwierdzone)</button>' +
+                '<button class="settings-export-btn settings-export-btn--secondary" id="settingBtnExportAll">📋 Eksport Shopify (wszystkie)</button>' +
+                '<button class="settings-export-btn settings-export-btn--secondary" id="settingBtnSyncThumbs">🔄 Sync thumbs + push</button>' +
+              '</div>' +
+              '<p class="settings-export-status" id="settingExportStatus"></p>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Cennik</h3>' +
+              '<div id="settingsPriceTable" class="price-table"></div>' +
+              '<button class="settings-save-btn" id="settingsBtnSavePrice">Zapisz cennik</button>' +
+              '<p class="settings-add-feedback" id="priceFeedback"></p>' +
+            '</section>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>';
+    document.body.appendChild(settingsModal);
+
+    // ── Info modal ────────────────────────────────────────────
+    // INFO-DOC: Ten blok zawiera dokumentację flow całego systemu.
+    // Przy zmianie logiki generatora, biblioteki lub eksportu — zaktualizuj
+    // odpowiednią sekcję info-panel poniżej.
+    var infoModal = document.createElement('div');
+    infoModal.id = 'infoModal';
+    infoModal.className = 'info-modal-overlay';
+    infoModal.hidden = true;
+    infoModal.innerHTML =
+      '<div class="info-modal" role="dialog" aria-labelledby="infoModalTitle">' +
+
+        // Header
+        '<div class="info-modal-header">' +
+          '<div>' +
+            '<p class="info-modal-eyebrow">Dokumentacja systemu</p>' +
+            '<h2 class="info-modal-title" id="infoModalTitle">' +
+              '<svg width="18" height="18" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M7.5 6.5v4M7.5 4.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' +
+              'Jak to działa?' +
+            '</h2>' +
+          '</div>' +
+          '<button class="info-modal-close" id="btnCloseInfo" aria-label="Zamknij">✕</button>' +
+        '</div>' +
+
+        // Tabs
+        '<div class="info-modal-tabs" role="tablist">' +
+          '<button class="info-modal-tab" data-itab="generator-upload" role="tab">📸 Dodaj własne zdjęcie</button>' +
+          '<button class="info-modal-tab is-active" data-itab="generator-manual" role="tab">🎨 Generator manualny</button>' +
+          '<button class="info-modal-tab" data-itab="generator-auto" role="tab">⚡ Generator automatyczny</button>' +
+          '<button class="info-modal-tab" data-itab="pipeline" role="tab">⚙️ Pipeline (zatwierdzenie)</button>' +
+          '<button class="info-modal-tab" data-itab="library" role="tab">📚 Biblioteka</button>' +
+          '<button class="info-modal-tab" data-itab="export" role="tab">🛒 Eksport Shopify</button>' +
+          '<button class="info-modal-tab" data-itab="mockups" role="tab">🖼️ Mockupy GPT</button>' +
+        '</div>' +
+
+        '<div class="info-modal-body">' +
+
+          // ── PANEL 1: Generator manualny ──────────────────────────
+          '<div class="info-panel is-active" id="itab-generator-manual">' +
+
+            '<p class="info-section-title">Wybór flow — ekran startowy Generatora</p>' +
+            '<div class="info-cards">' +
+              card('📸','Dodaj własne zdjęcie','Wgraj gotowy PNG/JPG/WEBP z dysku. Żadnego generowania — plik trafia prosto do biblioteki jako niezatwierdzony plakat.') +
+              card('🎨','Generator manualny','Piszesz prompt (lub prosisz GPT-4 o pomoc), opcjonalnie dołączasz zdjęcie ref., generujesz podgląd i akceptujesz wynik.') +
+              card('⚡','Generator automatyczny','Batch: wybierasz kategorię i liczbę plakatów. GPT generuje prompty i obrazy automatycznie, bez podglądu przed zapisem.') +
+            '</div>' +
+
+            '<p class="info-section-title">Flow — Generator manualny</p>' +
+            '<div class="info-flow">' +
+              step('📝','Prompt','Opisujesz plakat lub klikasz „Ułóż prompt" → GPT-4 pisze prompt za Ciebie','accent') +
+              arrow() +
+              step('👁️','Generuj podgląd','API generuje master PNG i wyświetla go w prawym panelu. Można ponowić.','accent') +
+              arrow() +
+              step('📚','Dodaj do biblioteki','„Dodaj do biblioteki" zapisuje master PNG + meta w inventory.<br>Plakat trafia jako <strong>niezatwierdzony</strong>.','') +
+            '</div>' +
+
+            '<p class="info-section-title">Wszystkie 3 flow kończą się w tym samym miejscu</p>' +
+            '<div class="info-cards">' +
+              card('📚','Wspólny punkt końcowy','Upload / manualny / automatyczny — zawsze: master PNG w <code>posters/</code> + wpis w inventory z <code>approvedForPrint: false</code>.') +
+              card('☑️','Co dalej?','Plakat czeka w bibliotece na Twoje zatwierdzenie. Dopiero zatwierdzenie uruchamia pipeline (thumby, PDF, mockupy).') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 2: Generator automatyczny ─────────────────────
+          '<div class="info-panel" id="itab-generator-auto">' +
+
+            '<p class="info-section-title">Flow — Generator automatyczny (zakładka 1, pole „Liczba")</p>' +
+            '<div class="info-flow">' +
+              step('🔢','Liczba','Wpisujesz ile plakatów na styl. Np. 3 = 3 plakaty × każdy styl w kategorii','') +
+              arrow() +
+              step('🤖','GPT-4 prompt','Dla każdego stylu generowany jest unikalny prompt w oparciu o kategorię i styl','accent') +
+              arrow() +
+              step('🎨','GPT Image 2','Obraz generowany przez API. Model: gpt-image-2, rozmiar: 1024×1536','accent') +
+              arrow() +
+              step('📚','Dodaj do biblioteki','Master PNG zapisywany do <code>posters/</code> + wpis w inventory jako <strong>niezatwierdzony</strong>','') +
+            '</div>' +
+
+            '<p class="info-section-title">Polecenia CLI (Terminal)</p>' +
+            '<div class="info-cards">' +
+              card('⌨️','Generuj wszystkie style','<code>npm run generate-all</code><br>Generuje po 1 plakacie na każdy styl, każdą kategorię.') +
+              card('⌨️','Konkretna kategoria','<code>npm run generate-botanika</code><br>Lub z parametrem stylu w JSON konfigu.') +
+              card('⌨️','Tryb headless','Serwer <code>node preview.js</code> nasłuchuje na porcie 3000. Generator woła lokalne API.') +
+              card('📊','Konfiguracja','Kategorie i style zdefiniowane w <code>config.js</code> lub przez UI Ustawień (zakładki Kategorie / Style).') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 2b: Dodaj własne zdjęcie ───────────────────────
+          '<div class="info-panel" id="itab-generator-upload">' +
+
+            '<p class="info-section-title">Flow — Dodaj własne zdjęcie (3. flow)</p>' +
+            '<div class="info-flow">' +
+              step('📸','Wybierz plik','Kliknij strefę lub przeciągnij PNG/JPG/WEBP · max 30 MB. Pojawia się podgląd.','accent') +
+              arrow() +
+              step('📋','Uzupełnij meta','Tytuł plakatu, kategoria, styl — te same pola co w generatorze manualnym.','') +
+              arrow() +
+              step('📚','Dodaj do biblioteki','Kliknij „Dodaj do biblioteki". Plik trafia do <code>posters/</code> jako <strong>niezatwierdzony</strong>.','') +
+            '</div>' +
+
+            '<p class="info-section-title">Kiedy używać</p>' +
+            '<div class="info-cards">' +
+              card('🖼️','Gotowe dzieło','Masz już gotowy obraz — rysunek, skan, ilustrację — i chcesz go po prostu dodać do katalogu bez generowania AI.') +
+              card('🔄','Ten sam pipeline','Po zatwierdzeniu w bibliotece uruchamia się identyczny pipeline co dla plakatów generowanych: thumby, PDFy, mockupy.') +
+              card('📐','Format','PNG/JPG/WEBP, proporcje 2:3 (portret) zalecane. Plik trafi jako master PNG — pipeline skalibruje go do standardu.') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 3: Pipeline po zatwierdzeniu ──────────────────
+          '<div class="info-panel" id="itab-pipeline">' +
+
+            '<p class="info-section-title">Pipeline po zatwierdzeniu — uruchamia się automatycznie w tle</p>' +
+            '<div class="info-flow">' +
+              step('☑️','Zatwierdź','Klikasz checkbox „Zatwierdzony do druku" w bibliotece → API PATCH → pipeline startuje w tle','') +
+              arrow() +
+              step('📐','Master standard','Sprawdza i koryguje rozdzielczość / proporcje mastera PNG','accent') +
+              arrow() +
+              step('🖼️','Ramka PNG','Generuje wersję z białą ramką (passepartout)','accent') +
+              arrow() +
+              step('🔲','Thumby Shopify','<code>_thumb.jpg</code> + <code>_ramka_thumb.jpg</code> — miniaturki 800×1200 JPEG','green') +
+              arrow() +
+              step('📄','PDF × 6','13×18, 21×30, 30×40, 40×50, 50×70, 70×100 cm — master i ramka','green') +
+              arrow() +
+              step('🖼️','Mockupy GPT','<code>_mockup_frame.jpg</code> + <code>_mockup_interior.jpg</code> — tylko gdy jest OPENAI_API_KEY','green') +
+            '</div>' +
+
+            '<p class="info-section-title">Co się generuje (kompletna lista)</p>' +
+            '<div class="info-cards">' +
+              card('📐','Master standard','Master PNG przeskalowany / dopasowany do standardu 2:3 (1024×1536 lub wyżej).') +
+              card('🖼️','Ramka PNG','Wersja mastera z białą ramką passepartout. Prefix <code>_ramka</code>.') +
+              card('🔲','Thumby Shopify','<code>_thumb.jpg</code> (master) i <code>_ramka_thumb.jpg</code>. 800×1200 JPEG. Skopiowane do <code>shopify_thumbs/</code> przy push.') +
+              card('📄','PDF master × 6','13×18, 21×30, 30×40, 40×50, 50×70, 70×100 cm. 300 DPI, CMYK-safe.') +
+              card('📄','PDF ramka × 6','Te same rozmiary z ramką passepartout. Prefix <code>_ramka</code>.') +
+              card('🖼️','Mockup frame','<code>TytułSlug_mockup_frame.jpg</code> — packshot w czarnej ramce na białym tle.') +
+              card('🖼️','Mockup interior','<code>TytułSlug_mockup_interior.jpg</code> — plakat w ramce w wnętrzu dopasowanym do kategorii (kuchnia, biuro, kawiarnia…).') +
+            '</div>' +
+
+            '<p class="info-section-title">Folder plakatu po zatwierdzeniu (komplet)</p>' +
+            '<div class="info-cards">' +
+              card('📁','Struktura folderu','<code>TytułPlakatu.png</code><br><code>TytułPlakatu_ramka.png</code><br><code>TytułPlakatu_thumb.jpg</code><br><code>TytułPlakatu_ramka_thumb.jpg</code><br><code>TytułPlakatu_13x18.pdf</code> … <code>_70x100.pdf</code><br><code>TytułPlakatu_ramka_13x18.pdf</code> … <code>_70x100.pdf</code><br><code>TytułSlug_mockup_frame.jpg</code><br><code>TytułSlug_mockup_interior.jpg</code>') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 3: Biblioteka ──────────────────────────────────
+          '<div class="info-panel" id="itab-library">' +
+
+            '<p class="info-section-title">Źródło danych — posters_inventory.json</p>' +
+            '<div class="info-flow">' +
+              step('💾','inventory.json','Główna baza: lista wszystkich plakatów z metadanymi, ścieżkami PDF, statusem','') +
+              arrow() +
+              step('🔗','API /api/posters','Serwer grupuje plakaty wg klucza dedup (ścieżka obrazu). Duplikaty → jeden rekord primary','accent') +
+              arrow() +
+              step('📐','flattenPosters()','Frontend spłaszcza grupę kategorii → płaską listę. Sortowanie: niezatwierdzone pierwsze','') +
+              arrow() +
+              step('🃏','Siatka kart','Renderowane jako karty z thumb, tytułem, kategorią, stylem i linkami PDF','green') +
+            '</div>' +
+
+            '<p class="info-section-title">Filtry w lewym panelu</p>' +
+            '<div class="info-cards">' +
+              card('🔍','Szukaj','Tytuł, kategoria, styl — pole tekstowe filtruje na żywo (debounce 120ms)') +
+              card('📂','Kategoria','Lista wszystkich kategorii z liczbą plakatów. Klik → filtr.') +
+              card('🎨','Styl','Abstract, Illustration, Line art, Minimalism, Photography itd.') +
+              card('✅','Status druku','Nowy (niewybrany), Zatwierdzony (gotowy do druku). Domyślnie: niezatwierdzone na górze.') +
+            '</div>' +
+
+            '<p class="info-section-title">Modal plakatu — zakładki</p>' +
+            '<div class="info-cards">' +
+              card('🌐','Pełny widok','Wszystkie sekcje naraz: meta, listing, zatwierdzenie, prompt, pliki, mockupy.') +
+              card('⚙️','Workflow','Tytuł + kategoria/styl + shop listing + prompt. Widok roboczy.') +
+              card('🖨️','Druk premium','Zatwierdzenie do druku + narzędzie przenoszenia plakatu między kategoriami.') +
+              card('📁','Pliki','Warianty PDF (6 rozmiarów + ramka) + warianty pliku (PNG, ramka PNG) + info techniczne + mockupy.') +
+            '</div>' +
+
+            '<p class="info-section-title">Zatwierdzanie do druku</p>' +
+            '<div class="info-cards">' +
+              card('☑️','Checkbox','„Zatwierdzony do druku" zapisuje <code>approvedForPrint: true</code> w inventory + API PATCH.') +
+              card('🛒','Eksport','Tylko zatwierdzone trafiają do CSV Shopify (opcja „tylko nowe" lub „wszystkie").') +
+              card('🔝','Sortowanie','Niezatwierdzone zawsze na górze siatki — łatwo widać co czeka na decyzję.') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 4: Eksport Shopify ─────────────────────────────
+          '<div class="info-panel" id="itab-export">' +
+
+            '<p class="info-section-title">Flow — Eksport do Shopify (zakładka 3)</p>' +
+            '<div class="info-flow">' +
+              step('⚙️','Ustawienia CSV','Wybierasz rozmiary (13×18…70×100), ceny, opcję „tylko nowe" lub „wszystkie"','') +
+              arrow() +
+              step('📋','Skrypt export','<code>scripts/exportShopifyCsv.js</code> — czyta inventory, buduje wiersze CSV','accent') +
+              arrow() +
+              step('🖼️','Obrazy','Image 1 = thumb master, Image 2 = thumb ramka, Image 3 = mockup frame, Image 4 = mockup interior','accent') +
+              arrow() +
+              step('📦','CSV Shopify','Gotowy plik z kolumnami Handle, Title, Description, Vendor, Type, Tags, Image, Variants','green') +
+              arrow() +
+              step('⬆️','Import Shopify','Wgrywasz CSV w panelu Shopify → Products → Import. Nowe produkty lub aktualizacja istniejących.','green') +
+            '</div>' +
+
+            '<p class="info-section-title">Struktura jednego produktu w CSV</p>' +
+            '<div class="info-cards">' +
+              card('🏷️','Handle','URL-slug tytułu plakatu, np. <code>waves-crashing-on-dunes</code>. Unikalny identyfikator produktu.') +
+              card('📝','Title / Body','Tytuł plakatu + opis (shop listing z biblioteki). Generowany przez GPT przy tworzeniu.') +
+              card('🖼️','Images 1–4','1: master thumb, 2: ramka thumb, 3: mockup frame (packshot), 4: mockup interior (wnętrze wg kategorii). Image 3+4 tylko gdy istnieją.') +
+              card('📐','Warianty','Każdy rozmiar (13×18, 21×30…) = osobny wariant z ceną i SKU. Do 6 wariantów na produkt.') +
+              card('🏷️','Tags','Automatycznie: kategoria + styl + „poster" + „print". Ułatwiają filtrowanie w Shopify.') +
+              card('📊','Inventory','Quantity ustawiane domyślnie na 999 (druk na żądanie). Można zmienić w ustawieniach.') +
+            '</div>' +
+
+            '<p class="info-section-title">Opcje eksportu</p>' +
+            '<div class="info-cards">' +
+              card('🆕','Tylko nowe','Eksportuje plakaty bez flagi <code>shopifyExportedAt</code> — czyli jeszcze nieeksportowane.') +
+              card('📋','Wszystkie','Wszystkie zatwierdzone plakaty, niezależnie od historii eksportu.') +
+              card('🕐','Timestamped','Plik CSV z datą w nazwie, np. <code>shopify_2026-06-29.csv</code>.') +
+            '</div>' +
+
+          '</div>' +
+
+          // ── PANEL 5: Mockupy GPT ─────────────────────────────────
+          '<div class="info-panel" id="itab-mockups">' +
+
+            '<p class="info-section-title">Flow — Generowanie mockupów (modal plakatu → Mockupy Shopify)</p>' +
+            '<div class="info-flow">' +
+              step('🖱️','Klik przycisku','„Generuj mockupy" w sekcji Mockupy Shopify w modalu plakatu','') +
+              arrow() +
+              step('📡','POST API','/api/posters/:id/generate-mockups — serwer pobiera dane plakatu z inventory','accent') +
+              arrow() +
+              step('📐','Resize mastera','Sharp skaluje PNG do max 1024×1536 px (limit OpenAI API) przed wysłaniem','') +
+              arrow() +
+              step('🤖','GPT Image 2','Dwa osobne wywołania: images.edit() z modelem gpt-image-2. Każde ~15–30 sek','accent') +
+              arrow() +
+              step('💾','Zapis plików','JPEG 800×1200 zapisywany obok mastera w tym samym folderze plakatu','green') +
+              arrow() +
+              step('📋','Inventory','Ścieżki zapisane w <code>poster.mockups.frame</code> i <code>.interior</code> + timestamp','green') +
+            '</div>' +
+
+            '<p class="info-section-title">Dwa generowane mockupy</p>' +
+            '<div class="info-cards">' +
+              card('🖼️','Packshot ramka <span class="info-badge info-badge--gray">_mockup_frame.jpg</span>','Plakat w czarnej galeriowej ramce na białym/jasno-szarym tle. Miękki cień. Format produktowy dla Shopify (Image Position 3).') +
+              card('🛋️','Wnętrze <span class="info-badge info-badge--gray">_mockup_interior.jpg</span>','Plakat w ramce na ścianie w kontekście dopasowanym do kategorii i tytułu — np. kuchnia dla „Kuchnia i jedzenie”, biuro lub siłownia domowa dla sportu, kawiarnia dla kawy. Lifestyle shot (Image Position 4).') +
+            '</div>' +
+
+            '<p class="info-section-title">Nazewnictwo plików mockupów</p>' +
+            '<div class="info-cards">' +
+              card('📁','Format nazwy','<code>{TytułSlug}_mockup_frame.jpg</code><br><code>{TytułSlug}_mockup_interior.jpg</code><br>Np. <code>Waves_Crashing_on_Dunes_mockup_frame.jpg</code>') +
+              card('🚫','Wykluczone ze skanera','Pliki <code>*_mockup_frame.*</code> i <code>*_mockup_interior.*</code> nie są traktowane jako nowe plakaty przy skanowaniu folderu.') +
+              card('💰','Koszt API','~$0.04–0.08 za jeden mockup × 2 = ~$0.10–0.16 za komplet dla jednego plakatu.') +
+              card('⏱️','Czas generowania','30–60 sekund łącznie (dwa wywołania po kolei). Pasek postępu w terminalu SSE.') +
+            '</div>' +
+
+            '<p class="info-section-title">Gdzie mockupy są widoczne</p>' +
+            '<div class="info-cards">' +
+              card('👁️','Prawy panel modalu','Thumby PACKSHOT i SALON obok MASTER i RAMKA — klikalny podgląd pełnej wersji.') +
+              card('📋','Zakładka Pliki','Sekcja Warianty pliku → wiersze Packshot ramka i Salon z klikalnymi linkami.') +
+              card('📋','Zakładka Pełny widok','Sekcja Mockupy Shopify z pełnymi obrazami i przyciskiem Regeneruj.') +
+              card('🛒','CSV Shopify','Image Position 3 (frame) i 4 (interior) — tylko gdy pliki faktycznie istnieją na dysku.') +
+            '</div>' +
+
+          '</div>' +
+
+        '</div>' + // info-modal-body
+      '</div>'; // info-modal
+
+    document.body.appendChild(infoModal);
+
+    // Info modal tab switching
+    infoModal.querySelectorAll('.info-modal-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var tab = btn.getAttribute('data-itab');
+        infoModal.querySelectorAll('.info-modal-tab').forEach(function(b) {
+          b.classList.toggle('is-active', b === btn);
+        });
+        infoModal.querySelectorAll('.info-panel').forEach(function(p) {
+          p.classList.toggle('is-active', p.id === 'itab-' + tab);
+        });
+      });
+    });
+
+    document.getElementById('btnOpenInfo').addEventListener('click', function() {
+      infoModal.hidden = false;
+    });
+    document.getElementById('btnCloseInfo').addEventListener('click', function() {
+      infoModal.hidden = true;
+    });
+    infoModal.addEventListener('click', function(e) {
+      if (e.target === infoModal) infoModal.hidden = true;
+    });
+
+    // Helper functions for building info modal HTML
+    function step(icon, label, desc, color) {
+      return '<div class="info-flow-step">' +
+        '<div class="info-flow-icon' + (color ? ' info-flow-icon--' + color : '') + '">' + icon + '</div>' +
+        '<div class="info-flow-label">' + label + '</div>' +
+        '<div class="info-flow-sub">' + desc + '</div>' +
+        '</div>';
+    }
+    function arrow() {
+      return '<div class="info-flow-arrow">→</div>';
+    }
+    function card(icon, title, desc) {
+      return '<div class="info-card">' +
+        '<span class="info-card-icon">' + icon + '</span>' +
+        '<div class="info-card-title">' + title + '</div>' +
+        '<div class="info-card-desc">' + desc + '</div>' +
+        '</div>';
+    }
+
+    // ── Settings helpers ─────────────────────────────────────
+    function reloadGeneratorCategories(categories) {
+      ['studioCategory', 'studioUploadCategory'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        var current = sel.value;
+        sel.innerHTML = categories.map(function(c) {
+          return '<option value="' + c + '"' + (c === current ? ' selected' : '') + '>' + c + '</option>';
+        }).join('');
+      });
+    }
+
+    function reloadGeneratorStyles(styles) {
+      ['studioStyle', 'studioUploadStyle'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        var current = sel.value;
+        sel.innerHTML = styles.map(function(s) {
+          return '<option value="' + s + '"' + (s === current ? ' selected' : '') + '>' + s + '</option>';
+        }).join('');
+      });
+    }
+
+    function renderCategoriesList(categories, extra) {
+      var extraNames = (extra || []).map(function(e) { return e.name; });
+      var el = document.getElementById('settingCategoriesList');
+      if (!el) return;
+      el.innerHTML = categories.map(function(c) {
+        var isExtra = extraNames.includes(c);
+        return '<span class="settings-tag' + (isExtra ? ' settings-tag--user' : '') + '">' +
+          c +
+          (isExtra ? '<button class="settings-tag-del" data-cat="' + encodeURIComponent(c) + '" title="Usuń">×</button>' : '') +
+          '</span>';
+      }).join('');
+      el.querySelectorAll('.settings-tag-del').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          fetch('/api/user-settings/categories/' + btn.dataset.cat, { method: 'DELETE' })
+            .then(function(r) { return r.json(); })
+            .then(function() { loadSettingsData(); });
+        });
+      });
+    }
+
+    function renderStylesList(styles, extraStyles) {
+      var el = document.getElementById('settingStylesList');
+      if (!el) return;
+      el.innerHTML = styles.map(function(s) {
+        var isExtra = (extraStyles || []).includes(s);
+        return '<span class="settings-tag' + (isExtra ? ' settings-tag--user' : '') + '">' +
+          s +
+          (isExtra ? '<button class="settings-tag-del" data-style="' + encodeURIComponent(s) + '" title="Usuń">×</button>' : '') +
+          '</span>';
+      }).join('');
+      el.querySelectorAll('.settings-tag-del').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          fetch('/api/user-settings/styles/' + btn.dataset.style, { method: 'DELETE' })
+            .then(function(r) { return r.json(); })
+            .then(function() { loadSettingsData(); });
+        });
+      });
+    }
+
+    function renderPriceTable(prices) {
+      var el = document.getElementById('settingsPriceTable');
+      if (!el) return;
+      var formats = ['13x18','21x30','30x40','40x50','50x70','70x100'];
+      el.innerHTML = formats.map(function(fmt) {
+        var val = (prices && prices[fmt]) ? prices[fmt] : '';
+        return '<div class="price-row">' +
+          '<span class="price-format">' + fmt.replace('x','×') + ' cm</span>' +
+          '<div class="price-input-wrap">' +
+            '<input class="price-input" type="number" step="0.01" min="0" data-fmt="' + fmt + '" value="' + val + '" />' +
+            '<span class="price-currency">PLN</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    var _settingsCache = null;
+
+    function loadSettingsData() {
+      Promise.all([
+        fetch('/api/settings').then(function(r){ return r.json(); }),
+        fetch('/api/generation-config').then(function(r){ return r.json(); }),
+        fetch('/api/shopify/export-settings').then(function(r){ return r.json(); }),
+      ]).then(function(results) {
+        var sys = results[0], gen = results[1], shopify = results[2];
+        _settingsCache = { sys: sys, gen: gen, shopify: shopify };
+
+        // API tab
+        var keyEl = document.getElementById('settingApiKey');
+        if (keyEl) keyEl.innerHTML = sys.openaiKeySet
+          ? '<span class="settings-badge settings-badge--green">✓ Aktywny</span><code class="settings-key-mask">' + sys.openaiKeyMasked + '</code>'
+          : '<span class="settings-badge settings-badge--red">✗ Brak klucza</span>';
+        var imgEl = document.getElementById('settingImageModel');
+        if (imgEl) imgEl.innerHTML = '<span class="settings-badge settings-badge--ink">' + sys.imageModel + '</span>';
+        var prmEl = document.getElementById('settingPromptModel');
+        if (prmEl) prmEl.innerHTML = '<span class="settings-badge settings-badge--ink">' + sys.promptModel + '</span>';
+        var nodeEl = document.getElementById('settingNodeVersion');
+        if (nodeEl) nodeEl.innerHTML = '<span class="settings-badge">' + sys.nodeVersion + '</span>';
+        var llmEl = document.getElementById('settingLlmProviders');
+        if (llmEl) llmEl.innerHTML = (sys.llmProviders || []).map(function(p) {
+          return '<span class="settings-badge settings-badge--green">' + p + '</span>';
+        }).join(' ') || '<span class="settings-badge">brak</span>';
+
+        // Categories tab
+        renderCategoriesList(gen.categories || [], gen.extraCategories || []);
+
+        // Styles tab
+        renderStylesList(gen.artStyles || [], gen.extraStyles || []);
+
+        // Defaults dropdowns
+        var defCatSel = document.getElementById('settingDefaultCategory');
+        var defStySel = document.getElementById('settingDefaultStyle');
+        if (defCatSel) {
+          defCatSel.innerHTML = '<option value="">— brak —</option>' +
+            (gen.categories || []).map(function(c) {
+              return '<option value="' + c + '"' + (gen.defaults && gen.defaults.category === c ? ' selected' : '') + '>' + c + '</option>';
+            }).join('');
+        }
+        if (defStySel) {
+          defStySel.innerHTML = '<option value="">— brak —</option>' +
+            (gen.artStyles || []).map(function(s) {
+              return '<option value="' + s + '"' + (gen.defaults && gen.defaults.style === s ? ' selected' : '') + '>' + s + '</option>';
+            }).join('');
+        }
+
+        // Price table
+        renderPriceTable(shopify.prices);
+
+        // Propagate to live generator
+        reloadGeneratorCategories(gen.categories || []);
+        reloadGeneratorStyles(gen.artStyles || []);
+      });
+    }
+
+    // Settings open/close
+    document.getElementById('btnOpenSettings').addEventListener('click', function() {
+      settingsModal.hidden = false;
+      loadSettingsData();
+    });
+    document.getElementById('btnCloseSettings').addEventListener('click', function() {
+      settingsModal.hidden = true;
+    });
+    settingsModal.addEventListener('click', function(e) {
+      if (e.target === settingsModal) settingsModal.hidden = true;
+    });
+
+    // Settings tabs
+    settingsModal.querySelectorAll('.settings-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        settingsModal.querySelectorAll('.settings-tab').forEach(function(t) { t.classList.remove('is-active'); });
+        settingsModal.querySelectorAll('.settings-tab-panel').forEach(function(p) { p.hidden = true; });
+        tab.classList.add('is-active');
+        var panel = settingsModal.querySelector('[data-stab-panel="' + tab.dataset.stab + '"]');
+        if (panel) panel.hidden = false;
+      });
+    });
+
+    // Add category
+    document.getElementById('btnAddCategory').addEventListener('click', function() {
+      var name = document.getElementById('newCategoryName').value.trim();
+      var hint = document.getElementById('newCategoryHint').value.trim();
+      var fb = document.getElementById('categoryFeedback');
+      if (!name) { fb.textContent = 'Wpisz nazwę kategorii.'; fb.className = 'settings-add-feedback settings-add-feedback--error'; return; }
+      fetch('/api/user-settings/categories/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, hint: hint }),
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) {
+          fb.textContent = '✓ Kategoria „' + name + '" dodana.';
+          fb.className = 'settings-add-feedback settings-add-feedback--ok';
+          document.getElementById('newCategoryName').value = '';
+          document.getElementById('newCategoryHint').value = '';
+          loadSettingsData();
+        } else {
+          fb.textContent = '✗ ' + (d.error || 'Błąd');
+          fb.className = 'settings-add-feedback settings-add-feedback--error';
+        }
+      });
+    });
+
+    // Add style
+    document.getElementById('btnAddStyle').addEventListener('click', function() {
+      var name = document.getElementById('newStyleName').value.trim();
+      var fb = document.getElementById('styleFeedback');
+      if (!name) { fb.textContent = 'Wpisz nazwę stylu.'; fb.className = 'settings-add-feedback settings-add-feedback--error'; return; }
+      fetch('/api/user-settings/styles/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name }),
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) {
+          fb.textContent = '✓ Styl „' + name + '" dodany.';
+          fb.className = 'settings-add-feedback settings-add-feedback--ok';
+          document.getElementById('newStyleName').value = '';
+          loadSettingsData();
+        } else {
+          fb.textContent = '✗ ' + (d.error || 'Błąd');
+          fb.className = 'settings-add-feedback settings-add-feedback--error';
+        }
+      });
+    });
+
+    // Save defaults
+    document.getElementById('btnSaveDefaults').addEventListener('click', function() {
+      var fb = document.getElementById('defaultsFeedback');
+      var cat = document.getElementById('settingDefaultCategory').value;
+      var sty = document.getElementById('settingDefaultStyle').value;
+      fetch('/api/user-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultCategory: cat, defaultStyle: sty }),
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) {
+          fb.textContent = '✓ Zapisano domyślne.';
+          fb.className = 'settings-add-feedback settings-add-feedback--ok';
+          // Apply to generator
+          var catSel = document.getElementById('studioCategory');
+          if (catSel && cat) catSel.value = cat;
+          var stySel = document.getElementById('studioStyle');
+          if (stySel && sty) stySel.value = sty;
+        }
+      });
+    });
+
+    // Export quick actions
+    document.getElementById('settingBtnExportApproved').addEventListener('click', function() {
+      var fb = document.getElementById('settingExportStatus');
+      fb.textContent = 'Eksportowanie…';
+      fetch('/api/shopify/export', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ fb.textContent = d.ok ? '✓ Gotowe' : '✗ ' + (d.error || 'Błąd'); });
+    });
+    document.getElementById('settingBtnExportAll').addEventListener('click', function() {
+      var fb = document.getElementById('settingExportStatus');
+      fb.textContent = 'Eksportowanie…';
+      fetch('/api/shopify/export', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ all: true }) })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ fb.textContent = d.ok ? '✓ Gotowe' : '✗ ' + (d.error || 'Błąd'); });
+    });
+    document.getElementById('settingBtnSyncThumbs').addEventListener('click', function() {
+      var fb = document.getElementById('settingExportStatus');
+      fb.textContent = 'Sync w toku…';
+      fetch('/api/shopify/thumbs-push', { method: 'POST' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ fb.textContent = d.ok ? '✓ Sync zakończony' : '✗ ' + (d.error || 'Błąd'); })
+        .catch(function(){ fb.textContent = '✗ Błąd połączenia'; });
+    });
+
+    // Save prices from settings
+    document.getElementById('settingsBtnSavePrice').addEventListener('click', function() {
+      var fb = document.getElementById('priceFeedback');
+      var prices = {};
+      document.querySelectorAll('#settingsPriceTable .price-input').forEach(function(inp) {
+        prices[inp.dataset.fmt] = inp.value;
+      });
+      fetch('/api/shopify/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ saveSettings: true, prices: prices }),
+      }).then(function(r){ return r.json(); })
+        .then(function(d){
+          fb.textContent = d.ok ? '✓ Cennik zapisany.' : '✗ ' + (d.error || 'Błąd');
+          fb.className = 'settings-add-feedback ' + (d.ok ? 'settings-add-feedback--ok' : 'settings-add-feedback--error');
+        });
+    });
+
+    // 2. Create tab panels
+    var dashPanel = document.createElement('div');
+    dashPanel.className = 'figma-panel';
+    dashPanel.dataset.tabPanel = 'dashboard';
+
+    var pageContainer = document.createElement('div');
+    pageContainer.className = 'figma-page';
+    dashPanel.appendChild(pageContainer);
+
+    var exportPanel = document.createElement('div');
+    exportPanel.className = 'figma-panel';
+    exportPanel.dataset.tabPanel = 'export';
+    exportPanel.hidden = true;
+
+    var libPanel = document.createElement('div');
+    libPanel.className = 'figma-panel';
+    libPanel.dataset.tabPanel = 'library';
+    libPanel.hidden = true;
+
+    // 3. Move sections
+    var studio = document.getElementById('studio');
+    var statsRow = document.getElementById('statsRow');
+    var libraryBrowse = document.getElementById('libraryBrowse');
+    var masthead = document.querySelector('.masthead');
+
+    if (studio) pageContainer.appendChild(studio);
+    if (statsRow) libPanel.appendChild(statsRow);
+    if (libraryBrowse) libPanel.appendChild(libraryBrowse);
+
+    // 4. Move nav action buttons from masthead to figma nav
+    var navActions = document.getElementById('figmaNavActions');
+    var themeToggle = document.getElementById('themeToggle');
+    var updatedAt = document.getElementById('updatedAt');
+    var refreshBtn = document.getElementById('refreshBtn');
+    if (navActions) {
+      if (themeToggle) navActions.appendChild(themeToggle);
+      if (updatedAt) navActions.appendChild(updatedAt);
+      if (refreshBtn) navActions.appendChild(refreshBtn);
+    }
+
+    // 5. Insert panels into body after nav
+    nav.after(dashPanel);
+    dashPanel.after(exportPanel);
+    exportPanel.after(libPanel);
+
+    // 6. Tab switching logic
+    nav.querySelectorAll('.figma-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tab = btn.dataset.tab;
+        nav.querySelectorAll('.figma-tab').forEach(function (b) {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+        dashPanel.hidden = (tab !== 'dashboard');
+        exportPanel.hidden = (tab !== 'export');
+        libPanel.hidden = (tab !== 'library');
+      });
+    });
+
+    // 7. If URL hash is #library, switch tab
+    if (window.location.hash === '#library') {
+      nav.querySelector('[data-tab="library"]').click();
+    }
+
+    // 8. Restructure dashboard into Generator + Shopify sections
+    var studioEl = document.getElementById('studio');
+    if (!studioEl) return;
+
+    // --- Extract existing DOM nodes ---
+    var inner      = studioEl.querySelector('.studio-pro-inner');
+    var eyebrow    = studioEl.querySelector('.studio-pro-eyebrow');
+    var heading    = studioEl.querySelector('#studio-heading');
+    var sub        = studioEl.querySelector('.studio-pro-sub');
+    var shopifyBox = studioEl.querySelector('.studio-shopify-export');
+    var panelUpload = document.getElementById('studioPanelUpload');
+    var panelMan   = document.getElementById('studioPanelManual');
+    var panelAuto  = document.getElementById('studioPanelAuto');
+
+    // Detach all from studioEl
+    [eyebrow, heading, sub, shopifyBox, panelUpload, panelMan, panelAuto].forEach(function(n){ if(n && n.parentNode) n.parentNode.removeChild(n); });
+
+    // --- SECTION A: Generator (lime) ---
+    studioEl.innerHTML = '';
+    studioEl.className = 'dash-generator color-block color-block--lime';
+
+    var genHeader = document.createElement('div');
+    genHeader.className = 'gen-header';
+    var ey = document.createElement('p');
+    ey.className = 'studio-pro-eyebrow';
+    ey.textContent = 'Generator';
+    var h2 = document.createElement('h2');
+    h2.id = 'studio-heading';
+    h2.className = 'studio-pro-hero';
+    h2.textContent = 'Generuj plakaty';
+    genHeader.appendChild(ey);
+    genHeader.appendChild(h2);
+    studioEl.appendChild(genHeader);
+
+    // ── Three-flow selector ──────────────────────────────────
+    var flowSelector = document.createElement('div');
+    flowSelector.className = 'gen-flow-selector';
+    studioEl.appendChild(flowSelector);
+
+    function makeFlowOption(id, icon, title, desc) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = id;
+      btn.className = 'gen-flow-option';
+      btn.innerHTML =
+        '<div class="gen-flow-opt-icon">' + icon + '</div>' +
+        '<div><div class="gen-flow-opt-title">' + title + '</div>' +
+        '<div class="gen-flow-opt-desc">' + desc + '</div></div>';
+      return btn;
+    }
+
+    var optUpload = makeFlowOption('genFlowUpload', '📸', 'Dodaj własne zdjęcie', 'Wgraj PNG/JPG/WEBP z dysku prosto do biblioteki');
+    var optManual = makeFlowOption('genFlowManual', '🎨', 'Generator manualny', 'Prompt → GPT Image 2 → podgląd → akceptacja');
+    var optAuto   = makeFlowOption('genFlowAuto',   '⚡', 'Generator automatyczny', 'Batch generacja całych kategorii bez podglądu');
+    flowSelector.appendChild(optUpload);
+    flowSelector.appendChild(optManual);
+    flowSelector.appendChild(optAuto);
+
+    // Click handler via event delegation on selector — registered immediately after creation
+    flowSelector.addEventListener('click', function(e) {
+      var opt = e.target.closest('.gen-flow-option');
+      if (!opt) return;
+      var flowMap = { genFlowUpload: 'upload', genFlowManual: 'manual', genFlowAuto: 'auto' };
+      var mode = flowMap[opt.id];
+      if (!mode) return;
+      // Update option active states
+      [optUpload, optManual, optAuto].forEach(function(o) { o.classList.toggle('is-active', o === opt); });
+      // Update panel active states
+      var panelMap = { upload: wrapUpload, manual: wrapManual, auto: wrapAuto };
+      Object.keys(panelMap).forEach(function(k) {
+        if (panelMap[k]) panelMap[k].classList.toggle('is-active', k === mode);
+      });
+      // Persist
+      try { localStorage.setItem('plakatyStudioMode', mode); } catch(_) {}
+    });
+
+    // ── Flow content area ────────────────────────────────────
+    var flowContent = document.createElement('div');
+    flowContent.className = 'gen-flow-content';
+    studioEl.appendChild(flowContent);
+
+    function wrapFlowPanel(id, panel) {
+      var wrap = document.createElement('div');
+      wrap.className = 'gen-flow-panel';
+      wrap.id = id;
+      if (panel) {
+        panel.removeAttribute('hidden');
+        wrap.appendChild(panel);
+      }
+      flowContent.appendChild(wrap);
+      return wrap;
+    }
+
+    var wrapUpload = wrapFlowPanel('genFlowPanelUpload', panelUpload);
+    var wrapManual = wrapFlowPanel('genFlowPanelManual', panelMan);
+    var wrapAuto   = wrapFlowPanel('genFlowPanelAuto',   panelAuto);
+
+    // Restore saved flow on load
+    (function() {
+      var saved = '';
+      try { saved = localStorage.getItem('plakatyStudioMode') || ''; } catch(_) {}
+      var flowMap = { upload: [optUpload, wrapUpload], manual: [optManual, wrapManual], auto: [optAuto, wrapAuto] };
+      var mode = flowMap[saved] ? saved : 'manual';
+      var pair = flowMap[mode];
+      if (pair) { pair[0].classList.add('is-active'); pair[1].classList.add('is-active'); }
+    })();
+
+    // --- Live log terminal panel ---
+    var logPanel = document.createElement('div');
+    logPanel.className = 'gen-log-panel';
+    logPanel.id = 'genLogPanel';
+    logPanel.innerHTML =
+      '<div class="gen-log-header" id="genLogHeader">' +
+        '<span class="gen-log-header-dot" id="genLogDot"></span>' +
+        '<span class="gen-log-header-title">Logi generacji — API &amp; pipeline</span>' +
+        '<div class="gen-log-header-actions">' +
+          '<button type="button" class="gen-log-btn" id="genLogClearBtn">Wyczyść</button>' +
+          '<button type="button" class="gen-log-btn" id="genLogScrollBtn" title="Przewiń na dół">↓</button>' +
+        '</div>' +
+        '<span class="gen-log-toggle-icon" id="genLogToggleIcon">▼</span>' +
+      '</div>' +
+      '<div class="gen-log-body" id="genLogBody">' +
+        '<div class="gen-log-empty" id="genLogEmpty">Czekam na generację…</div>' +
+      '</div>';
+    pageContainer.appendChild(logPanel);
+
+    // ── Log terminal JS ──────────────────────────────────────────────────────
+    (function() {
+      var body = document.getElementById('genLogBody');
+      var dot  = document.getElementById('genLogDot');
+      var empty = document.getElementById('genLogEmpty');
+      var panel = document.getElementById('genLogPanel');
+      var header = document.getElementById('genLogHeader');
+      var clearBtn = document.getElementById('genLogClearBtn');
+      var scrollBtn = document.getElementById('genLogScrollBtn');
+      var lineCount = 0;
+      var collapsed = false;
+      var es = null;
+
+      function fmtTime(ts) {
+        var d = new Date(ts);
+        return d.toTimeString().slice(0,8);
+      }
+
+      function appendLine(level, msg, ts) {
+        if (empty) { empty.remove(); empty = null; }
+        var line = document.createElement('div');
+        line.className = 'gen-log-line gen-log-line--' + level;
+        var tsSpan = document.createElement('span');
+        tsSpan.className = 'gen-log-ts';
+        tsSpan.textContent = fmtTime(ts || Date.now());
+        var msgSpan = document.createElement('span');
+        msgSpan.className = 'gen-log-msg';
+        // Highlight key words
+        var text = String(msg);
+        if (/^\s*(->|OK|✓|✗|x |Saved|Prompt|Generating|Retry|Passe|Safe|mockup|PDF|thumb|Wrote|Created)/i.test(text)) {
+          line.classList.add('gen-log-line--step');
+        }
+        msgSpan.textContent = text;
+        line.appendChild(tsSpan);
+        line.appendChild(msgSpan);
+        body.appendChild(line);
+        lineCount++;
+        // Auto-scroll
+        if (!collapsed) body.scrollTop = body.scrollHeight;
+      }
+
+      function connect() {
+        if (es) { es.close(); }
+        es = new EventSource('/api/logs/stream');
+        dot.classList.add('is-active');
+        es.onmessage = function(e) {
+          try {
+            var d = JSON.parse(e.data);
+            appendLine(d.level || 'log', d.msg, d.ts);
+          } catch(_) {}
+        };
+        es.onerror = function() {
+          dot.classList.remove('is-active');
+          appendLine('system', '── Połączenie przerwane. Rekonektuję… ──', Date.now());
+          setTimeout(connect, 3000);
+        };
+      }
+
+      connect();
+
+      header.addEventListener('click', function(e) {
+        if (e.target.closest('button')) return;
+        collapsed = !collapsed;
+        panel.classList.toggle('is-collapsed', collapsed);
+      });
+
+      clearBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        body.innerHTML = '';
+        lineCount = 0;
+        empty = document.createElement('div');
+        empty.className = 'gen-log-empty';
+        empty.textContent = 'Wyczyść. Czekam na generację…';
+        body.appendChild(empty);
+      });
+
+      scrollBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        body.scrollTop = body.scrollHeight;
+      });
+    })();
+    // ────────────────────────────────────────────────────────────────────────
+
+    // --- SECTION B: Shopify & Operacje (coral block) ---
+    var shopifySection = document.createElement('section');
+    shopifySection.className = 'dash-shopify color-block color-block--coral';
+    shopifySection.setAttribute('aria-label', 'Shopify i operacje');
+
+    var shopifyHead = document.createElement('div');
+    shopifyHead.className = 'shopify-head';
+    shopifyHead.innerHTML =
+      '<p class="studio-pro-eyebrow">Shopify & Operacje</p>' +
+      '<h2 class="shopify-section-title">Eksport i synchronizacja</h2>';
+    shopifySection.appendChild(shopifyHead);
+
+    // Shopify three-column ops
+    var shopifyOps = document.createElement('div');
+    shopifyOps.className = 'shopify-ops';
+    shopifySection.appendChild(shopifyOps);
+
+    // --- Col 1: Eksport CSV ---
+    var colExport = document.createElement('div');
+    colExport.className = 'shopify-col shopify-col--export';
+    colExport.innerHTML = '<h4 class="shopify-col-label">Eksport CSV</h4>';
+
+    if (shopifyBox) {
+      // Query from detached shopifyBox, not document
+      var btnApproved  = shopifyBox.querySelector('#btnShopifyExportApproved');
+      var btnAll       = shopifyBox.querySelector('#btnShopifyExportAll');
+      var btnReadiness = shopifyBox.querySelector('#btnShopifyReadiness');
+      var csvLink      = shopifyBox.querySelector('#shopifyCsvOpenLink');
+      var exportStatus = shopifyBox.querySelector('#shopifyExportStatus');
+      var readStatus   = shopifyBox.querySelector('#shopifyReadinessStatus');
+      var sizeRow      = shopifyBox.querySelector('#shopifySizeRow');
+      var cbEl         = shopifyBox.querySelector('#shopifyOnlyNewToggle');
+
+      var exportBtns = document.createElement('div');
+      exportBtns.className = 'shopify-export-btns';
+      if (btnApproved) exportBtns.appendChild(btnApproved);
+      if (btnAll)      exportBtns.appendChild(btnAll);
+      colExport.appendChild(exportBtns);
+
+      if (cbEl) {
+        var checkWrap = document.createElement('div');
+        checkWrap.className = 'shopify-check-wrap';
+        checkWrap.appendChild(cbEl.closest('label') || cbEl.parentElement);
+        colExport.appendChild(checkWrap);
+      }
+
+      if (sizeRow) colExport.appendChild(sizeRow);
+
+      var exportMeta = document.createElement('div');
+      exportMeta.className = 'shopify-export-meta';
+      if (csvLink)      exportMeta.appendChild(csvLink);
+      if (btnReadiness) exportMeta.appendChild(btnReadiness);
+      if (exportStatus) exportMeta.appendChild(exportStatus);
+      if (readStatus)   exportMeta.appendChild(readStatus);
+      colExport.appendChild(exportMeta);
+    }
+    shopifyOps.appendChild(colExport);
+
+    // --- Col 2: Sync ---
+    var colSync = document.createElement('div');
+    colSync.className = 'shopify-col shopify-col--sync';
+    colSync.innerHTML = '<h4 class="shopify-col-label">Synchronizacja</h4>';
+    if (shopifyBox) {
+      var btnThumbsPush = shopifyBox.querySelector('#btnShopifyThumbsPush');
+      if (btnThumbsPush) {
+        btnThumbsPush.className = 'shopify-sync-btn';
+        colSync.appendChild(btnThumbsPush);
+      }
+    }
+    var syncDesc = document.createElement('p');
+    syncDesc.className = 'shopify-sync-desc';
+    syncDesc.textContent = 'Generuje miniatury dla zatwierdzonych plakatów i wysyła je do Shopify CDN.';
+    colSync.appendChild(syncDesc);
+    shopifyOps.appendChild(colSync);
+
+    // --- Col 3: Cennik ---
+    var colPrice = document.createElement('div');
+    colPrice.className = 'shopify-col shopify-col--price';
+    colPrice.innerHTML = '<h4 class="shopify-col-label">Cennik</h4>';
+
+    var priceTable = document.createElement('div');
+    priceTable.className = 'price-table';
+
+    var formats = ['13x18','21x30','30x40','40x50','50x70','70x100'];
+    formats.forEach(function(fmt) {
+      var row = document.createElement('div');
+      row.className = 'price-row';
+      var lbl = document.createElement('span');
+      lbl.className = 'price-format';
+      lbl.textContent = fmt.replace('x','×') + ' cm';
+      var inp = shopifyBox ? shopifyBox.querySelector('#shopifyPrice' + fmt) : null;
+      var inputWrap = document.createElement('div');
+      inputWrap.className = 'price-input-wrap';
+      if (inp) {
+        inp.className = 'price-input';
+        inputWrap.appendChild(inp);
+      }
+      var cur = document.createElement('span');
+      cur.className = 'price-currency';
+      cur.textContent = 'PLN';
+      inputWrap.appendChild(cur);
+      row.appendChild(lbl);
+      row.appendChild(inputWrap);
+      priceTable.appendChild(row);
+    });
+    colPrice.appendChild(priceTable);
+
+    var savePriceWrap = document.createElement('div');
+    savePriceWrap.className = 'price-save-wrap';
+    if (shopifyBox) {
+      var btnSave = shopifyBox.querySelector('#btnShopifySaveSettings');
+      if (btnSave) {
+        btnSave.className = 'price-save-btn';
+        btnSave.textContent = 'Zapisz cennik';
+        savePriceWrap.appendChild(btnSave);
+      }
+    }
+    colPrice.appendChild(savePriceWrap);
+    shopifyOps.appendChild(colPrice);
+
+    // Shopify section goes into its own export panel
+    var exportPageWrap = document.createElement('div');
+    exportPageWrap.className = 'figma-page';
+    exportPageWrap.appendChild(shopifySection);
+    exportPanel.appendChild(exportPageWrap);
+  });
+  </script>
   <div class="shell shell--library">
     <div class="app-main">
     <header class="masthead">
@@ -4457,7 +5660,7 @@
               </svg>
               <span class="theme-toggle-label" id="themeToggleText">Dzień</span>
             </button>
-            <span class="version-pill" id="appVersionPill" title="Wersja aplikacji">Version 1.0</span>
+            <span class="version-pill" id="appVersionPill" title="Wersja aplikacji">Version 2.0</span>
             <span class="meta-pill" id="updatedAt" aria-live="polite">—</span>
             <button type="button" class="btn btn-primary" id="refreshBtn">Odśwież dane</button>
           </div>
@@ -4511,11 +5714,40 @@
             Automatyczny
           </button>
         </div>
-        <div id="studioPanelManual" class="studio-pro-panel">
-          <div class="studio-pro-models" role="group" aria-label="Źródło podglądu">
-            <button type="button" class="studio-pro-model-pill is-active" id="studioSourceDalle" aria-pressed="true">GPT Image</button>
-            <button type="button" class="studio-pro-model-pill" id="studioSourceManual" aria-pressed="false">✋ RĘCZNY</button>
+        <div id="studioPanelUpload" class="studio-pro-panel" hidden>
+          <div class="studio-upload-panel">
+            <div class="studio-pro-meta-grid">
+              <div class="studio-pro-field">
+                <label for="studioUploadCategory">Kategoria</label>
+                <select id="studioUploadCategory"></select>
+              </div>
+              <div class="studio-pro-field">
+                <label for="studioUploadTitle">Tytuł plakatu</label>
+                <input type="text" id="studioUploadTitle" placeholder="np. Letni ogród" autocomplete="off" />
+              </div>
+              <div class="studio-pro-field">
+                <label for="studioUploadStyle">Styl</label>
+                <select id="studioUploadStyle"></select>
+              </div>
+            </div>
+            <div class="studio-upload-dropzone" id="studioUploadDropzone">
+              <span class="studio-upload-dropzone-icon">📸</span>
+              <span class="studio-upload-dropzone-label">Kliknij lub przeciągnij plik</span>
+              <span class="studio-upload-dropzone-hint">PNG, JPG lub WEBP · max 30 MB</span>
+            </div>
+            <input type="file" id="studioUploadInputFile" accept="image/png,image/jpeg,image/webp" hidden />
+            <div class="studio-manual-upload-row" id="studioManualUploadRow" style="margin-top:0">
+              <button type="button" class="studio-pro-chip" id="btnPickStudioImage">Wybierz plik</button>
+              <button type="button" class="studio-pro-chip studio-pro-send" id="btnUploadStudioImage" disabled>
+                <span>Dodaj do biblioteki</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              <p class="studio-manual-upload-note" id="studioUploadNote">Wybierz PNG/JPG/WEBP — plik trafi do biblioteki jako niezatwierdzony plakat.</p>
+            </div>
           </div>
+        </div>
+
+        <div id="studioPanelManual" class="studio-pro-panel">
           <div class="studio-pro-meta-grid">
             <div class="studio-pro-field">
               <label for="studioCategory">Kategoria</label>
@@ -4547,12 +5779,6 @@
             <button type="button" class="studio-pro-chip studio-pro-chip--clear" id="btnClearStudio">
               Wyczyść
             </button>
-          </div>
-          <div class="studio-manual-upload-row" id="studioManualUploadRow" hidden>
-            <input type="file" id="studioUploadInput" accept="image/png,image/jpeg,image/webp" hidden />
-            <button type="button" class="studio-pro-chip" id="btnPickStudioImage">Dodaj zdjęcie ręcznie</button>
-            <button type="button" class="studio-pro-chip" id="btnUploadStudioImage" disabled>Użyj zdjęcia jako podgląd</button>
-            <p class="studio-manual-upload-note" id="studioUploadNote">Ręczny flow: wybierz PNG/JPG/WEBP i zapisz przez ten sam modal akceptacji.</p>
           </div>
           <div class="studio-pro-send-row">
             <button type="button" class="studio-pro-send" id="btnGeneratePoster">
@@ -4693,6 +5919,14 @@
             <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Zatwierdzony (gotowy do druku)</button>
           </div>
         </div>
+        <div class="filter-status-wrap">
+          <span class="filter-category-heading filter-category-heading--sidebar">Mockupy Shopify</span>
+          <div class="filter-status-seg" id="mockupFilterGroup" role="group" aria-label="Mockupy Shopify">
+            <button type="button" class="filter-status-btn" data-mockup="all" aria-pressed="true">Wszystkie</button>
+            <button type="button" class="filter-status-btn" data-mockup="missing" aria-pressed="false">Bez mockupu</button>
+            <button type="button" class="filter-status-btn" data-mockup="has" aria-pressed="false">Z mockupem</button>
+          </div>
+        </div>
         </div>
         <div class="library-filters-actions">
           <button type="button" class="btn btn-primary btn-filter-apply btn-filter-apply--block" id="filterApplyBtn">Zastosuj filtry</button>
@@ -4739,17 +5973,17 @@
   <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal modal-poster" role="document">
       <button type="button" class="modal-close" id="modalClose" aria-label="Zamknij">×</button>
-      <div class="modal-detail modal-detail--tiled" id="modalDetailTiled" data-modal-view="all">
+      <div class="modal-detail modal-detail--tiled" id="modalDetailTiled" data-modal-view="workflow">
         <div class="modal-top-premium-menu" id="modalTopPremiumMenu">
           <div class="modal-top-premium-filters" role="group" aria-label="Menu widoku plakatu">
-            <button type="button" class="modal-premium-chip is-active" data-modal-view="all" aria-pressed="true">Pełny widok</button>
-            <button type="button" class="modal-premium-chip" data-modal-view="workflow" aria-pressed="false">Workflow</button>
+            <button type="button" class="modal-premium-chip" data-modal-view="all" aria-pressed="false">Pełny widok</button>
+            <button type="button" class="modal-premium-chip is-active" data-modal-view="workflow" aria-pressed="true">Workflow</button>
             <button type="button" class="modal-premium-chip" data-modal-view="print" aria-pressed="false">Druk premium</button>
             <button type="button" class="modal-premium-chip" data-modal-view="files" aria-pressed="false">Pliki</button>
           </div>
           <div class="modal-top-premium-actions">
             <button type="button" class="modal-premium-action modal-premium-action--print" id="modalPremiumPrintAction">
-              Aktywuj druk premium
+              Druk premium
               <span class="modal-premium-print-badge" id="modalPremiumPrintBadge">OFF</span>
             </button>
             <button type="button" class="modal-premium-action" id="modalOpenFolderBtnTop">📁 Explorer</button>
@@ -4854,7 +6088,7 @@
             <p class="modal-copy-feedback" id="modalCopyFeedback" aria-live="polite"></p>
           </div>
         </div>
-        <div class="modal-tile modal-tile--files" data-modal-section="files print">
+        <div class="modal-tile modal-tile--span-2 modal-tile--files" data-modal-section="files print" data-modal-hide-in-all="true">
           <div class="modal-pdf-variants" id="modalPdfVariants">
             <p class="section-label">Warianty PDF (druk)</p>
             <div class="modal-pdf-variants-grid" id="modalPdfVariantsGrid"></div>
@@ -4862,6 +6096,15 @@
           <div class="modal-file-variants" id="modalFileVariants">
             <p class="section-label">Warianty pliku</p>
             <div class="modal-file-variants-grid" id="modalFileVariantsGrid"></div>
+            <div class="modal-file-variant-col modal-file-variant-col--mockups" id="modalMockupsSection">
+              <p class="modal-file-variant-title">Mockupy Shopify <span class="modal-mockups-badge">GPT Image 2</span></p>
+              <div class="modal-file-variants-mockups-rows" id="modalMockupsGrid"></div>
+              <div class="modal-mockups-actions">
+                <button type="button" class="modal-move-btn modal-mockups-generate-btn" id="btnGenerateMockups">Generuj mockupy</button>
+                <span class="modal-mockups-feedback" id="mockupGenerateFeedback"></span>
+              </div>
+              <p class="field-hint modal-mockups-hint">Generowanie zajmuje ok. 30–60 s. Mockupy zostaną zapisane w folderze plakatu.</p>
+            </div>
           </div>
           <div class="modal-tile-files-pdf">
             <p class="section-label">Informacje techniczne</p>
@@ -4882,6 +6125,14 @@
         <button type="button" class="modal-preview-thumb" id="modalPreviewFramedBtn" aria-pressed="false" title="Podgląd MASTER z ramką">
           <img id="modalPreviewFramedImg" src="" alt="Miniatura master z ramką" />
           <span class="modal-preview-thumb-label">Ramka</span>
+        </button>
+        <button type="button" class="modal-preview-thumb modal-preview-thumb--mockup" id="modalPreviewMockupFrameBtn" aria-pressed="false" title="Mockup — ramka packshot" hidden>
+          <img id="modalPreviewMockupFrameImg" src="" alt="Mockup ramka" />
+          <span class="modal-preview-thumb-label">Packshot</span>
+        </button>
+        <button type="button" class="modal-preview-thumb modal-preview-thumb--mockup" id="modalPreviewMockupInteriorBtn" aria-pressed="false" title="Mockup — salon" hidden>
+          <img id="modalPreviewMockupInteriorImg" src="" alt="Mockup salon" />
+          <span class="modal-preview-thumb-label">Salon</span>
         </button>
       </div>
       <div class="modal-poster-preview-main">
@@ -5022,6 +6273,7 @@
         filterClearBtn: document.getElementById('filterClearBtn'),
         filterPendingHint: document.getElementById('filterPendingHint'),
         statusFilterGroup: document.getElementById('statusFilterGroup'),
+        mockupFilterGroup: document.getElementById('mockupFilterGroup'),
         modalApprovedPrint: document.getElementById('modalApprovedPrint'),
         modalApprovalFeedback: document.getElementById('modalApprovalFeedback'),
         posterGrid: document.getElementById('posterGrid'),
@@ -5103,7 +6355,11 @@
         studioManualUploadRow: document.getElementById('studioManualUploadRow'),
         btnDraftPrompt: document.getElementById('btnDraftPrompt'),
         btnClearStudio: document.getElementById('btnClearStudio'),
-        studioUploadInput: document.getElementById('studioUploadInput'),
+        studioUploadInput: document.getElementById('studioUploadInputFile'),
+        studioUploadDropzone: document.getElementById('studioUploadDropzone'),
+        studioUploadCategory: document.getElementById('studioUploadCategory'),
+        studioUploadTitle: document.getElementById('studioUploadTitle'),
+        studioUploadStyle: document.getElementById('studioUploadStyle'),
         btnPickStudioImage: document.getElementById('btnPickStudioImage'),
         btnUploadStudioImage: document.getElementById('btnUploadStudioImage'),
         studioUploadNote: document.getElementById('studioUploadNote'),
@@ -5173,33 +6429,47 @@
       function getStoredStudioMode() {
         try {
           const v = localStorage.getItem(STUDIO_MODE_KEY);
-          if (v === 'auto' || v === 'manual') return v;
+          if (v === 'auto' || v === 'manual' || v === 'upload') return v;
         } catch (_) {}
         return 'manual';
       }
 
       function setStudioMode(mode) {
-        const manual = mode === 'manual';
-        els.studioModeManual.classList.toggle('is-active', manual);
-        els.studioModeManual.setAttribute('aria-pressed', manual ? 'true' : 'false');
-        els.studioModeAuto.classList.toggle('is-active', !manual);
-        els.studioModeAuto.setAttribute('aria-pressed', manual ? 'false' : 'true');
-        els.studioPanelManual.hidden = !manual;
-        els.studioPanelAuto.hidden = manual;
+        // mode: 'upload' | 'manual' | 'auto'
+        const flowOpts = {
+          upload: document.getElementById('genFlowUpload'),
+          manual: document.getElementById('genFlowManual'),
+          auto:   document.getElementById('genFlowAuto'),
+        };
+        const flowPanels = {
+          upload: document.getElementById('genFlowPanelUpload'),
+          manual: document.getElementById('genFlowPanelManual'),
+          auto:   document.getElementById('genFlowPanelAuto'),
+        };
+        Object.keys(flowOpts).forEach(function(k) {
+          if (flowOpts[k]) flowOpts[k].classList.toggle('is-active', k === mode);
+          if (flowPanels[k]) flowPanels[k].classList.toggle('is-active', k === mode);
+        });
+        // Legacy hidden flags for panels still used by other JS
+        if (els.studioPanelManual) els.studioPanelManual.hidden = false;
+        if (els.studioPanelAuto)   els.studioPanelAuto.hidden   = false;
         const h = document.getElementById('studio-heading');
-        if (h) h.textContent = manual ? STUDIO_HEADING_MANUAL : STUDIO_HEADING_AUTO;
-        if (els.studioSub) {
-          if (manual) els.studioSub.innerHTML = STUDIO_SUB_MANUAL_HTML;
-          else {
-            els.studioSub.textContent =
-              'Zakres, styl, liczba jak wyżej. „Wykonaj teraz” = PNG do biblioteki (bez PDF). PDF: terminal + node index.js.';
-          }
+        if (h) {
+          h.textContent = mode === 'auto' ? STUDIO_HEADING_AUTO
+            : mode === 'upload' ? 'Dodaj własne zdjęcie'
+            : STUDIO_HEADING_MANUAL;
         }
         try {
-          localStorage.setItem(STUDIO_MODE_KEY, manual ? 'manual' : 'auto');
+          localStorage.setItem(STUDIO_MODE_KEY, mode);
         } catch (_) {}
-        if (!manual) updateStudioAutoCommand();
+        if (mode === 'auto') updateStudioAutoCommand();
       }
+
+      // Flow selector click handlers
+      ['upload','manual','auto'].forEach(function(m) {
+        var btn = document.getElementById('genFlow' + m.charAt(0).toUpperCase() + m.slice(1));
+        if (btn) btn.addEventListener('click', function() { setStudioMode(m); });
+      });
 
       let activeStudioPreviewId = null;
       let studioUploadedImageDataUrl = '';
@@ -5222,7 +6492,7 @@
       let lightboxPanOriginX = 0;
       let lightboxPanOriginY = 0;
       let lightboxLoupeSize = 220;
-      let modalTopView = 'all';
+      let modalTopView = 'workflow';
       const LIGHTBOX_ZOOM_MIN = 0.5;
       const LIGHTBOX_ZOOM_MAX = 20;
       const LIGHTBOX_ZOOM_STEP = 0.2;
@@ -5294,6 +6564,9 @@
       /** Filtr statusu: all | new | approved */
       let activeStatusFilter = 'all';
       let draftStatusFilter = 'all';
+      /** Filtr mockupów: all | missing | has */
+      let activeMockupFilter = 'all';
+      let draftMockupFilter = 'all';
       /** Filtr stylu: all | dokładna nazwa z artStyle */
       let activeStyleFilter = 'all';
       let draftStyleFilter = 'all';
@@ -5474,10 +6747,18 @@
               needsManualMetadata: p.needsManualMetadata === true,
               shopDescription: typeof p.shopDescription === 'string' ? p.shopDescription : '',
               approvedForPrint: p.approvedForPrint === true,
+              mockups: p.mockups || null,
+              imagePathLifestyle: p.imagePathLifestyle || '',
+              shopifyState: p.shopifyState || '',
+              shopifyIssues: p.shopifyIssues || [],
             });
           }
         }
         list.sort((a, b) => {
+          // Unapproved always first, then by creation date descending
+          const aNew = a.approvedForPrint ? 0 : 1;
+          const bNew = b.approvedForPrint ? 0 : 1;
+          if (bNew !== aNew) return bNew - aNew;
           const ta = a.createdAt ? Date.parse(a.createdAt) : 0;
           const tb = b.createdAt ? Date.parse(b.createdAt) : 0;
           return tb - ta;
@@ -5555,6 +6836,26 @@
         });
       }
 
+      function itemHasMockups(item) {
+        const m = item && item.mockups;
+        return !!(m && m.frame && m.interior);
+      }
+
+      function syncMockupFilterButtons() {
+        if (!els.mockupFilterGroup) return;
+        els.mockupFilterGroup.querySelectorAll('.filter-status-btn').forEach((btn) => {
+          const on = btn.getAttribute('data-mockup') === draftMockupFilter;
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.classList.toggle('is-active', on);
+        });
+      }
+
+      function setDraftMockupFilter(s) {
+        draftMockupFilter = s === 'missing' || s === 'has' ? s : 'all';
+        syncMockupFilterButtons();
+        updatePendingHint();
+      }
+
       function syncStatusFilterButtons() {
         if (!els.statusFilterGroup) return;
         els.statusFilterGroup.querySelectorAll('.filter-status-btn').forEach((btn) => {
@@ -5576,6 +6877,7 @@
           q !== searchQuery ||
           draftCategory !== activeCategory ||
           draftStatusFilter !== activeStatusFilter ||
+          draftMockupFilter !== activeMockupFilter ||
           draftStyleFilter !== activeStyleFilter
         );
       }
@@ -5594,6 +6896,7 @@
         searchQuery = els.search ? els.search.value : '';
         activeCategory = draftCategory;
         activeStatusFilter = draftStatusFilter;
+        activeMockupFilter = draftMockupFilter;
         activeStyleFilter = draftStyleFilter;
         updatePendingHint();
         renderGrid();
@@ -5604,6 +6907,8 @@
         activeCategory = 'all';
         draftStatusFilter = 'all';
         activeStatusFilter = 'all';
+        draftMockupFilter = 'all';
+        activeMockupFilter = 'all';
         draftStyleFilter = 'all';
         activeStyleFilter = 'all';
         searchQuery = '';
@@ -5612,6 +6917,7 @@
         syncCategoryFilterSelection();
         syncStyleFilterSelection();
         syncStatusFilterButtons();
+        syncMockupFilterButtons();
         updatePendingHint();
         renderGrid();
       }
@@ -5735,6 +7041,8 @@
         if (activeCategory !== 'all') msg += ` · kategoria: ${activeCategory}`;
         if (activeStatusFilter === 'new') msg += ' · tylko: nowe (niewybrane do druku)';
         if (activeStatusFilter === 'approved') msg += ' · tylko: zatwierdzone do druku';
+        if (activeMockupFilter === 'missing') msg += ' · tylko: bez mockupu Shopify';
+        if (activeMockupFilter === 'has') msg += ' · tylko: z mockupem Shopify';
         if (activeStyleFilter !== 'all') msg += ` · styl: ${activeStyleFilter}`;
         if (searchQuery.trim()) msg += ' · wyszukiwanie tekstowe';
         els.filterResultsMeta.textContent = total === 0 && filteredLen === 0 ? '' : msg;
@@ -5898,12 +7206,12 @@
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);
           const prices = data.prices || {};
-          if (els.shopifyPrice13x18) els.shopifyPrice13x18.value = prices['13x18'] || '15.00';
-          if (els.shopifyPrice21x30) els.shopifyPrice21x30.value = prices['21x30'] || '25.00';
-          if (els.shopifyPrice30x40) els.shopifyPrice30x40.value = prices['30x40'] || '32.00';
-          if (els.shopifyPrice40x50) els.shopifyPrice40x50.value = prices['40x50'] || '54.00';
-          if (els.shopifyPrice50x70) els.shopifyPrice50x70.value = prices['50x70'] || '65.00';
-          if (els.shopifyPrice70x100) els.shopifyPrice70x100.value = prices['70x100'] || '90.00';
+          if (els.shopifyPrice13x18) els.shopifyPrice13x18.value = prices['13x18'] || '16.00';
+          if (els.shopifyPrice21x30) els.shopifyPrice21x30.value = prices['21x30'] || '26.00';
+          if (els.shopifyPrice30x40) els.shopifyPrice30x40.value = prices['30x40'] || '43.00';
+          if (els.shopifyPrice40x50) els.shopifyPrice40x50.value = prices['40x50'] || '57.00';
+          if (els.shopifyPrice50x70) els.shopifyPrice50x70.value = prices['50x70'] || '71.00';
+          if (els.shopifyPrice70x100) els.shopifyPrice70x100.value = prices['70x100'] || '99.00';
           const selected = Array.isArray(data.selectedSizes) ? new Set(data.selectedSizes) : new Set();
           const nodes = Array.from(document.querySelectorAll('.shopify-size-toggle'));
           for (const node of nodes) {
@@ -5979,10 +7287,13 @@
           if (!res.ok) throw new Error(data.error || res.statusText);
           const s = data.summary || {};
           const blocked = Number(s.blockedApproved || 0);
+          const dup = Number(s.duplicates || 0);
           const msg =
-            `Ready: ${Number(s.ready || 0)} · Pending: ${Number(s.pending_assets || 0)} · Legacy: ${Number(
-              s.legacy_blocked || 0
-            )}` + (blocked > 0 ? ` · Zablokowane zatwierdzone: ${blocked}` : '');
+            `Zatwierdzone: ${Number(s.approved || 0)} · Ready: ${Number(s.ready || 0)} · Pending: ${Number(
+              s.pending_assets || 0
+            )} · Legacy: ${Number(s.legacy_blocked || 0)}` +
+            (dup > 0 ? ` · Duplikaty: ${dup}` : '') +
+            (blocked > 0 ? ` · Zablokowane: ${blocked}` : '');
           setShopifyReadinessStatus(msg, blocked > 0 ? 'error' : 'ok');
         } catch (e) {
           setShopifyReadinessStatus(e.message || 'Nie udało się sprawdzić gotowości Shopify.', 'error');
@@ -6093,6 +7404,8 @@
         if (activeStyleFilter !== 'all' && (item.style || '') !== activeStyleFilter) return false;
         if (activeStatusFilter === 'new' && item.approvedForPrint) return false;
         if (activeStatusFilter === 'approved' && !item.approvedForPrint) return false;
+        if (activeMockupFilter === 'missing' && itemHasMockups(item)) return false;
+        if (activeMockupFilter === 'has' && !itemHasMockups(item)) return false;
         if (!searchQuery.trim()) return true;
         const q = searchQuery.trim().toLowerCase();
         const inPrompt = (item.prompt || '').toLowerCase().includes(q);
@@ -6541,7 +7854,10 @@
           const own = String(node.getAttribute('data-modal-section') || '')
             .split(/\s+/)
             .filter(Boolean);
-          const show = modalTopView === 'all' || own.includes(modalTopView);
+          const hideInAll = node.getAttribute('data-modal-hide-in-all') === 'true';
+          const show = hideInAll && modalTopView === 'all'
+            ? false
+            : modalTopView === 'all' || own.includes(modalTopView);
           node.hidden = !show;
         });
       }
@@ -6705,7 +8021,7 @@
 
       function populatePosterDetailModal(item, preferredPreviewVariant) {
         modalPosterItem = item;
-        setModalTopView('all');
+        setModalTopView('workflow');
         syncPremiumPrintBadge();
         if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
         if (els.modalApprovalFeedback) els.modalApprovalFeedback.textContent = '';
@@ -6775,7 +8091,134 @@
           if (els.modalCopyPrompt) els.modalCopyPrompt.disabled = true;
         }
         if (els.modalCopyFeedback) els.modalCopyFeedback.textContent = '';
+        renderModalMockups(item);
       }
+
+      function mockupUrlFromRel(p) {
+        if (!p) return '';
+        if (p.startsWith('/') || p.startsWith('http')) return p;
+        const stripped = p.startsWith('posters/') ? p.slice('posters/'.length) : p;
+        return '/' + stripped;
+      }
+
+      function renderModalMockupRows(item) {
+        const grid = document.getElementById('modalMockupsGrid');
+        const fb = document.getElementById('mockupGenerateFeedback');
+        const btn = document.getElementById('btnGenerateMockups');
+        if (!grid) return;
+        if (fb) {
+          fb.textContent = '';
+          fb.className = 'modal-mockups-feedback';
+        }
+
+        const mkups = item.mockups || {};
+        const frameUrl = mockupUrlFromRel(mkups.frame || '');
+        const interiorUrl = mockupUrlFromRel(mkups.interior || '');
+
+        const mkRow = (label, value) => {
+          const v = String(value || '').trim();
+          const shown = v || '—';
+          const img = v
+            ? `<img class="modal-file-variant-preview" src="${escapeAttr(v)}" alt="${escapeAttr(label)}" loading="lazy" />`
+            : '';
+          const copyBtn = v
+            ? `<button type="button" class="modal-copy-combo-line modal-copy-combo-line--compact" data-copy-path="${escapeAttr(v)}">Kopiuj</button>`
+            : '';
+          return `
+            <div class="modal-file-variant-row">
+              <span class="modal-file-variant-name">${escapeHtml(label)}</span>
+              ${img}
+              <code class="modal-file-variant-path">${escapeHtml(shown)}</code>
+              ${copyBtn}
+            </div>
+          `;
+        };
+
+        grid.innerHTML = mkRow('PACKSHOT RAMKA', frameUrl) + mkRow('SALON', interiorUrl);
+
+        grid.querySelectorAll('[data-copy-path]').forEach((copyBtn) => {
+          copyBtn.addEventListener('click', async () => {
+            const path = copyBtn.getAttribute('data-copy-path') || '';
+            if (!path.trim()) return;
+            await copyTextWithOptionalFeedback(path, els.modalListingFeedback, 'Path copied.');
+            window.setTimeout(() => {
+              if (els.modalListingFeedback) els.modalListingFeedback.textContent = '';
+            }, 1800);
+          });
+        });
+
+        const mfBtn = document.getElementById('modalPreviewMockupFrameBtn');
+        const mfImg = document.getElementById('modalPreviewMockupFrameImg');
+        const miBtn = document.getElementById('modalPreviewMockupInteriorBtn');
+        const miImg = document.getElementById('modalPreviewMockupInteriorImg');
+        const thumbsEl = document.getElementById('modalPreviewThumbs');
+
+        if (mfBtn && mfImg) {
+          if (frameUrl) {
+            mfImg.src = frameUrl;
+            mfBtn.hidden = false;
+          } else {
+            mfBtn.hidden = true;
+          }
+        }
+        if (miBtn && miImg) {
+          if (interiorUrl) {
+            miImg.src = interiorUrl;
+            miBtn.hidden = false;
+          } else {
+            miBtn.hidden = true;
+          }
+        }
+        if (thumbsEl) thumbsEl.hidden = false;
+
+        if (btn) btn.textContent = mkups.frame ? 'Regeneruj mockupy' : 'Generuj mockupy';
+      }
+
+      // ── Mockup section (Pliki tab) ───────────────────────────────────────
+      function renderModalMockups(item) {
+        renderModalMockupRows(item);
+      }
+
+      // Generate mockups button handler
+      document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('#btnGenerateMockups');
+        if (!btn || !modalPosterItem) return;
+        const fb = document.getElementById('mockupGenerateFeedback');
+        btn.disabled = true;
+        btn.textContent = 'Generowanie…';
+        if (fb) { fb.textContent = 'Wysyłam do GPT Image 2…'; fb.className = 'modal-mockups-feedback'; }
+        try {
+          const res = await fetch('/api/posters/' + encodeURIComponent(modalPosterItem.id) + '/generate-mockups', { method: 'POST' });
+          const data = await res.json();
+          if (data.ok) {
+            modalPosterItem.mockups = data.mockups;
+            renderModalMockups(modalPosterItem);
+            if (fb) { fb.textContent = 'Mockupy gotowe ✓'; fb.className = 'modal-mockups-feedback'; }
+          } else {
+            if (fb) { fb.textContent = 'Błąd: ' + (data.error || 'nieznany'); fb.className = 'modal-mockups-feedback is-error'; }
+          }
+        } catch (err) {
+          if (fb) { fb.textContent = 'Błąd połączenia: ' + err.message; fb.className = 'modal-mockups-feedback is-error'; }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = (modalPosterItem.mockups && modalPosterItem.mockups.frame) ? 'Regeneruj mockupy' : 'Generuj mockupy';
+        }
+      });
+
+      // Mockup preview thumb click handlers
+      ['modalPreviewMockupFrameBtn', 'modalPreviewMockupInteriorBtn'].forEach(function(id, idx) {
+        const thumbBtn = document.getElementById(id);
+        if (!thumbBtn) return;
+        thumbBtn.addEventListener('click', function() {
+          const imgEl = document.getElementById(idx === 0 ? 'modalPreviewMockupFrameImg' : 'modalPreviewMockupInteriorImg');
+          if (!imgEl || !els.modalImg) return;
+          els.modalImg.src = imgEl.src;
+          // Update aria-pressed for all thumbs
+          document.querySelectorAll('.modal-preview-thumb').forEach(b => b.setAttribute('aria-pressed','false'));
+          thumbBtn.setAttribute('aria-pressed','true');
+        });
+      });
+      // ────────────────────────────────────────────────────────────────────
 
       function openModal(item, previewVariant) {
         closePosterLightbox();
@@ -6790,7 +8233,7 @@
       function closeModal() {
         closePosterLightbox();
         modalPosterItem = null;
-        setModalTopView('all');
+        setModalTopView('workflow');
         syncPremiumPrintBadge();
         els.modal.classList.remove('is-open');
         els.modal.hidden = true;
@@ -6840,12 +8283,14 @@
           if (activeCategory !== 'all' && !cats.includes(activeCategory)) activeCategory = 'all';
           draftCategory = activeCategory;
           draftStatusFilter = activeStatusFilter;
+          draftMockupFilter = activeMockupFilter;
           draftStyleFilter = activeStyleFilter;
           if (els.search) els.search.value = searchQuery;
           categoryCountMap = buildCategoryCountMap(rawCategories);
           renderCategoryFilterList(cats);
           renderLibraryStyleFilterList();
           syncStatusFilterButtons();
+          syncMockupFilterButtons();
           updatePendingHint();
           renderGrid();
           syncSelectionBasketsWithLibrary();
@@ -6868,6 +8313,8 @@
           draftCategory = 'all';
           activeStatusFilter = 'all';
           draftStatusFilter = 'all';
+          activeMockupFilter = 'all';
+          draftMockupFilter = 'all';
           activeStyleFilter = 'all';
           draftStyleFilter = 'all';
           searchQuery = '';
@@ -6877,6 +8324,7 @@
           if (els.filterResultsMeta) els.filterResultsMeta.textContent = '';
           if (els.libraryStyleFilterListbox) els.libraryStyleFilterListbox.innerHTML = '';
           syncStatusFilterButtons();
+          syncMockupFilterButtons();
           updatePendingHint();
         }
       }
@@ -7049,6 +8497,15 @@
           if (!btn || !els.statusFilterGroup.contains(btn)) return;
           const st = btn.getAttribute('data-status');
           if (st) setDraftStatusFilter(st);
+        });
+      }
+
+      if (els.mockupFilterGroup) {
+        els.mockupFilterGroup.addEventListener('click', (e) => {
+          const btn = e.target.closest('.filter-status-btn');
+          if (!btn || !els.mockupFilterGroup.contains(btn)) return;
+          const mk = btn.getAttribute('data-mockup');
+          if (mk) setDraftMockupFilter(mk);
         });
       }
 
@@ -7622,8 +9079,8 @@
         });
       }
 
-      els.studioModeManual.addEventListener('click', () => setStudioMode('manual'));
-      els.studioModeAuto.addEventListener('click', () => setStudioMode('auto'));
+      if (els.studioModeManual) els.studioModeManual.addEventListener('click', () => setStudioMode('manual'));
+      if (els.studioModeAuto) els.studioModeAuto.addEventListener('click', () => setStudioMode('auto'));
       els.studioAutoScope.addEventListener('change', () => fillStudioAutoStyleSelect());
       if (els.studioAutoStyle) els.studioAutoStyle.addEventListener('change', updateStudioAutoCommand);
       els.studioAutoCount.addEventListener('input', updateStudioAutoCommand);
@@ -7797,42 +9254,51 @@
       }
 
       if (els.studioUploadInput) {
-        els.studioUploadInput.addEventListener('change', async () => {
+        els.studioUploadInput.addEventListener('change', () => {
           const f = els.studioUploadInput.files && els.studioUploadInput.files[0];
-          if (!f) return;
-          const maxBytes = 25 * 1024 * 1024;
-          if (f.size > maxBytes) {
-            studioUploadedImageDataUrl = '';
-            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = true;
-            if (els.studioUploadNote) els.studioUploadNote.textContent = 'Plik jest za duży (max 25MB).';
-            return;
-          }
-          try {
-            const dataUrl = await new Promise((resolve, reject) => {
-              const r = new FileReader();
-              r.onload = () => resolve(String(r.result || ''));
-              r.onerror = () => reject(new Error('Nie udało się odczytać pliku.'));
-              r.readAsDataURL(f);
-            });
-            studioUploadedImageDataUrl = dataUrl;
-            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = !studioUploadedImageDataUrl;
-            if (els.studioUploadNote) {
-              els.studioUploadNote.textContent = `Wybrano: ${f.name} — kliknij „Użyj zdjęcia jako podgląd”.`;
-            }
-          } catch (e) {
-            studioUploadedImageDataUrl = '';
-            if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = true;
-            if (els.studioUploadNote) els.studioUploadNote.textContent = e.message || 'Błąd odczytu pliku.';
-          }
+          if (f) processUploadFile(f);
         });
+      }
+
+      // Dropzone click / drag-drop for upload panel
+      if (els.studioUploadDropzone && els.studioUploadInput) {
+        els.studioUploadDropzone.addEventListener('click', () => els.studioUploadInput.click());
+        els.studioUploadDropzone.addEventListener('dragover', (e) => { e.preventDefault(); els.studioUploadDropzone.classList.add('is-dragover'); });
+        els.studioUploadDropzone.addEventListener('dragleave', () => els.studioUploadDropzone.classList.remove('is-dragover'));
+        els.studioUploadDropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          els.studioUploadDropzone.classList.remove('is-dragover');
+          const file = e.dataTransfer.files && e.dataTransfer.files[0];
+          if (file) processUploadFile(file);
+        });
+      }
+
+      function processUploadFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          studioUploadedImageDataUrl = ev.target.result;
+          // Show preview inside dropzone
+          if (els.studioUploadDropzone) {
+            let img = els.studioUploadDropzone.querySelector('.studio-upload-preview-img');
+            if (!img) { img = document.createElement('img'); img.className = 'studio-upload-preview-img'; els.studioUploadDropzone.appendChild(img); }
+            img.src = studioUploadedImageDataUrl;
+            els.studioUploadDropzone.querySelector('.studio-upload-dropzone-label').textContent = file.name;
+            els.studioUploadDropzone.querySelector('.studio-upload-dropzone-hint').textContent = Math.round(file.size / 1024) + ' KB';
+          }
+          if (els.btnUploadStudioImage) els.btnUploadStudioImage.disabled = false;
+          if (els.studioUploadNote) els.studioUploadNote.textContent = 'Plik gotowy — uzupełnij tytuł i kliknij „Dodaj do biblioteki".';
+        };
+        reader.onerror = () => { if (els.studioUploadNote) els.studioUploadNote.textContent = 'Błąd odczytu pliku.'; };
+        reader.readAsDataURL(file);
       }
 
       if (els.btnUploadStudioImage) {
         const runManualUploadPreview = async () => {
-          const title = els.studioTitle.value.trim();
-          const category = els.studioCategory.value;
-          const style = els.studioStyle.value;
-          const imagePrompt = els.studioPrompt.value.trim();
+          const title = (els.studioUploadTitle ? els.studioUploadTitle.value.trim() : els.studioTitle.value.trim());
+          const category = (els.studioUploadCategory ? els.studioUploadCategory.value : els.studioCategory.value);
+          const style = (els.studioUploadStyle ? els.studioUploadStyle.value : els.studioStyle.value);
+          const imagePrompt = (title ? 'Photo: ' + title : '') || els.studioPrompt.value.trim();
           if (!title) return setStudioStatus('Podaj tytuł plakatu.', 'error');
           const pairErrUp = validateStudioCategoryStyle(category, style);
           if (pairErrUp) return setStudioStatus(pairErrUp, 'error');

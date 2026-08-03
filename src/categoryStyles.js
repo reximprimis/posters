@@ -48,7 +48,7 @@ const CATEGORY_DESCRIPTIONS = {
   Zwierzęta: 'pets, wildlife, birds, dogs, cats, horses, wild animals',
   'Mapy i miasta': 'cities, skylines, urbanism, maps, topography, streets, urban architecture',
   'Plakaty dla dzieci':
-    'gentle child-friendly illustrations, fairy-tale motifs, animals, clouds, moon, neutral nursery art',
+    'Boho-Scandi nursery art: soft watercolor animals, boho rainbows, moon and stars, muted earthy pastels on cream — calm modern nursery, not cartoon clipart',
   'Kosmos i astronomia': 'planets, moon, stars, galaxies, nebulae, astronomy, cosmic landscapes',
   Retro: 'vintage, analog, old photos, polaroid, cassettes, cameras, sepia, nostalgia',
   Pojazdy: 'cars, motorcycles, aircraft, boats, classic vehicles, engineered transport forms',
@@ -59,7 +59,8 @@ const CATEGORY_DESCRIPTIONS = {
   Architektura:
     'buildings, facades, stairs, columns, modernism, brutalism, arches, architectural details',
   'Morze i plaża': 'sea, waves, beach, dunes, shells, lighthouses, calm coastal landscapes',
-  'Sport i hobby': 'sport, tennis, cycling, skiing, surfing, running, golf, active lifestyle hobbies',
+  'Sport i hobby':
+    'football, basketball, volleyball, tennis, cycling, running, swimming, golf, skiing, surfing, plus hobbies: books, chess, camera, hiking, fishing, guitar, gardening, camping',
   'Gaming i e-sport':
     'gaming room, retro arcade, controllers without logos, neon gaming mood, e-sport energy, player setup, futuristic light',
   'AI i technologia':

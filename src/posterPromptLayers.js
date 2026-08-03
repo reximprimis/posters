@@ -101,7 +101,7 @@ const CATEGORY_ART_DIRECTION = {
   Zwierzęta:
     'Animal or wildlife as clear hero subject; supporting environment only; sharp focus on subject, highly detailed fur/feathers, no blur on subject, no texture artifacts; naturalistic or stylized; no signage or labels.',
   'Plakaty dla dzieci':
-    'Playful refined art: soft shapes, gentle colors, whimsical subjects; full-bleed single composition.',
+    'Nursery wall art: one cute animal portrait OR one boho motif (rainbow, sun, moon, stars) on cream background; muted sage, mustard, terracotta, blush pastels; watercolor or flat boho minimal — never neon clipart.',
   'Mapy i miasta':
     'Map-like abstraction, skyline silhouette, or travel graphic; stylized geography; artistic not infographic.',
   Retro:
@@ -233,7 +233,7 @@ const SHORT_CATEGORY_HINTS = {
   'Natura i krajobrazy': 'TITLE-defined subject is primary; natural landscape is only supporting context with realistic atmosphere.',
   'Kosmos i astronomia': 'Cosmic subject with controlled realism and clean composition.',
   'Mapy i miasta': 'Urban/city subject in clean, structured visual language.',
-  'Plakaty dla dzieci': 'Child-friendly playful subject, simple and clear.',
+  'Plakaty dla dzieci': 'Nursery hero subject from title: one gentle animal or boho celestial motif, Boho-Scandi palette.',
   Retro: 'Retro mood with restrained vintage character.',
   Abstrakcja: 'Abstract subject with clean edge-to-edge flow.',
 };

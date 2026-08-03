@@ -46,7 +46,12 @@ const {
   buildWellnessYogaPrompt,
   buildSymbolsHarmonyPrompt,
 } = require('./newSalesCategoryPrompts');
+const {
+  buildChildrenIllustrationPrompt,
+  buildChildrenMinimalismPrompt,
+} = require('./childrenPosterPrompts');
 const { getCategoryDescription } = require('./categoryStyles');
+const { buildCategoryStylePrompt } = require('./categoryPromptModes');
 
 const CORE_PROMPT_TEMPLATE = `{TITLE_BRIEF_BLOCK}
 
@@ -341,4 +346,7 @@ module.exports = {
   buildMusicSoundPrompt,
   buildWellnessYogaPrompt,
   buildSymbolsHarmonyPrompt,
+  buildChildrenIllustrationPrompt,
+  buildChildrenMinimalismPrompt,
+  buildCategoryStylePrompt,
 };

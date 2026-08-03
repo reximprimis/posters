@@ -29,6 +29,36 @@ function withFramedSuffix(relPath) {
 }
 
 /**
+ * Resolve inventory thumb path to shopify_thumbs/ using real on-disk segment names (CDN is case-sensitive).
+ * @param {string} projectRoot
+ * @param {string} relPath e.g. posters/Botanika/Photography/foo_thumb.jpg
+ * @returns {string} path relative to shopify_thumbs/, or '' if not found
+ */
+function resolveShopifyThumbsRel(projectRoot, relPath) {
+  let rel = normalizeRelPath(relPath);
+  if (!rel) return '';
+  if (rel.startsWith('posters/')) rel = rel.slice('posters/'.length);
+  if (rel.startsWith('shopify_thumbs/')) rel = rel.slice('shopify_thumbs/'.length);
+
+  const shopRoot = path.join(projectRoot, 'shopify_thumbs');
+  const parts = rel.split('/').filter(Boolean);
+  if (!parts.length) return '';
+
+  let walk = shopRoot;
+  const resolved = [];
+  for (const part of parts) {
+    if (!fs.existsSync(walk)) return '';
+    const entries = fs.readdirSync(walk);
+    const hit = entries.find((e) => e.toLowerCase() === part.toLowerCase());
+    if (!hit) return '';
+    resolved.push(hit);
+    walk = path.join(walk, hit);
+  }
+  if (!fs.existsSync(walk) || !fs.statSync(walk).isFile()) return '';
+  return resolved.join('/');
+}
+
+/**
  * @param {string} projectRoot
  * @param {any} poster
  * @returns {{ state: 'ready'|'pending_assets'|'legacy_blocked', reasons: string[], resolved: { sourceExists:boolean, masterThumbRel:string, framedThumbRel:string } }}
@@ -129,11 +159,49 @@ function reconcileInventoryShopifyStates(projectRoot, inventory) {
   return summary;
 }
 
+/**
+ * Shopify readiness counts for export: approved only, one row per imagePath (newest wins).
+ * @param {string} projectRoot
+ * @param {{ posters?: any[] }} inventory
+ */
+function summarizeApprovedShopifyStates(projectRoot, inventory) {
+  const posters = Array.isArray(inventory && inventory.posters) ? inventory.posters : [];
+  const approved = posters.filter((p) => p && p.approvedForPrint === true);
+  const byImage = new Map();
+
+  for (const p of approved) {
+    const k = normalizeRelPath(p.imagePath).toLowerCase();
+    if (!k) continue;
+    const t = Date.parse(p.createdAt || '') || 0;
+    const prev = byImage.get(k);
+    if (!prev || t >= prev._t) byImage.set(k, { poster: p, _t: t });
+  }
+
+  const unique = [...byImage.values()].map((x) => x.poster);
+  const summary = {
+    approved: approved.length,
+    uniqueApproved: unique.length,
+    duplicates: Math.max(0, approved.length - unique.length),
+    ready: 0,
+    pending_assets: 0,
+    legacy_blocked: 0,
+  };
+
+  for (const p of unique) {
+    const out = evaluatePosterShopifyState(projectRoot, p);
+    summary[out.state] += 1;
+  }
+
+  return summary;
+}
+
 module.exports = {
   normalizeRelPath,
   fileExists,
   withThumbSuffix,
   withFramedSuffix,
+  resolveShopifyThumbsRel,
   evaluatePosterShopifyState,
   reconcileInventoryShopifyStates,
+  summarizeApprovedShopifyStates,
 };

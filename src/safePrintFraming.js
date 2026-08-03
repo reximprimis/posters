@@ -13,6 +13,11 @@ function envFloat(name, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function envInt(name, fallback) {
+  const n = parseInt(process.env[name], 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function normalizeBlock(text) {
   return String(text || '')
     .replace(/\s+/g, ' ')
@@ -183,7 +188,16 @@ function resolveSafePrintFramingForCategory(category, style) {
   return SAFE_PRINT_FRAMING;
 }
 
+const COMPOSITION_LINE_ART = normalizeBlock(`
+Composition:
+Single cohesive line-art composition with one clear focal subject.
+The entire subject must be fully visible — no part cut off at top, bottom, left, or right.
+Tall vertical subjects (rackets, tools, bottles, figures) need clear margin above and below the full silhouette.
+Subject occupies around 60–75% of the canvas with generous breathing room on all sides.
+`);
+
 function getCompositionBlock(category, style) {
+  if (normalizeArtStyle(style) === 'line_art') return COMPOSITION_LINE_ART;
   if (isMinimalismArtStyle(style)) return COMPOSITION_MINIMAL;
   if (isAbstractArtStyle(style)) return COMPOSITION_ABSTRACT;
   if (isBotanicalCategory(category)) return COMPOSITION_BOTANICAL;
@@ -255,29 +269,144 @@ function isExcludedLibraryImageFileName(fileName) {
 }
 
 /**
- * Placeholder — logs border zones; later: detect sharp subject matter in outer 5%.
- * @returns {Promise<'PASS'|'FAIL'>}
+ * Detect non-background pixels in outer margin bands (subject touching / crossing border).
+ * Background is sampled from the four corners — never from the image center (that is usually
+ * the subject and caused false FAIL rates of 50–100% on still-life photography).
+ * @returns {Promise<{ status: 'PASS'|'FAIL', reasons: string[], bands: object }>}
  */
-async function validateSafeEdges(imagePath) {
+async function validateSafeEdges(imagePath, style) {
   const meta = await sharp(imagePath).metadata();
   const W = Number(meta.width || 0);
   const H = Number(meta.height || 0);
+  if (!W || !H) {
+    return { status: 'PASS', reasons: [], bands: {} };
+  }
+
+  const styleNorm = normalizeArtStyle(style);
+
+  // Photography / soft full-bleed scenes (sand, sky, table texture) legitimately fill
+  // the outer 5% — pixel "clean margin" checks are prompt-only for those styles.
+  // Hard edge checks remain for line art / illustration on flat backgrounds.
+  if (styleNorm === 'photography' || styleNorm === 'abstract' || styleNorm === 'minimalism') {
+    console.log(
+      `    -> validateSafeEdges: ${W}x${H} — PASS (prompt-level only for ${styleNorm}; pixel border check skipped)`
+    );
+    return { status: 'PASS', reasons: [], bands: {}, skippedPixelCheck: true, styleNorm };
+  }
+
   const marginPct = getSafeMarginPercent();
-  const marginX = Math.round(W * marginPct);
-  const marginY = Math.round(H * marginPct);
-  const zones = {
-    left: { x0: 0, x1: marginX },
-    right: { x0: W - marginX, x1: W },
-    top: { y0: 0, y1: marginY },
-    bottom: { y0: H - marginY, y1: H },
+  const marginX = Math.max(2, Math.round(W * marginPct));
+  const marginY = Math.max(2, Math.round(H * marginPct));
+
+  const analyzeW = Math.min(W, 720);
+  const analyzeH = Math.max(2, Math.round((analyzeW / W) * H));
+  const raw = await sharp(imagePath)
+    .resize(analyzeW, analyzeH, { fit: 'fill' })
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+
+  const ch = 4;
+  const scaleX = analyzeW / W;
+  const scaleY = analyzeH / H;
+  const bandX = Math.max(2, Math.round(marginX * scaleX));
+  const bandY = Math.max(2, Math.round(marginY * scaleY));
+
+  // Corner patches (~8% of analyze size) — true background / pad color.
+  const pw = Math.max(4, Math.round(analyzeW * 0.08));
+  const ph = Math.max(4, Math.round(analyzeH * 0.08));
+  const cornerRegions = [
+    { x0: 0, y0: 0, w: pw, h: ph },
+    { x0: analyzeW - pw, y0: 0, w: pw, h: ph },
+    { x0: 0, y0: analyzeH - ph, w: pw, h: ph },
+    { x0: analyzeW - pw, y0: analyzeH - ph, w: pw, h: ph },
+  ];
+  const rs = [];
+  const gs = [];
+  const bs = [];
+  for (const region of cornerRegions) {
+    for (let y = region.y0; y < region.y0 + region.h; y += 2) {
+      for (let x = region.x0; x < region.x0 + region.w; x += 2) {
+        const i = (y * analyzeW + x) * ch;
+        rs.push(raw[i]);
+        gs.push(raw[i + 1]);
+        bs.push(raw[i + 2]);
+      }
+    }
+  }
+  const median = (arr) => {
+    const s = [...arr].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)] || 240;
   };
+  const br = median(rs);
+  const bg = median(gs);
+  const bb = median(bs);
+
+  const colorDelta = envFloat('SAFE_EDGE_COLOR_DELTA', 36);
+  const ratioMax = envFloat('SAFE_EDGE_SUBJECT_RATIO_MAX_LINE', 0.01);
+
+  function isSubjectPixel(i) {
+    const r = raw[i];
+    const g = raw[i + 1];
+    const b = raw[i + 2];
+    const dist = Math.sqrt((r - br) ** 2 + (g - bg) ** 2 + (b - bb) ** 2);
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const bgLum = 0.299 * br + 0.587 * bg + 0.114 * bb;
+    return dist > colorDelta && Math.abs(lum - bgLum) > 22;
+  }
+
+  function bandRatio(x0, y0, w, h, step = 1) {
+    let subject = 0;
+    let total = 0;
+    const xEnd = Math.min(analyzeW, x0 + w);
+    const yEnd = Math.min(analyzeH, y0 + h);
+    for (let y = Math.max(0, y0); y < yEnd; y += step) {
+      for (let x = Math.max(0, x0); x < xEnd; x += step) {
+        total += 1;
+        const i = (y * analyzeW + x) * ch;
+        if (isSubjectPixel(i)) subject += 1;
+      }
+    }
+    return total ? subject / total : 0;
+  }
+
+  const bands = {
+    top: bandRatio(0, 0, analyzeW, bandY),
+    bottom: bandRatio(0, analyzeH - bandY, analyzeW, bandY),
+    left: bandRatio(0, 0, bandX, analyzeH),
+    right: bandRatio(analyzeW - bandX, 0, bandX, analyzeH),
+  };
+
+  const reasons = [];
+  for (const [edge, ratio] of Object.entries(bands)) {
+    if (ratio > ratioMax) {
+      reasons.push(`${edge} margin ${(ratio * 100).toFixed(1)}% subject (max ${(ratioMax * 100).toFixed(1)}%)`);
+    }
+  }
+
+  const status = reasons.length ? 'FAIL' : 'PASS';
   console.log(
     `    -> validateSafeEdges: ${W}x${H} margin ${(marginPct * 100).toFixed(1)}% ` +
-      `(L/R ${marginX}px, T/B ${marginY}px) — PASS (placeholder)`
+      `(L/R ${marginX}px, T/B ${marginY}px) — ${status}` +
+      (reasons.length ? ` (${reasons.join('; ')})` : '')
   );
-  console.log(`    -> Border zones (px): ${JSON.stringify(zones)}`);
-  return 'PASS';
+  if (reasons.length) {
+    console.log(`    -> Border subject ratios: ${JSON.stringify(bands)}`);
+  }
+  return { status, reasons, bands };
 }
+
+function getSafeFramingMaxRetries() {
+  const n = envInt('SAFE_FRAMING_MAX_RETRIES', 2);
+  return Number.isFinite(n) && n >= 0 ? n : 2;
+}
+
+const FRAMING_RETRY_PROMPT_SUFFIX = normalizeBlock(`
+CRITICAL RE-FRAME: Previous attempt clipped the subject at the image border — unacceptable for print.
+Show the COMPLETE subject with every part fully visible: nothing cut off at top, bottom, left, or right.
+Pull the camera back. Subject must occupy only 60–70% of canvas height with clear empty margin on all four sides.
+The outer 8% of the canvas must be clean background only — no subject lines, shapes, or shadows touching edges.
+`);
 
 module.exports = {
   SAFE_PRINT_FRAMING,
@@ -286,6 +415,7 @@ module.exports = {
   COMPOSITION_BOTANICAL,
   COMPOSITION_ABSTRACT,
   COMPOSITION_MINIMAL,
+  COMPOSITION_LINE_ART,
   SAFE_PRINT_FRAMING_ABSTRACT,
   SAFE_PRINT_FRAMING_MINIMAL_LANDSCAPE,
   RESTRICTIONS_BLOCK,
@@ -308,4 +438,6 @@ module.exports = {
   masterPathFromFinalPath,
   isExcludedLibraryImageFileName,
   validateSafeEdges,
+  getSafeFramingMaxRetries,
+  FRAMING_RETRY_PROMPT_SUFFIX,
 };
