@@ -41,3 +41,6 @@ posters_inventory.json
 prompt_cache.json
 *.pdf
 *.png
+
+# Grafiki interfejsu sa czescia aplikacji - regula *.png dotyczy generowanych plakatow.
+!public/*.png
