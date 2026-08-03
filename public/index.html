@@ -4596,6 +4596,11 @@
                 '<label class="prompt-picker-field"><span>Przykładowy tytuł</span><input id="promptTitle" type="text" value="Przykładowy Tytuł" /></label>' +
               '</div>' +
               '<div id="promptRouteInfo" class="prompt-route"></div>' +
+              '<div class="prompt-actions">' +
+                '<button type="button" class="prompt-copy-btn" id="btnCopyPrompt">Kopiuj prompt</button>' +
+                '<button type="button" class="prompt-copy-btn prompt-copy-btn--ghost" id="btnSelectPrompt">Zaznacz cały</button>' +
+                '<span id="promptCopyFeedback" class="prompt-copy-feedback" role="status"></span>' +
+              '</div>' +
               '<pre id="promptPreviewText" class="prompt-preview"></pre>' +
             '</section>' +
             '<section class="settings-section">' +
@@ -5171,7 +5176,64 @@
         });
     }
 
+    // Wlasny helper kopiowania — copyTextWithOptionalFeedback() zyje w drugim
+    // bloku skryptu, wiec nie polegamy na kolejnosci ladowania.
+    function copyPromptText() {
+      var out = document.getElementById('promptPreviewText');
+      var fb = document.getElementById('promptCopyFeedback');
+      var text = out ? out.textContent : '';
+      if (!text.trim()) { if (fb) fb.textContent = 'Najpierw wybierz kategorię i styl.'; return; }
+
+      function done(ok) {
+        if (!fb) return;
+        fb.textContent = ok ? '✓ Skopiowano ' + text.length + ' znaków' : '✗ Nie udało się skopiować';
+        fb.className = 'prompt-copy-feedback' + (ok ? ' is-ok' : ' is-error');
+        setTimeout(function() { fb.textContent = ''; fb.className = 'prompt-copy-feedback'; }, 2600);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() { done(true); }, function() { done(fallbackCopy(text)); });
+      } else {
+        done(fallbackCopy(text));
+      }
+    }
+
+    // Zapasowa sciezka dla przegladarek bez Clipboard API lub bez uprawnien.
+    function fallbackCopy(text) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function selectPromptText() {
+      var out = document.getElementById('promptPreviewText');
+      if (!out || !out.textContent.trim()) return;
+      var range = document.createRange();
+      range.selectNodeContents(out);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      var fb = document.getElementById('promptCopyFeedback');
+      if (fb) {
+        fb.textContent = 'Zaznaczone — Ctrl+C kopiuje';
+        fb.className = 'prompt-copy-feedback is-ok';
+      }
+    }
+
     document.addEventListener('click', function(ev) {
+      if (ev.target.closest && ev.target.closest('#btnCopyPrompt')) { copyPromptText(); return; }
+      if (ev.target.closest && ev.target.closest('#btnSelectPrompt')) { selectPromptText(); return; }
       var cell = ev.target.closest && ev.target.closest('[data-mx-cat]');
       if (!cell) return;
       var catSel = document.getElementById('promptCategory');
