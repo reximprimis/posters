@@ -25,7 +25,9 @@ const { getRoutingPathLabel, getPromptRouteKind } = require('./promptRouter');
 const {
   makeSafeFileBase,
   collectExcludeTitles,
+  collectGloballyUsedTitles,
   assertMasterPathAvailable,
+  assertHandleGloballyUnique,
 } = require('./posterNameGuard');
 const DALLE_RATIO_PORTRAIT = 2 / 3;
 const DALLE_RATIO_LANDSCAPE = 3 / 2;
@@ -826,15 +828,25 @@ class PosterBatchGenerator {
 
     if (useFixedStyle) {
       console.log(`📝 Generating ${count} poster title(s)...`);
-      const excludeTitles = collectExcludeTitles(categoryKey, fixedTrimmed, this.db.posters);
+      const excludeTitles = [
+        ...new Set([
+          ...collectExcludeTitles(categoryKey, fixedTrimmed, this.db.posters),
+          ...collectGloballyUsedTitles(this.db.posters),
+        ]),
+      ];
       const { titles, titlePrompt } = await this.contentGen.generatePosterTitles(categoryKey, count, {
         llmProvider: llmProviderOpt,
         artStyle: fixedTrimmed,
         excludeTitles,
       });
+      const acceptedInBatch = [];
       const plannedTitles = titles.filter((t) => {
         try {
           assertMasterPathAvailable(categoryKey, fixedTrimmed, t, options);
+          assertHandleGloballyUnique(t, this.db.posters, options);
+          // Dwa nowe tytuly z tej samej partii tez moga dac ten sam handle.
+          assertHandleGloballyUnique(t, acceptedInBatch, options);
+          acceptedInBatch.push({ title: t, category: categoryKey, artStyle: fixedTrimmed });
           return true;
         } catch (e) {
           console.warn(`  ⚠ Pomijam zajęty tytuł: "${t}" — ${e.message}`);
@@ -855,15 +867,25 @@ class PosterBatchGenerator {
       let globalIdx = 0;
       for (const style of stylesForCategory) {
         console.log(`—— Styl: ${style} ——`);
-        const excludeTitles = collectExcludeTitles(categoryKey, style, this.db.posters);
+        const excludeTitles = [
+          ...new Set([
+            ...collectExcludeTitles(categoryKey, style, this.db.posters),
+            ...collectGloballyUsedTitles(this.db.posters),
+          ]),
+        ];
         const { titles, titlePrompt } = await this.contentGen.generatePosterTitles(categoryKey, count, {
           llmProvider: llmProviderOpt,
           artStyle: style,
           excludeTitles,
         });
+        const acceptedInBatch = [];
         const plannedTitles = titles.filter((t) => {
           try {
             assertMasterPathAvailable(categoryKey, style, t, options);
+            assertHandleGloballyUnique(t, this.db.posters, options);
+            // Dwa nowe tytuly z tej samej partii tez moga dac ten sam handle.
+            assertHandleGloballyUnique(t, acceptedInBatch, options);
+            acceptedInBatch.push({ title: t, category: categoryKey, artStyle: style });
             return true;
           } catch (e) {
             console.warn(`  ⚠ Pomijam zajęty tytuł: "${t}" — ${e.message}`);

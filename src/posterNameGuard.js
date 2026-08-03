@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getPosterOutputDir } = require('./posterPaths');
-const { titleFromFileName } = require('./posterTitle');
+const { titleFromFileName, toPosterHandle } = require('./posterTitle');
 const { normalizeTitleKey } = require('./categoryTitlePools');
 
 function makeSafeFileBase(title) {
@@ -132,6 +132,89 @@ function assertMasterPathAvailable(category, style, title, opts = {}) {
   );
 }
 
+/**
+ * Tytuly zajete w CALYM katalogu - niezaleznie od kategorii i stylu.
+ *
+ * Handle Shopify liczy sie z samego tytulu, wiec zakres unikalnosci tytulu
+ * musi byc globalny, szerszy niz kategoria+styl pilnowana przez
+ * collectExcludeTitles(). Sluzy do wykluczania nazw juz na etapie promptu.
+ *
+ * @param {object[]} [dbPosters]
+ * @returns {string[]}
+ */
+function collectGloballyUsedTitles(dbPosters = []) {
+  const seen = new Set();
+  const titles = [];
+  for (const p of dbPosters || []) {
+    const t = String((p && p.title) || '').trim();
+    if (!t) continue;
+    const h = toPosterHandle(t);
+    if (!h || seen.has(h)) continue;
+    seen.add(h);
+    titles.push(t);
+  }
+  return titles;
+}
+
+/**
+ * Pilnuje, by tytul dawal handle unikalny w calym katalogu.
+ *
+ * Porownanie idzie po handle, nie po surowym tytule - dzieki temu wykrywa tez
+ * pary rozne wizualnie, a zbiezne po normalizacji (np. "Cafe" i "Café").
+ * Rekord samego plakatu jest pomijany po imagePath, zeby regeneracja
+ * istniejacej pozycji nie wywalala sie na sobie samej.
+ *
+ * @param {string} title
+ * @param {object[]} [dbPosters]
+ * @param {{ allowOverwrite?: boolean, selfImagePath?: string }} [opts]
+ * @throws {PosterNameCollisionError}
+ */
+function assertHandleGloballyUnique(title, dbPosters = [], opts = {}) {
+  if (opts.allowOverwrite === true) return;
+  const t = String(title || '').trim();
+  if (!t) throw new PosterNameCollisionError('Brak tytułu plakatu.');
+
+  const handle = toPosterHandle(t);
+  const selfKey = String(opts.selfImagePath || '').replace(/\\/g, '/').toLowerCase();
+
+  for (const p of dbPosters || []) {
+    if (!p) continue;
+    const otherKey = String(p.imagePath || '').replace(/\\/g, '/').toLowerCase();
+    if (selfKey && otherKey === selfKey) continue;
+    if (toPosterHandle(p.title) !== handle) continue;
+    throw new PosterNameCollisionError(
+      `Tytuł „${t}” daje handle „${handle}”, który zajmuje już „${p.title}” ` +
+        `(${p.category || '?'} / ${p.artStyle || '?'}). ` +
+        'Handle musi być unikalny w całym sklepie — wybierz inny tytuł.',
+      { title: t, handle, conflictWith: { title: p.title, category: p.category, artStyle: p.artStyle, imagePath: p.imagePath } }
+    );
+  }
+}
+
+/**
+ * Wszystkie kolizje handli w inventory - do audytu i do twardej blokady eksportu.
+ *
+ * @param {object[]} [dbPosters]
+ * @returns {{ handle: string, posters: object[] }[]}
+ */
+function findHandleCollisions(dbPosters = []) {
+  const byHandle = new Map();
+  for (const p of dbPosters || []) {
+    const t = String((p && p.title) || '').trim();
+    if (!t) continue;
+    const h = toPosterHandle(t);
+    if (!byHandle.has(h)) byHandle.set(h, []);
+    byHandle.get(h).push(p);
+  }
+  const out = [];
+  for (const [handle, posters] of byHandle) {
+    // Ten sam plik moze wystapic w inventory wielokrotnie (regeneracja) - to nie kolizja.
+    const distinctImages = new Set(posters.map((p) => String(p.imagePath || '').replace(/\\/g, '/').toLowerCase()));
+    if (distinctImages.size > 1) out.push({ handle, posters });
+  }
+  return out;
+}
+
 function collisionErrorMessage(category, style, title) {
   const cat = String(category || '').trim();
   const st = String(style || '').trim();
@@ -149,8 +232,11 @@ module.exports = {
   resolveMasterAbsPath,
   listDiskTitlesInCategoryStyle,
   collectExcludeTitles,
+  collectGloballyUsedTitles,
   masterExistsAt,
   assertMasterPathAvailable,
+  assertHandleGloballyUnique,
+  findHandleCollisions,
   collisionErrorMessage,
   PosterNameCollisionError,
 };

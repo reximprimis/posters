@@ -33,8 +33,29 @@ function isFilenameStyleTitle(title) {
   return t.includes('_') || /\bsafe\s+frame\s*$/i.test(t);
 }
 
+/**
+ * Handle produktu Shopify liczony z tytulu plakatu.
+ *
+ * Jedyne zrodlo prawdy - uzywaja go zarowno eksport CSV, jak i guard nazw.
+ * Rozjechanie tych dwoch miejsc bylo przyczyna kolizji handli w katalogu.
+ *
+ * @param {string} title
+ * @returns {string} slug bezpieczny dla Shopify, nigdy pusty
+ */
+function toPosterHandle(title) {
+  return (
+    String(title || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[<>:"/\\|?*\x00-\x1f]+/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'poster'
+  );
+}
+
 module.exports = {
   humanizePosterTitle,
   titleFromFileName,
   isFilenameStyleTitle,
+  toPosterHandle,
 };
