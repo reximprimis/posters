@@ -1,192 +1,151 @@
-# Poster Generation System
+# Plakaty — generator i pipeline do Shopify
 
-Automated system to generate print-ready posters in 16+ categories using AI.
+System do generowania plakatów print-ready (AI) i publikowania ich w sklepie
+[reximprimis.com](https://reximprimis.com/collections/posters). Obejmuje: prompty i generowanie
+obrazów, ramkę + miniatury + PDF-y, lokalną bazę produktów oraz eksport CSV do Shopify.
 
-## Operational Docs
-
-- Frame + thumb + PDF workflow: `docs/FRAME_THUMB_PDF_FLOW.md`
-- Application versioning: `docs/VERSIONING.md`
-
-## Shopify Operations
+## Szybki start
 
 ```bash
-# 1) Reconcile inventory states (ready / pending_assets / legacy_blocked)
-npm run shopify:reconcile
-
-# 2) Sync ready thumbnails to git-trackable folder
-npm run shopify:thumbs
-
-# 3) Export Shopify CSV (ready products only)
-npm run shopify:export
-```
-
-## Quick Start
-
-```bash
-# Setup
 npm install
-cp .env.example .env
-# Edit .env with your API keys
-
-# Generate posters for one category
-node index.js generate "Botanika" 5
-
-# Generate posters for all categories
-node index.js generate-all 5
-
-# View inventory statistics
-node index.js stats
+cp .env.example .env      # uzupełnij OPENAI_API_KEY (reszta ma sensowne domyślne)
+npm run dev               # UI podglądu na http://localhost:3000
 ```
 
-## Features
+Bez `OPENAI_API_KEY` aplikacja wstaje, ale nie wygeneruje nowych plakatów.
 
-- ✓ AI-powered content generation (ChatGPT for titles/prompts)
-- ✓ Image generation with placeholder system (ready for Gemini API)
-- ✓ Print-ready PDFs in all 6 sizes
-- ✓ 300 DPI resolution for professional printing
-- ✓ 3mm bleed for commercial printing
-- ✓ CMYK color profile support
-- ✓ Batch generation across categories
-- ✓ Automatic inventory tracking (JSON database)
+## Dwa sposoby pracy
 
-## Architecture
+**UI (`npm run dev`)** — główne narzędzie. Przeglądanie biblioteki, generowanie, zatwierdzanie
+(`approve`), ramki/miniatury/PDF, ustawienia eksportu. Cała reszta dokumentacji zakłada,
+że codzienna praca odbywa się tutaj.
 
-1. **Content Generation** → ChatGPT generates unique titles & visual prompts
-2. **Image Generation** → Creates poster images (placeholder SVG, ready for Gemini/AI)
-3. **PDF Export** → Generates PDFs in all 6 print-ready sizes
-4. **Database** → Tracks all generated posters in `posters_inventory.json`
-
-## Output Structure
-
-```
-posters/
-├── Botanika/
-│   ├── Rose_Garden.png
-│   ├── Rose_Garden_13x18.pdf
-│   ├── Rose_Garden_21x30.pdf
-│   ├── Rose_Garden_30x40.pdf
-│   ├── Rose_Garden_40x50.pdf
-│   ├── Rose_Garden_50x70.pdf
-│   └── Rose_Garden_70x100.pdf
-├── Natura i krajobrazy/
-└── [other categories]
-
-posters_inventory.json  # Complete catalog with metadata
-```
-
-## Poster Specifications
-
-- **Sizes:** 13×18, 21×30, 30×40, 40×50, 50×70, 70×100 cm
-- **DPI:** 300 (professional print quality)
-- **Color Profile:** CMYK (ready for printing)
-- **Bleed:** 3mm on all sides
-- **Format:** PDF (flattened, print-ready)
-
-## Categories
-
-- Botanika (botanical)
-- Pory roku (seasonal)
-- Natura i krajobrazy (landscapes)
-- Obrazy do kuchni (kitchen art)
-- Plakaty z napisami (typography)
-- Zwierzęta (animals)
-- Plakaty dla dzieci (kids)
-- Mapy i miasta (maps/cities)
-- Retro (vintage)
-- Kultowe zdjęcia (iconic images)
-- Złoto i srebro (metallic/luxury)
-- Kosmos i astronomia (space)
-- Sporty (sports)
-- Muzyka (music)
-- Plakaty planery (planners)
-
-## API Keys Required
-
-1. **OpenAI API Key** (ChatGPT)
-   - Get from: https://platform.openai.com/
-   - For generating poster titles and prompts
-
-2. **Google Gemini API Key** (Optional - for image generation)
-   - Get from: https://makersuite.google.com/
-   - Ready for integration in `imageGenerator.js`
-
-3. **Canva API** (Optional - for design templates)
-   - Get from: https://developers.canva.com/
-   - Can be integrated for template-based designs
-
-## Usage Examples
-
-### Generate 5 posters for Botanika category
+**CLI (`node index.js`)** — generowanie wsadowe bez UI.
 
 ```bash
-node index.js generate "Botanika" 5
+node index.js generate "Botanika" 5                 # 5 plakatów, wszystkie style kategorii
+node index.js generate "Botanika" 5 --style Minimalism
+node index.js generate "Botanika" 5 --mat-frame     # passe-partout wokół motywu
+node index.js generate-all 5                        # wszystkie kategorie
+node index.js stats                                 # statystyki inventory
 ```
 
-### Generate 3 posters for all 16 categories (48 total)
+Bez `--style` liczba oznacza plakaty **na styl**; z `--style` — łącznie.
+
+## Kategorie i style
+
+21 kategorii × 5 globalnych stylów, ale nie każda para jest dozwolona — macierz ma **71
+dopuszczonych kombinacji** i jest pilnowana w `src/categoryStyles.js`.
+
+Style: `Photography`, `Minimalism`, `Abstract`, `Illustration`, `Line art`.
+
+Kategorie: Botanika, Abstrakcja, Natura i krajobrazy, Zwierzęta, Mapy i miasta, Plakaty dla
+dzieci, Kosmos i astronomia, Retro, Pojazdy, Kawa i herbata, Kuchnia i jedzenie, Architektura,
+Morze i plaża, Sport i hobby, Gaming i e-sport, AI i technologia, Humor i memy, Cyberpunk i neon,
+Muzyka i dźwięk, Wellness i joga, Symbole i harmonia.
+
+Aktualną listę promptów per kategoria/styl trzyma `CATEGORY_STYLE_PROMPTS_USED.md`.
+Walidacja macierzy: `npm test`.
+
+## Pipeline Shopify
+
+Obowiązuje stała kolejność: **approve → ramka/thumb/PDF → sync thumbów → eksport CSV**.
 
 ```bash
-node index.js generate-all 3
+npm run shopify:reconcile        # klasyfikacja inventory: ready / pending_assets / legacy_blocked
+npm run shopify:thumbs           # sync miniatur gotowych produktów do shopify_thumbs/
+npm run shopify:export           # CSV z rekordów `ready` -> shopify_csv/products_export_shopify.csv
+npm run shopify:headless:check   # porównanie live sklepu (Storefront API) z lokalnym inventory
 ```
 
-### Check inventory status
+Szczegóły statusów i przepływu assetów: `docs/FRAME_THUMB_PDF_FLOW.md`.
+Co jest czym w katalogu CSV i jak działają ceny: `shopify_csv/README.md`.
+
+### Rozmiary i ceny
+
+Sześć rozmiarów print-ready: 13×18, 21×30, 30×40, 40×50, 50×70, 70×100 cm — 300 DPI, 3 mm spadu,
+profil CMYK. Do sklepu eksportowanych jest domyślnie pięć (bez 70×100).
+
+Ceny **nie są ustalane w repo** — źródłem prawdy jest sklep, a `shopify_export_settings.json`
+tylko je odwzorowuje. Aktualna tabela cen i zasada `Compare At`: `shopify_csv/README.md`.
+
+### Unikalne handle
+
+Handle Shopify liczy się z samego tytułu, więc dwa plakaty o tym samym tytule nadpisałyby się
+przy imporcie. Zabezpieczenie działa na czterech poziomach (wspólna funkcja `toPosterHandle()`
+w `src/posterTitle.js`, guard przy generowaniu, walidacja w UI, twardy stop przed zapisem CSV).
 
 ```bash
-node index.js stats
+npm run audit:duplicates   # raport kolizji, kod wyjścia 1 gdy są duplikaty
+npm run test:guard         # testy sprawdzające, że guard faktycznie blokuje
 ```
 
-## File Structure
+Projekt: `docs/superpowers/specs/2026-08-03-duplikaty-handli-design.md`.
+
+## Struktura projektu
 
 ```
-├── index.js                 # CLI entry point
-├── config.js                # Configuration & categories
-├── package.json             # Node.js dependencies
-├── .env.example             # Environment variables template
-├── README.md                # This file
-├── posters_inventory.json   # Generated inventory database
-└── src/
-    ├── posterGenerator.js   # Main orchestrator
-    ├── contentGenerator.js  # ChatGPT integration
-    ├── imageGenerator.js    # Image generation (SVG placeholder, ready for Gemini)
-    └── pdfGenerator.js      # PDF export (300 DPI, CMYK)
+index.js                      # CLI
+preview.js                    # serwer UI + API (Express)
+config.js                     # konfiguracja: rozmiary, DPI, ścieżki, kategorie
+public/                       # frontend UI (index.html, style.css, logotypy)
+src/                          # moduły generatora
+  posterGenerator.js          #   orkiestrator generowania
+  contentGenerator.js         #   tytuły i prompty (OpenAI)
+  dalleImageGenerator.js      #   generowanie obrazów
+  promptBuilders.js           #   składanie promptów
+  promptRouter.js             #   wybór trybu promptu per kategoria/styl
+  categoryStyles.js           #   macierz kategoria × styl (źródło prawdy)
+  posterTitle.js              #   normalizacja tytułu -> handle Shopify
+  posterNameGuard.js          #   blokada duplikatów tytułów/handli
+  safePrintFraming.js         #   walidacja marginesów przed drukiem
+  posterMatFrame.js           #   passe-partout
+  pdfGenerator.js             #   PDF 300 DPI / CMYK
+  mockupGenerator.js          #   mockupy produktowe
+  lifestyleMockup.js          #   mockupy wnętrz (Sharp, bez AI)
+  shopifyState.js             #   statusy eksportowe
+  shopifyHeadless.js          #   Storefront API
+scripts/                      # narzędzia operacyjne (eksport, audyty, naprawy)
+shopify_csv/                  # eksporty CSV (+ archive/, frames/)
+shopify_thumbs/               # miniatury serwowane do Shopify przez Git CDN
+docs/                         # dokumentacja operacyjna
+design-md/                    # referencje designerskie dla promptów UI
 ```
 
-## Next Steps
+### Dane lokalne (poza gitem)
 
-1. ✓ Set up Node.js environment
-2. ✓ Install dependencies
-3. **Add API keys** to `.env` file
-4. **Run first generation** - `node index.js generate "Botanika" 3`
-5. **Validate PDFs** - Check `posters/` directory
-6. **Integrate Gemini API** - Replace placeholder images in `imageGenerator.js`
-7. **Integrate Canva API** - Optional design template system
+`posters/` (wygenerowane PNG/PDF), `posters_inventory.json` (baza produktów),
+`prompt_cache.json`, kopie `posters_inventory.backup_*.json` oraz logi `*.log` są
+w `.gitignore` — repo trzyma tylko kod, konfigurację i miniatury eksportowe.
 
-## Rights & Licensing
+⚠️ `posters_inventory.json` nie ma kopii w repo. Przed operacjami masowymi na danych
+handlowych zrób backup tego pliku.
 
-- AI-generated images use commercial-licensed models
-- Full rights to print, modify, and sell
-- Ready for e-commerce integration
+## Konfiguracja
 
-## Performance
+Wszystkie zmienne środowiskowe są opisane w `.env.example` — to źródło prawdy obok kodu.
+Najważniejsze grupy: klucz OpenAI, parametry generowania obrazu i upscale'u, safe print framing,
+passe-partout, mockupy wnętrz, dostęp do Storefront API.
 
-- ~30-60 seconds per poster (including API calls)
-- Batch generation: 16 categories × 5 posters = ~2-3 minutes
+Tytuły i prompty obrazu układa wyłącznie OpenAI — obsługa Claude'a została z aplikacji usunięta
+(`llmProvider=anthropic` zwraca teraz błąd 400).
 
-## Troubleshooting
+## Dokumentacja
 
-**Missing API Key?**
+| Plik | Zawartość |
+|---|---|
+| `WORKFLOW.md` | Jak dzielimy pracę nad projektem i jak zlecać zadania |
+| `docs/FRAME_THUMB_PDF_FLOW.md` | Statusy eksportowe i kolejność generowania assetów |
+| `docs/VERSIONING.md` | Zasady wersjonowania aplikacji |
+| `shopify_csv/README.md` | Eksporty CSV, ceny, co można importować |
+| `CATEGORY_STYLE_PROMPTS_USED.md` | Prompty użyte per kategoria/styl |
+| `IMPLEMENTATION_PLAN.md` | Historyczny plan wdrożenia (nieaktualny w szczegółach) |
+| `DESIGN.md` | Referencja systemu designu dla UI |
+
+## Testy
+
 ```bash
-# Edit .env and add OPENAI_API_KEY=sk-...
+npm test              # walidacja macierzy kategoria × styl
+npm run test:guard    # blokada duplikatów handli
+npm run audit:duplicates
 ```
-
-**Directory not found?**
-```bash
-# The script auto-creates posters/ directory
-```
-
-**PDF generation failed?**
-- Check image file exists in poster directory
-- Verify pdfkit package installed correctly
-
-## Support
-
-Built for reximprimis.com poster sales platform.

@@ -1,46 +1,47 @@
+# --- Zaleznosci i build ---
 node_modules/
-
 .worktrees/
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+
+# --- Sekrety i ustawienia lokalne ---
 .env
 .claude/settings.local.json
+
+# --- Python (pomocnicze skrypty, requirements.txt) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
 .venv
-env/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
+
+# --- Edytory / system ---
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 .DS_Store
+
+# --- Dane generowane w runtime ---
+# Biblioteka plakatow (PNG/PDF) i baza inwentarza - poza gitem, zbyt duze.
 posters/
 .preview-staging/
 posters_inventory.json
 prompt_cache.json
+# Kopie zapasowe inwentarza tworzone automatycznie przez preview.js.
+posters_inventory.backup_*.json
+# Logi z dlugich przebiegow (generowanie, mockupy, testy jakosci).
+*.log
+# Zrzuty ekranu robione podczas debugowania UI.
+preview_screenshot*.png
+
+# --- Pliki graficzne ---
+# Wygenerowane plakaty i PDF-y nie trafiaja do repo.
 *.pdf
 *.png
-
-# Grafiki interfejsu sa czescia aplikacji - regula *.png dotyczy generowanych plakatow.
+# Grafiki interfejsu sa czescia aplikacji - regula *.png ich nie dotyczy.
 !public/*.png
