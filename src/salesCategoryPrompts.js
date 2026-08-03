@@ -112,14 +112,20 @@ function buildSeaBeachPhotographyPrompt(opts) {
   });
 }
 
+// Slowo "tenis" celowo NIE wystepuje w tym tekscie. Wczesniejsza wersja pisala
+// "not only tennis" i "tennis racket OR court" — a negacja i tak podsuwa temat,
+// przez co 9 z 11 pierwszych plakatow w tej kategorii wyszlo tenisowych.
+// Tenisowe tytuly zostaly w puli, wiec tenis moze wystapic, gdy zada go TYTUL.
 const SPORT_HOBBY_MODE = `
-Sport & hobby category mode — rotate across distinct subjects, not only tennis or rackets.
+Sport & hobby category mode: build the artwork strictly around the subject named in the title. Do not substitute a different, more familiar sport.
 
-Popular sports (pick one hero subject per artwork): football/soccer ball on grass, basketball on court, volleyball net or ball, tennis racket OR court (not every image), cycling, running shoes on track, swimming goggles, golf club, ski poles, surfboard, skateboard, climbing rope.
+Equipment and place, not competition: one hero object or one empty sporting place, treated as calm editorial still-life.
 
-Hobbies (calm editorial still-life or lifestyle, no logos): open book, chess board, film camera, hiking boots on trail, fishing rod by water, knitting yarn, paint palette, acoustic guitar, camping tent, gardening gloves with herbs, vinyl records player without labels.
+Popular sports (only if the title names one): football on grass, basketball on court, volleyball net, cycling, running shoes on track, swimming goggles, golf club, ski poles, surfboard, skateboard, climbing rope, boxing gloves, ice hockey stick, archery target.
 
-Forbidden: club logos, famous brands, jersey numbers and text, celebrity athlete faces, stadium signage, advertising.
+Hobbies (calm editorial still-life or lifestyle, no logos): open book, chess board, film camera, hiking boots on trail, fishing rod by water, knitting yarn, paint palette, acoustic guitar, camping tent, gardening gloves with herbs, pottery wheel, binoculars, telescope, vinyl record player without labels.
+
+Forbidden: club logos, famous brands, jersey numbers and text, stadium signage, advertising, match action with identifiable players, medals or trophies of real competitions.
 `.trim();
 
 module.exports = {

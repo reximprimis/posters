@@ -201,5 +201,51 @@ check('nieznana kategoria pozostaje nieznana', () => {
   expectEqual(cs.isKnownCategory('Kompletnie Zmyslona Kategoria'), false, 'zmyslona');
 });
 
+console.log('\nOCHRONA PRAW AUTORSKICH:');
+
+check('KAZDA dozwolona para ma blok praw dokladnie raz', () => {
+  // Sprzedajemy komercyjnie, wiec brak tego bloku to ryzyko prawne, nie usterka
+  // estetyczna. Osiem plikow siega po stale restrykcji bezposrednio, wiec latwo
+  // o sciezke, ktora go omija — dlatego sprawdzamy wszystkie pary, nie probke.
+  const brak = [];
+  const zdublowane = [];
+  for (const { category, style } of cs.getAllAllowedCategoryStylePairs()) {
+    const p = quiet(() => pr.routePromptBuildResult({ category, style, title: 'Test Subject' })).imagePrompt;
+    const n = (p.match(/Rights safety/g) || []).length;
+    if (n === 0) brak.push(`${category} / ${style}`);
+    else if (n > 1) zdublowane.push(`${category} / ${style} (x${n})`);
+  }
+  if (brak.length) throw new Error(`bez bloku praw: ${brak.slice(0, 5).join(', ')}${brak.length > 5 ? ` (+${brak.length - 5})` : ''}`);
+  if (zdublowane.length) throw new Error(`zdublowany blok: ${zdublowane.slice(0, 5).join(', ')}`);
+});
+
+check('blok praw zakazuje wizerunku, klubow i postaci', () => {
+  const p = quiet(() => pr.routePromptBuildResult({ category: 'Sport i hobby', style: 'Photography', title: 'Cycling Road at Dawn' })).imagePrompt;
+  for (const fraza of [
+    'likeness of any public figure',
+    'national team jerseys',
+    'competition trophies',
+    'copyrighted characters',
+  ]) {
+    expectTrue(p.includes(fraza), `fraza "${fraza}"`);
+  }
+});
+
+check('prompt sportowy nie podsuwa juz tenisa', () => {
+  // Wczesniej tekst zawieral "not only tennis" i "tennis racket OR court".
+  // Negacja i tak podsuwa temat — 9 z 11 pierwszych plakatow wyszlo tenisowych.
+  for (const style of cs.getAllowedStylesForCategory('Sport i hobby')) {
+    const p = quiet(() => pr.routePromptBuildResult({ category: 'Sport i hobby', style, title: 'Chess Board Still Life' })).imagePrompt;
+    if (/tennis/i.test(p)) throw new Error(`styl ${style}: prompt nadal zawiera slowo "tennis"`);
+  }
+});
+
+check('tenis nadal MOZLIWY, gdy zada go tytul', () => {
+  // Nie wycinamy tenisa z oferty — usuwamy tylko samoczynne ciagoty do niego.
+  const { CATEGORY_TITLE_POOLS } = require(path.join(__dirname, '..', 'src', 'categoryTitlePools'));
+  const pool = CATEGORY_TITLE_POOLS['Sport i hobby'] || [];
+  expectTrue(pool.some((t) => /tennis/i.test(t)), 'tenisowy tytul w puli');
+});
+
 console.log(`\n${pass} przeszlo, ${fail} nie przeszlo`);
 process.exit(fail === 0 ? 0 : 1);

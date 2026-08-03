@@ -65,8 +65,11 @@ const CATEGORY_DESCRIPTIONS = {
   Architektura:
     'buildings, facades, stairs, columns, modernism, brutalism, arches, architectural details',
   'Morze i plaża': 'sea, waves, beach, dunes, shells, lighthouses, calm coastal landscapes',
+  // Tenis swiadomie NIE wymieniony: model lgnal do niego, gdy tylko pojawial sie
+  // w opisie. Tenisowe tytuly nadal sa w puli, wiec moga wystapic — ale wtedy
+  // decyduje tytul, a nie sugestia z opisu kategorii.
   'Sport i hobby':
-    'football, basketball, volleyball, tennis, cycling, running, swimming, golf, skiing, surfing, plus hobbies: books, chess, camera, hiking, fishing, guitar, gardening, camping',
+    'cycling, running, swimming, football, basketball, volleyball, golf, skiing, surfing, climbing, boxing, ice hockey, archery, plus hobbies: books, chess, camera, hiking, fishing, guitar, gardening, camping, pottery, knitting, birdwatching',
   'Gaming i e-sport':
     'gaming room, retro arcade, controllers without logos, neon gaming mood, e-sport energy, player setup, futuristic light',
   'AI i technologia':

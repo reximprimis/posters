@@ -85,6 +85,24 @@ Avoid tight crop, edge-touching composition, oversized forms, cropped rectangles
 Full-bleed image is allowed only for the background, not for the main abstract structure.
 `);
 
+/**
+ * Ochrona przed naruszeniem praw — wbudowana w KAZDY blok restrykcji.
+ *
+ * Powod: sprzedajemy wydruki komercyjnie, wiec rozpoznawalna twarz sportowca,
+ * herb klubu czy koszulka reprezentacji to nie kwestia estetyki, tylko ryzyko
+ * prawne (prawo do wizerunku, znaki towarowe).
+ *
+ * Doklejane do samych STALYCH, nie do getRestrictionsBlock(), bo osiem plikow
+ * siega po te stale bezposrednio z pominieciem funkcji — m.in. sciezka Abstract.
+ */
+const IP_SAFETY_LINES = `
+Rights safety — mandatory:
+No recognisable real person, no portrait or likeness of any public figure, athlete, musician, actor, or historical person.
+No real club crests, team kits, national team jerseys, sponsor markings, competition trophies, or event branding.
+No copyrighted characters, mascots, film or game imagery, album covers, or recognisable branded product designs.
+Any human presence must be anonymous and incidental: distant, turned away, or reduced to an unidentifiable silhouette.
+`;
+
 const RESTRICTIONS_ABSTRACT = normalizeBlock(`
 Restrictions:
 No readable text, letters, numbers, logos, labels, packaging copy, watermark, frame, mockup, border, mat, passe-partout, UI, or product presentation.
@@ -92,6 +110,7 @@ No realistic photography still-life, no physical table scene, no object-on-surfa
 No faces.
 Single flat 2D image only.
 Premium fine-art artwork for print.
+${IP_SAFETY_LINES}
 `);
 
 const RESTRICTIONS_BLOCK = normalizeBlock(`
@@ -99,6 +118,7 @@ Restrictions:
 No readable text, letters, numbers, logos, labels, packaging copy, watermark, frame, mockup, border, mat, passe-partout, or product presentation.
 Single flat 2D image only.
 Premium fine-art artwork for print.
+${IP_SAFETY_LINES}
 `);
 
 function isSafeFramingEnabled() {
@@ -176,6 +196,7 @@ No people, buildings, boats, animals, roads, signs, or modern elements.
 No realistic photography still-life or product-shot framing.
 Single flat 2D image only.
 Premium fine-art artwork for print.
+${IP_SAFETY_LINES}
 `);
 
 function resolveSafePrintFramingForCategory(category, style) {
@@ -421,6 +442,7 @@ module.exports = {
   RESTRICTIONS_BLOCK,
   RESTRICTIONS_ABSTRACT,
   RESTRICTIONS_MINIMAL_LANDSCAPE,
+  IP_SAFETY_LINES,
   normalizeArtStyle,
   isAbstractArtStyle,
   isMinimalismArtStyle,
