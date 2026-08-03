@@ -126,5 +126,38 @@ check('lista zajetych tytulow deduplikuje po handle', () => {
   expectEqual(titles.length, 2, 'liczba unikalnych tytulow');
 });
 
+console.log('\nPULE TYTULOW:');
+
+check('zaden tytul z pul nie daje handle zajetego przez inna pule', () => {
+  // Kolizja tutaj oznacza, ze jeden z dwoch plakatow przepadnie po cichu
+  // przy generowaniu — guard go zablokuje. Latwo o to przy rozbudowie pul.
+  const { CATEGORY_TITLE_POOLS } = require(path.join(__dirname, '..', 'src', 'categoryTitlePools'));
+  const byHandle = new Map();
+  for (const [category, pool] of Object.entries(CATEGORY_TITLE_POOLS)) {
+    for (const title of pool) {
+      const h = toPosterHandle(title);
+      if (!byHandle.has(h)) byHandle.set(h, []);
+      byHandle.get(h).push(`${category} / ${title}`);
+    }
+  }
+  const collisions = [...byHandle.entries()].filter(([, v]) => v.length > 1);
+  if (collisions.length) {
+    const detail = collisions.map(([h, v]) => `${h}: ${v.join(' | ')}`).join('; ');
+    throw new Error(`${collisions.length} kolizji w pulach — ${detail}`);
+  }
+});
+
+check('kazda pula ma wylacznie unikalne tytuly', () => {
+  const { CATEGORY_TITLE_POOLS } = require(path.join(__dirname, '..', 'src', 'categoryTitlePools'));
+  for (const [category, pool] of Object.entries(CATEGORY_TITLE_POOLS)) {
+    const seen = new Set();
+    for (const t of pool) {
+      const k = toPosterHandle(t);
+      if (seen.has(k)) throw new Error(`${category}: duplikat "${t}"`);
+      seen.add(k);
+    }
+  }
+});
+
 console.log(`\n${pass} przeszlo, ${fail} nie przeszlo`);
 process.exit(fail === 0 ? 0 : 1);
