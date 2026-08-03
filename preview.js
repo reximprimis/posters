@@ -20,6 +20,12 @@ const {
   assertHandleGloballyUnique,
   PosterNameCollisionError,
 } = require('./src/posterNameGuard');
+const {
+  PATHS: GENERATOR_PATHS,
+  isKnownModel,
+  resolveAllModelSettings,
+  applyModelOverridesToEnv,
+} = require('./src/modelCatalog');
 const sharp = require('sharp');
 
 const app = express();
@@ -96,6 +102,11 @@ function writeUserSettings(data) {
   fs.writeFileSync(USER_SETTINGS_PATH, JSON.stringify(merged, null, 2), 'utf-8');
   return merged;
 }
+
+// Nadpisania modeli z panelu maja pierwszenstwo przed .env. Stosujemy je do
+// process.env juz przy starcie, zeby generator uzywal dokladnie tego modelu,
+// ktory panel pokazuje jako aktywny.
+applyModelOverridesToEnv((readUserSettings() || {}).models || {});
 
 if (!fs.existsSync(PREVIEW_STAGING_DIR)) {
   fs.mkdirSync(PREVIEW_STAGING_DIR, { recursive: true });
@@ -1637,22 +1648,202 @@ app.get('/api/logs/stream', (req, res) => {
   });
 });
 
-/** Settings: read-only system config snapshot (masked secrets). */
+function maskSecret(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  return v.length > 8 ? v.slice(0, 4) + '••••••••' + v.slice(-4) : '••••••••';
+}
+
+/**
+ * Realny stan integracji — nie sama obecność klucza.
+ *
+ * Anthropic celowo raportuje 'missing_integration': klucz bywa ustawiony w .env,
+ * ale w package.json nie ma SDK, a contentGenerator zwraca dla niego null.
+ * Panel ma mówić prawdę zamiast pokazywać opcję, której kod nie wykona.
+ */
+function describeConnections() {
+  const anthropicKey = String(process.env.ANTHROPIC_API_KEY || '').trim();
+  let anthropicSdk = true;
+  try {
+    require.resolve('@anthropic-ai/sdk');
+  } catch (_) {
+    anthropicSdk = false;
+  }
+
+  return [
+    {
+      id: 'openai',
+      label: 'OpenAI',
+      status: config.openaiKey ? 'ok' : 'missing_key',
+      purpose: 'Generowanie obrazów oraz tytułów i opisów sklepowych.',
+      envVars: ['OPENAI_API_KEY'],
+      masked: maskSecret(config.openaiKey),
+      note: '',
+    },
+    {
+      id: 'anthropic',
+      label: 'Anthropic (Claude)',
+      status: anthropicSdk ? (anthropicKey ? 'ok' : 'missing_key') : 'missing_integration',
+      purpose: 'Alternatywny model do tytułów i opisów.',
+      envVars: ['ANTHROPIC_API_KEY', 'PROMPT_LLM'],
+      masked: maskSecret(anthropicKey),
+      note: anthropicSdk
+        ? ''
+        : 'Klucz bywa ustawiony w .env, ale brakuje pakietu @anthropic-ai/sdk — aplikacja nie potrafi wywołać Claude. Opcja nieaktywna.',
+    },
+    {
+      id: 'shopify',
+      label: 'Shopify Storefront',
+      status: String(process.env.SHOPIFY_STOREFRONT_API_TOKEN || '').trim() ? 'ok' : 'missing_key',
+      purpose: 'Odczyt cen i produktów ze sklepu live (źródło prawdy dla cen).',
+      envVars: ['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_STOREFRONT_API_TOKEN'],
+      masked: maskSecret(process.env.SHOPIFY_STOREFRONT_API_TOKEN),
+      note: String(process.env.SHOPIFY_STORE_DOMAIN || '').trim(),
+    },
+    {
+      id: 'cdn',
+      label: 'CDN miniatur (jsDelivr)',
+      status: String(process.env.SHOPIFY_IMAGE_BASE_URL || '').trim() ? 'ok' : 'missing_key',
+      purpose: 'Serwuje miniatury plakatów do eksportu Shopify.',
+      envVars: ['SHOPIFY_IMAGE_BASE_URL'],
+      masked: '',
+      note: String(process.env.SHOPIFY_IMAGE_BASE_URL || '').trim(),
+    },
+  ];
+}
+
+/** Settings: stan konfiguracji, połączeń i modeli (sekrety zamaskowane). */
 app.get('/api/settings', (req, res) => {
-  const key = config.openaiKey || '';
-  const maskedKey = key.length > 8
-    ? key.slice(0, 4) + '••••••••' + key.slice(-4)
-    : key ? '••••••••' : '(brak klucza)';
-  const imageModel = String(process.env.IMAGE_GENERATION_MODEL || 'gpt-image-2').trim();
+  const overrides = (readUserSettings() || {}).models || {};
+  const models = resolveAllModelSettings(overrides);
+  const imageModel = (models.find((m) => m.key === 'imageModel') || {}).value || 'gpt-image-2';
+  const textModel = (models.find((m) => m.key === 'textModel') || {}).value || 'gpt-4o-mini';
+
   res.json({
-    openaiKeyMasked: maskedKey,
-    openaiKeySet: !!key,
+    openaiKeyMasked: maskSecret(config.openaiKey) || '(brak klucza)',
+    openaiKeySet: !!config.openaiKey,
+    // Zachowane dla zgodnosci ze starym UI.
     imageModel,
-    promptModel: config.openaiPromptModel || 'gpt-4o-mini',
+    promptModel: textModel,
+    models,
+    connections: describeConnections(),
+    generatorPaths: GENERATOR_PATHS,
+    // Prompt obrazu sklada szablon, nie model jezykowy - UI to komunikuje wprost.
+    imagePromptBuilder: require('./src/posterMetadata').PROMPT_BUILDER_VERSION || 'master-prompt-v1',
     llmProviders: new (require('./src/contentGenerator'))().getAvailableLlmProviders(),
     nodeVersion: process.version,
     appVersion: '2.0',
   });
+});
+
+/** Zapis nadpisań modeli. Klucze API celowo nieedytowalne — zostają w .env. */
+app.post('/api/settings/models', (req, res) => {
+  try {
+    const body = req.body || {};
+    const incoming = body.models && typeof body.models === 'object' ? body.models : body;
+    const current = (readUserSettings() || {}).models || {};
+    const next = { ...current };
+
+    for (const [key, raw] of Object.entries(incoming)) {
+      const value = String(raw == null ? '' : raw).trim();
+      if (value === '') {
+        // Pusta wartosc = powrot do wartosci z .env.
+        delete next[key];
+        continue;
+      }
+      if (!isKnownModel(key, value)) {
+        return res.status(400).json({ error: `Nieznany model "${value}" dla ustawienia "${key}".` });
+      }
+      next[key] = value;
+    }
+
+    writeUserSettings({ models: next });
+    applyModelOverridesToEnv(next);
+
+    return res.json({ ok: true, models: resolveAllModelSettings(next) });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Nie udało się zapisać ustawień modeli.' });
+  }
+});
+
+/** Czytelne etykiety tras promptu — zgodne z getPromptRouteKind(). */
+const PROMPT_ROUTE_LABELS = {
+  category_override: 'Twardy override kategorii',
+  category_dedicated: 'Dedykowany prompt kategorii',
+  category_style_dedicated: 'Dedykowana para kategoria + styl',
+  category_style_prompt: 'Prompt z pary kategoria + styl',
+  style_generic: 'Ogólny prompt stylu',
+  core_fallback: 'Awaryjny prompt bazowy',
+};
+
+/**
+ * Macierz tras promptów dla wszystkich dozwolonych par kategoria + styl.
+ * Czysta kalkulacja — zero wywołań API, więc endpoint jest darmowy i natychmiastowy.
+ */
+app.get('/api/prompts/routes', (req, res) => {
+  try {
+    const { getPromptRouteKind, getRoutingPathLabel } = require('./src/promptRouter');
+    const { getAllAllowedCategoryStylePairs } = require('./src/categoryStyles');
+
+    const pairs = getAllAllowedCategoryStylePairs().map((p) => {
+      const category = p.category || p[0];
+      const style = p.style || p[1];
+      const kind = getPromptRouteKind(category, style);
+      return {
+        category,
+        style,
+        routeKind: kind,
+        routeLabel: PROMPT_ROUTE_LABELS[kind] || kind,
+        routingPath: getRoutingPathLabel(category, style),
+        isFallback: kind === 'core_fallback',
+      };
+    });
+
+    const counts = {};
+    for (const p of pairs) counts[p.routeKind] = (counts[p.routeKind] || 0) + 1;
+
+    res.json({
+      ok: true,
+      total: pairs.length,
+      fallbackCount: pairs.filter((p) => p.isFallback).length,
+      counts,
+      routeLabels: PROMPT_ROUTE_LABELS,
+      pairs,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Nie udało się zbudować macierzy promptów.' });
+  }
+});
+
+/** Pełny tekst promptu dla jednej pary kategoria + styl. Bez wywołań API. */
+app.get('/api/prompts/preview', (req, res) => {
+  try {
+    const category = String(req.query.category || '').trim();
+    const style = String(req.query.style || '').trim();
+    const title = String(req.query.title || '').trim() || 'Przykładowy Tytuł';
+    if (!category || !style) {
+      return res.status(400).json({ error: 'Wymagane parametry: category, style' });
+    }
+
+    const { routePromptBuildResult } = require('./src/promptRouter');
+    const built = routePromptBuildResult({ category, style, title });
+
+    res.json({
+      ok: true,
+      category,
+      style,
+      title,
+      routeKind: built.routeKind,
+      routeLabel: PROMPT_ROUTE_LABELS[built.routeKind] || built.routeKind,
+      routingPath: built.routingPath,
+      isFallback: built.usedFallbackPromptBuilder,
+      builder: require('./src/posterMetadata').PROMPT_BUILDER_VERSION || 'master-prompt-v1',
+      length: built.imagePrompt.length,
+      prompt: built.imagePrompt,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Nie udało się zbudować promptu.' });
+  }
 });
 
 /** Generate product mockups (frame packshot + interior lifestyle) for a poster. */

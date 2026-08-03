@@ -4539,7 +4539,9 @@
 
         // Tab nav inside modal
         '<div class="settings-tabs">' +
-          '<button class="settings-tab is-active" data-stab="api">API & Modele</button>' +
+          '<button class="settings-tab is-active" data-stab="connections">Połączenia</button>' +
+          '<button class="settings-tab" data-stab="models">Modele</button>' +
+          '<button class="settings-tab" data-stab="prompts">Prompty</button>' +
           '<button class="settings-tab" data-stab="categories">Kategorie</button>' +
           '<button class="settings-tab" data-stab="styles">Style</button>' +
           '<button class="settings-tab" data-stab="export">Eksport</button>' +
@@ -4547,38 +4549,57 @@
 
         '<div class="settings-modal-body">' +
 
-          // ─── Tab: API & Modele ───
-          '<div class="settings-tab-panel is-active" data-stab-panel="api">' +
+          // ─── Tab: Połączenia ───
+          '<div class="settings-tab-panel is-active" data-stab-panel="connections">' +
             '<section class="settings-section">' +
-              '<h3 class="settings-section-title">API & Modele</h3>' +
-              '<div class="settings-row">' +
-                '<div class="settings-row-label"><span class="settings-row-name">OpenAI API Key</span><span class="settings-row-desc">Klucz do GPT Image 2 i promptów</span></div>' +
-                '<div class="settings-row-value" id="settingApiKey"><span class="settings-skeleton">…</span></div>' +
-              '</div>' +
-              '<div class="settings-row">' +
-                '<div class="settings-row-label"><span class="settings-row-name">Model obrazów</span><span class="settings-row-desc">IMAGE_GENERATION_MODEL</span></div>' +
-                '<div class="settings-row-value" id="settingImageModel"><span class="settings-skeleton">…</span></div>' +
-              '</div>' +
-              '<div class="settings-row">' +
-                '<div class="settings-row-label"><span class="settings-row-name">Model promptów</span><span class="settings-row-desc">OPENAI_PROMPT_MODEL</span></div>' +
-                '<div class="settings-row-value" id="settingPromptModel"><span class="settings-skeleton">…</span></div>' +
-              '</div>' +
+              '<h3 class="settings-section-title">Co jest podłączone</h3>' +
+              '<p class="settings-info-text">Klucze API konfigurujesz wyłącznie w pliku <code>.env</code> — panel ich nie zapisuje i nie wysyła.</p>' +
+              '<div id="settingsConnections" class="conn-grid"><span class="settings-skeleton">…</span></div>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Środowisko</h3>' +
               '<div class="settings-row">' +
                 '<div class="settings-row-label"><span class="settings-row-name">Node.js</span></div>' +
                 '<div class="settings-row-value" id="settingNodeVersion"><span class="settings-skeleton">…</span></div>' +
               '</div>' +
               '<div class="settings-row">' +
-                '<div class="settings-row-label"><span class="settings-row-name">LLM Providers</span><span class="settings-row-desc">Aktywni dostawcy AI</span></div>' +
+                '<div class="settings-row-label"><span class="settings-row-name">Szablon promptu obrazu</span><span class="settings-row-desc">Składa prompt do generatora — nie model językowy</span></div>' +
+                '<div class="settings-row-value" id="settingPromptBuilder"><span class="settings-skeleton">…</span></div>' +
+              '</div>' +
+              '<div class="settings-row">' +
+                '<div class="settings-row-label"><span class="settings-row-name">Aktywni dostawcy AI</span></div>' +
                 '<div class="settings-row-value" id="settingLlmProviders"><span class="settings-skeleton">…</span></div>' +
               '</div>' +
             '</section>' +
-            '<section class="settings-section settings-section--info">' +
-              '<h3 class="settings-section-title">Konfiguracja przez .env</h3>' +
-              '<div class="settings-env-preview">' +
-                '<code class="settings-env-line">OPENAI_API_KEY=sk-…</code>' +
-                '<code class="settings-env-line">IMAGE_GENERATION_MODEL=gpt-image-2</code>' +
-                '<code class="settings-env-line">OPENAI_PROMPT_MODEL=gpt-4o-mini</code>' +
+          '</div>' +
+
+          // ─── Tab: Modele ───
+          '<div class="settings-tab-panel" data-stab-panel="models" hidden>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Modele</h3>' +
+              '<p class="settings-info-text">Plakietki pokazują, których trybów generatora dotyczy dane ustawienie. Wybór zapisuje się od razu i działa bez restartu.</p>' +
+              '<div id="settingsModels"><span class="settings-skeleton">…</span></div>' +
+              '<div id="settingsModelsStatus" class="settings-status" role="status"></div>' +
+            '</section>' +
+          '</div>' +
+
+          // ─── Tab: Prompty ───
+          '<div class="settings-tab-panel" data-stab-panel="prompts" hidden>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Wbudowane prompty</h3>' +
+              '<p class="settings-info-text">Prompt do obrazu składa wbudowany szablon, nie model językowy. Podgląd jest darmowy — nie wywołuje API.</p>' +
+              '<div id="promptCoverage" class="prompt-coverage"><span class="settings-skeleton">…</span></div>' +
+              '<div class="prompt-picker">' +
+                '<label class="prompt-picker-field"><span>Kategoria</span><select id="promptCategory"></select></label>' +
+                '<label class="prompt-picker-field"><span>Styl</span><select id="promptStyle"></select></label>' +
+                '<label class="prompt-picker-field"><span>Przykładowy tytuł</span><input id="promptTitle" type="text" value="Przykładowy Tytuł" /></label>' +
               '</div>' +
+              '<div id="promptRouteInfo" class="prompt-route"></div>' +
+              '<pre id="promptPreviewText" class="prompt-preview"></pre>' +
+            '</section>' +
+            '<section class="settings-section">' +
+              '<h3 class="settings-section-title">Pokrycie wszystkich par</h3>' +
+              '<div id="promptMatrix" class="prompt-matrix"><span class="settings-skeleton">…</span></div>' +
             '</section>' +
           '</div>' +
 
@@ -5022,6 +5043,228 @@
       });
     }
 
+    var _promptRoutes = null;
+
+    function loadPromptRoutes() {
+      if (_promptRoutes) { renderPromptTab(); return; }
+      fetch('/api/prompts/routes', { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.error) throw new Error(d.error);
+          _promptRoutes = d;
+          renderPromptTab();
+        })
+        .catch(function(e) {
+          var m = document.getElementById('promptMatrix');
+          if (m) m.innerHTML = '<p class="settings-status is-error">' + esc(e.message) + '</p>';
+        });
+    }
+
+    function renderPromptTab() {
+      var d = _promptRoutes;
+      if (!d) return;
+
+      var cov = document.getElementById('promptCoverage');
+      if (cov) {
+        var okAll = d.fallbackCount === 0;
+        cov.innerHTML = '<span class="settings-badge settings-badge--' + (okAll ? 'green' : 'amber') + '">' +
+            (d.total - d.fallbackCount) + ' / ' + d.total + ' par ma dedykowany prompt</span>' +
+          Object.keys(d.counts).map(function(k) {
+            return '<span class="settings-badge">' + esc(d.routeLabels[k] || k) + ': ' + d.counts[k] + '</span>';
+          }).join('');
+      }
+
+      var catSel = document.getElementById('promptCategory');
+      var stySel = document.getElementById('promptStyle');
+      if (catSel && !catSel.options.length) {
+        var cats = [];
+        d.pairs.forEach(function(p) { if (cats.indexOf(p.category) === -1) cats.push(p.category); });
+        catSel.innerHTML = cats.map(function(c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+        catSel.addEventListener('change', function() { syncPromptStyles(); });
+        if (stySel) stySel.addEventListener('change', loadPromptPreview);
+        var titleInput = document.getElementById('promptTitle');
+        if (titleInput) titleInput.addEventListener('change', loadPromptPreview);
+      }
+      syncPromptStyles();
+
+      var matrix = document.getElementById('promptMatrix');
+      if (matrix) {
+        matrix.innerHTML = d.pairs.map(function(p) {
+          return '<button type="button" class="matrix-cell matrix-cell--' + esc(p.routeKind) + (p.isFallback ? ' is-fallback' : '') + '"' +
+            ' data-mx-cat="' + esc(p.category) + '" data-mx-style="' + esc(p.style) + '"' +
+            ' title="' + esc(p.routingPath) + '">' +
+            '<span class="matrix-cell-cat">' + esc(p.category) + '</span>' +
+            '<span class="matrix-cell-style">' + esc(p.style) + '</span>' +
+          '</button>';
+        }).join('');
+      }
+    }
+
+    function syncPromptStyles() {
+      var d = _promptRoutes;
+      var catSel = document.getElementById('promptCategory');
+      var stySel = document.getElementById('promptStyle');
+      if (!d || !catSel || !stySel) return;
+      var cat = catSel.value;
+      var styles = d.pairs.filter(function(p) { return p.category === cat; }).map(function(p) { return p.style; });
+      var prev = stySel.value;
+      stySel.innerHTML = styles.map(function(s) { return '<option value="' + esc(s) + '">' + esc(s) + '</option>'; }).join('');
+      if (styles.indexOf(prev) !== -1) stySel.value = prev;
+      loadPromptPreview();
+    }
+
+    function loadPromptPreview() {
+      var catSel = document.getElementById('promptCategory');
+      var stySel = document.getElementById('promptStyle');
+      var titleInput = document.getElementById('promptTitle');
+      var info = document.getElementById('promptRouteInfo');
+      var out = document.getElementById('promptPreviewText');
+      if (!catSel || !stySel || !catSel.value || !stySel.value) return;
+
+      var url = '/api/prompts/preview?category=' + encodeURIComponent(catSel.value) +
+        '&style=' + encodeURIComponent(stySel.value) +
+        '&title=' + encodeURIComponent((titleInput && titleInput.value) || 'Przykładowy Tytuł');
+
+      if (out) out.textContent = 'Ładowanie…';
+      fetch(url, { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.error) throw new Error(d.error);
+          if (info) {
+            info.innerHTML = '<span class="settings-badge settings-badge--' + (d.isFallback ? 'amber' : 'green') + '">' +
+                esc(d.routeLabel) + '</span>' +
+              '<code class="prompt-route-path">' + esc(d.routingPath) + '</code>' +
+              '<span class="prompt-route-len">' + d.length + ' znaków · szablon ' + esc(d.builder) + '</span>';
+          }
+          if (out) out.textContent = d.prompt;
+        })
+        .catch(function(e) {
+          if (out) out.textContent = '';
+          if (info) info.innerHTML = '<span class="settings-status is-error">' + esc(e.message) + '</span>';
+        });
+    }
+
+    document.addEventListener('click', function(ev) {
+      var cell = ev.target.closest && ev.target.closest('[data-mx-cat]');
+      if (!cell) return;
+      var catSel = document.getElementById('promptCategory');
+      var stySel = document.getElementById('promptStyle');
+      if (!catSel || !stySel) return;
+      catSel.value = cell.dataset.mxCat;
+      syncPromptStyles();
+      stySel.value = cell.dataset.mxStyle;
+      loadPromptPreview();
+      var panel = document.querySelector('[data-stab-panel="prompts"]');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Lokalny escape — escapeHtml() zyje w drugim bloku skryptu, wiec nie polegamy
+    // na kolejnosci ladowania.
+    function esc(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    var CONN_STATUS = {
+      ok: { cls: 'green', label: '✓ Aktywne' },
+      missing_key: { cls: 'red', label: '✗ Brak klucza' },
+      missing_integration: { cls: 'amber', label: '⚠ Brak integracji' }
+    };
+
+    function renderConnections(list) {
+      var el = document.getElementById('settingsConnections');
+      if (!el) return;
+      if (!list.length) { el.innerHTML = '<p class="settings-info-text">Brak danych.</p>'; return; }
+      el.innerHTML = list.map(function(c) {
+        var st = CONN_STATUS[c.status] || { cls: '', label: c.status };
+        return '<div class="conn-card conn-card--' + esc(st.cls) + '">' +
+          '<div class="conn-card-head">' +
+            '<span class="conn-card-name">' + esc(c.label) + '</span>' +
+            '<span class="settings-badge settings-badge--' + esc(st.cls) + '">' + esc(st.label) + '</span>' +
+          '</div>' +
+          '<p class="conn-card-purpose">' + esc(c.purpose) + '</p>' +
+          (c.note ? '<p class="conn-card-note">' + esc(c.note) + '</p>' : '') +
+          '<div class="conn-card-env">' +
+            (c.masked ? '<code class="settings-key-mask">' + esc(c.masked) + '</code>' : '') +
+            (c.envVars || []).map(function(v) { return '<code class="conn-env-var">' + esc(v) + '</code>'; }).join('') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderModelSettings(models, pathLabels) {
+      var el = document.getElementById('settingsModels');
+      if (!el) return;
+      if (!models.length) { el.innerHTML = '<p class="settings-info-text">Brak danych.</p>'; return; }
+      var allPaths = ['upload', 'manual', 'auto'];
+
+      el.innerHTML = models.map(function(m) {
+        var badges = allPaths.map(function(p) {
+          var on = (m.paths || []).indexOf(p) !== -1;
+          return '<span class="path-chip' + (on ? '' : ' path-chip--off') + '">' + esc(pathLabels[p] || p) + '</span>';
+        }).join('');
+
+        var source = m.source === 'panel'
+          ? 'wybrane w panelu'
+          : (m.source === 'env' ? 'z pliku .env' : 'domyślne w aplikacji');
+
+        var cards = (m.options || []).map(function(o) {
+          var active = o.id === m.value;
+          return '<button type="button" class="model-card' + (active ? ' is-active' : '') + '"' +
+            ' data-model-setting="' + esc(m.key) + '" data-model-id="' + esc(o.id) + '">' +
+            '<span class="model-card-top">' +
+              '<span class="model-card-name">' + esc(o.label) + '</span>' +
+              (o.badge ? '<span class="model-card-badge">' + esc(o.badge) + '</span>' : '') +
+            '</span>' +
+            '<span class="model-card-desc">' + esc(o.description) + '</span>' +
+            '<span class="model-card-id">' + esc(o.id) + '</span>' +
+          '</button>';
+        }).join('');
+
+        return '<div class="model-group">' +
+          '<div class="model-group-head">' +
+            '<h4 class="model-group-title">' + esc(m.label) + '</h4>' +
+            '<div class="path-chips">' + badges + '</div>' +
+          '</div>' +
+          '<p class="settings-info-text">' + esc(m.hint) + '</p>' +
+          '<div class="model-cards">' + cards + '</div>' +
+          '<p class="model-source">Aktywne: <strong>' + esc(m.value) + '</strong> — ' + esc(source) +
+            ' · <code>' + esc(m.envVar) + '</code>' +
+            (m.envValue ? ' w .env = <code>' + esc(m.envValue) + '</code>' : ' nie ustawione w .env') +
+            (m.overrideValue ? ' <button type="button" class="model-reset" data-model-reset="' + esc(m.key) + '">przywróć .env</button>' : '') +
+          '</p>' +
+        '</div>';
+      }).join('');
+    }
+
+    function saveModelSetting(key, value) {
+      var status = document.getElementById('settingsModelsStatus');
+      if (status) { status.textContent = 'Zapisywanie…'; status.className = 'settings-status'; }
+      var payload = {}; payload[key] = value;
+      fetch('/api/settings/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ models: payload })
+      })
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+        .then(function(res) {
+          if (!res.ok) throw new Error(res.d.error || 'Zapis nie powiódł się');
+          if (status) { status.textContent = '✓ Zapisano — działa od razu, bez restartu.'; status.className = 'settings-status is-ok'; }
+          loadSettingsData();
+        })
+        .catch(function(e) {
+          if (status) { status.textContent = e.message; status.className = 'settings-status is-error'; }
+        });
+    }
+
+    document.addEventListener('click', function(ev) {
+      var card = ev.target.closest && ev.target.closest('[data-model-id]');
+      if (card) { saveModelSetting(card.dataset.modelSetting, card.dataset.modelId); return; }
+      var reset = ev.target.closest && ev.target.closest('[data-model-reset]');
+      if (reset) { saveModelSetting(reset.dataset.modelReset, ''); }
+    });
+
     function renderPriceTable(prices) {
       var el = document.getElementById('settingsPriceTable');
       if (!el) return;
@@ -5054,10 +5297,10 @@
         if (keyEl) keyEl.innerHTML = sys.openaiKeySet
           ? '<span class="settings-badge settings-badge--green">✓ Aktywny</span><code class="settings-key-mask">' + sys.openaiKeyMasked + '</code>'
           : '<span class="settings-badge settings-badge--red">✗ Brak klucza</span>';
-        var imgEl = document.getElementById('settingImageModel');
-        if (imgEl) imgEl.innerHTML = '<span class="settings-badge settings-badge--ink">' + sys.imageModel + '</span>';
-        var prmEl = document.getElementById('settingPromptModel');
-        if (prmEl) prmEl.innerHTML = '<span class="settings-badge settings-badge--ink">' + sys.promptModel + '</span>';
+        var pbEl = document.getElementById('settingPromptBuilder');
+        if (pbEl) pbEl.innerHTML = '<span class="settings-badge settings-badge--ink">' + esc(sys.imagePromptBuilder || '—') + '</span>';
+        renderConnections(sys.connections || []);
+        renderModelSettings(sys.models || [], sys.generatorPaths || {});
         var nodeEl = document.getElementById('settingNodeVersion');
         if (nodeEl) nodeEl.innerHTML = '<span class="settings-badge">' + sys.nodeVersion + '</span>';
         var llmEl = document.getElementById('settingLlmProviders');
@@ -5116,6 +5359,8 @@
         tab.classList.add('is-active');
         var panel = settingsModal.querySelector('[data-stab-panel="' + tab.dataset.stab + '"]');
         if (panel) panel.hidden = false;
+        // Macierz promptow ladujemy dopiero przy pierwszym wejsciu w zakladke.
+        if (tab.dataset.stab === 'prompts') loadPromptRoutes();
       });
     });
 

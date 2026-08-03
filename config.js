@@ -14,8 +14,17 @@ function parseLifestyleInset(raw) {
 const config = {
   // API Keys
   openaiKey: process.env.OPENAI_API_KEY,
-  /** Model czatu do tytułów / promptu obrazu (Chat Completions). */
-  openaiPromptModel: (process.env.OPENAI_PROMPT_MODEL || 'gpt-4o-mini').trim(),
+  /**
+   * Model czatu do tytułów i opisów sklepowych (Chat Completions).
+   *
+   * Getter, nie wartość stała — panel ustawień nadpisuje process.env w trakcie
+   * działania serwera, a odczyt przy każdym użyciu sprawia, że zmiana modelu
+   * działa bez restartu. Uwaga: ten model NIE pisze promptu do obrazu —
+   * ten składa szablon master-prompt-v1 (patrz src/promptRouter.js).
+   */
+  get openaiPromptModel() {
+    return (process.env.OPENAI_PROMPT_MODEL || 'gpt-4o-mini').trim();
+  },
   /** Zarezerwowane — aplikacja używa wyłącznie OpenAI do promptów (gdy jest klucz). */
   promptLlmDefault: 'openai',
   geminiKey: process.env.GEMINI_API_KEY,
