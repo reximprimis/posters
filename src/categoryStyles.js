@@ -35,6 +35,12 @@ const CATEGORIES = [
   'Muzyka i dźwięk',
   'Wellness i joga',
   'Symbole i harmonia',
+  // Dodane 2026-08-03 na podstawie researchu rynku wall-art.
+  // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
+  // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
+  'Japonia',
+  'Podróże i plakaty vintage',
+  'Grzyby i las',
 ];
 
 /** What is on the poster — generator categories only. */
@@ -75,6 +81,12 @@ const CATEGORY_DESCRIPTIONS = {
     'yoga, meditation, calm lifestyle, breath, balance, spa, slow living, soft morning, organic forms, quiet wellness',
   'Symbole i harmonia':
     'yin-yang, mandalas, balance, energy, zen, organic geometry, spiritual symbols in neutral aesthetic framing',
+  Japonia:
+    'torii gate, Mount Fuji, cherry blossom branch, koi carp, crane in flight, bamboo grove, zen garden raked gravel, stone lantern, misty Japanese mountains, stylised wave — Japanese motifs treated as calm fine art',
+  'Podróże i plakaty vintage':
+    'travel landmarks, national park vistas, canyons, alpine peaks, desert arches, coastal cliffs, retro travel-poster graphic language with bold simplified shapes and flat layered color — no lettering',
+  'Grzyby i las':
+    'mushrooms, toadstools, fern fronds, moss, forest floor detail, woodland undergrowth, tree bark, cottagecore forest mood, quiet damp woodland light',
 };
 
 const CATEGORY_STYLES = {
@@ -99,6 +111,9 @@ const CATEGORY_STYLES = {
   'Muzyka i dźwięk': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
   'Wellness i joga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'Symbole i harmonia': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
+  Japonia: ['Minimalism', 'Line art', 'Illustration', 'Photography'],
+  'Podróże i plakaty vintage': ['Illustration', 'Minimalism', 'Abstract', 'Photography'],
+  'Grzyby i las': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
 };
 
 /** Sales / room collections — tags only, never generator categories or output folders. */
@@ -137,9 +152,13 @@ const CATEGORY_ROOM_COLLECTIONS = {
   'Muzyka i dźwięk': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do kawiarni'],
   'Wellness i joga': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do gabinetu'],
   'Symbole i harmonia': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  Japonia: ['Do salonu', 'Do sypialni', 'Do gabinetu', 'Do biura', 'Do łazienki'],
+  'Podróże i plakaty vintage': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'Grzyby i las': ['Do salonu', 'Do sypialni', 'Do kuchni', 'Do pokoju dziecka', 'Do jadalni'],
 };
 
-const EXPECTED_ALLOWED_COMBINATIONS = 71;
+// 71 par bazowych + 12 z trzech kategorii dodanych 2026-08-03 (po 4 style kazda).
+const EXPECTED_ALLOWED_COMBINATIONS = 83;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).

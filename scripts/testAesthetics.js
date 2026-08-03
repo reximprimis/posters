@@ -114,8 +114,30 @@ check('kategorie wbudowane nie dostaja bloku CATEGORY FOCUS', () => {
   expectEqual(b.imagePrompt.includes('CATEGORY FOCUS'), false, 'blok nie powinien wystapic');
 });
 
-check('liczba par wbudowanych jest stala', () => {
-  expectEqual(cs.getBuiltInCategoryStylePairs().length, 71, 'pary wbudowane');
+check('liczba par wbudowanych zgadza sie z deklaracja', () => {
+  // Walidacja i tak rzuca przy niezgodnosci — tu pilnujemy, ze stala nie
+  // rozjechala sie po cichu z rzeczywista zawartoscia CATEGORY_STYLES.
+  expectEqual(cs.getBuiltInCategoryStylePairs().length, cs.EXPECTED_ALLOWED_COMBINATIONS, 'pary wbudowane');
+});
+
+check('nowe kategorie tematyczne maja dedykowany tryb promptu', () => {
+  const pr2 = require(path.join(__dirname, '..', 'src', 'promptRouter'));
+  for (const c of ['Japonia', 'Podróże i plakaty vintage', 'Grzyby i las']) {
+    const styles = cs.getAllowedStylesForCategory(c);
+    expectTrue(styles.length >= 3, `${c}: liczba stylow`);
+    for (const s of styles) {
+      const kind = pr2.getPromptRouteKind(c, s);
+      if (kind === 'core_fallback' || kind === 'style_generic') {
+        throw new Error(`${c} + ${s}: trasa ${kind}, oczekiwano dedykowanego trybu`);
+      }
+    }
+  }
+});
+
+check('Japonia to TEMAT, a japandi to ESTETYKA — nie mylimy osi', () => {
+  expectTrue(cs.isKnownCategory('Japonia'), 'Japonia jako kategoria');
+  expectEqual(cs.isKnownCategory('Japandi'), false, 'Japandi nie moze byc kategoria');
+  expectTrue(ae.isKnownAesthetic('japandi'), 'japandi jako estetyka');
 });
 
 check('wbudowana kategoria nie jest kategoria uzytkownika', () => {

@@ -100,6 +100,21 @@ Sea & beach mode: waves, shoreline, dunes, shells, lighthouses, calm coastal hor
 Forbidden: crowds, hotels, ads, signs, cheesy tourist stock look.
 `.trim(),
   'Sport i hobby': SPORT_HOBBY_MODE,
+  Japonia: `
+Japan category mode: one clear Japanese motif — torii gate, Mount Fuji, cherry blossom branch, koi carp, crane, bamboo, zen garden, stone lantern, or stylised wave.
+Treat it as calm fine art with restraint and generous empty space, never as a tourist souvenir or festival collage.
+Forbidden: kanji or any lettering, anime and manga characters, ninja and samurai kitsch, national flag, brand logos, crowded street scenes, neon signage.
+`.trim(),
+  'Podróże i plakaty vintage': `
+Travel poster mode: one iconic destination motif — national park vista, canyon, alpine peak, desert arch, coastal cliff, or lighthouse.
+Use retro travel-poster graphic language: bold simplified shapes, flat layered color bands, confident silhouettes, gentle grain.
+Forbidden: ALL lettering and place names (the poster must work without text), brand logos, tourists and crowds, hotels, road signs, modern vehicles, stock-photo look.
+`.trim(),
+  'Grzyby i las': `
+Mushroom & forest mode: mushrooms, toadstools, ferns, moss, bark, forest floor detail — cottagecore woodland calm.
+Botanical accuracy with soft damp light; intimate close view rather than a wide landscape.
+Forbidden: text and field-guide labels, human hands, baskets and foraging props, psychedelic or drug references, cartoon faces on mushrooms.
+`.trim(),
 };
 
 const CATEGORY_STYLE_DIRECTIONS = {
@@ -174,6 +189,36 @@ const CATEGORY_STYLE_DIRECTIONS = {
       'Minimal sports object silhouette — ball, racket, or hobby item as single hero form.',
     'Line art':
       'Elegant sports equipment line drawing, full object visible, no brand markings.',
+  },
+  Japonia: {
+    Minimalism:
+      'One Japanese motif reduced to its essence — few shapes, muted ink tones, very generous empty space, sumi-e restraint.',
+    'Line art':
+      'Fine single-weight ink contour of a Japanese motif on warm paper, confident uninterrupted stroke, nothing cropped.',
+    Illustration:
+      'Soft washed Japanese scene with layered flat tones and gentle gradient mist, ukiyo-e influence without lettering or seals.',
+    Photography:
+      'Quiet editorial photograph of a Japanese subject in soft diffused light, calm depth, believable natural materials.',
+  },
+  'Podróże i plakaty vintage': {
+    Illustration:
+      'Retro travel-poster illustration: bold simplified landforms, flat layered color bands, confident silhouette, subtle print grain — no lettering.',
+    Minimalism:
+      'Destination reduced to a few clean geometric bands and one recognisable landform, muted retro palette.',
+    Abstract:
+      'Landscape abstracted into overlapping color planes and arcs suggesting a place rather than depicting it.',
+    Photography:
+      'Editorial destination photograph with clean horizon and no people, poster-like clarity, natural light.',
+  },
+  'Grzyby i las': {
+    Photography:
+      'Close editorial macro of mushrooms or forest floor, soft damp light, shallow depth, believable woodland detail.',
+    Illustration:
+      'Botanical-plate style mushroom or fern illustration, accurate forms, muted earthy palette, no labels.',
+    Minimalism:
+      'Single simplified mushroom or fern form, restrained earthy tones, large calm negative space.',
+    'Line art':
+      'Delicate ink contour of mushroom caps, gills, or fern fronds on cream, full form visible.',
   },
 };
 
