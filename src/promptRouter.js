@@ -1,4 +1,5 @@
-const { assertCategoryStyleAllowed } = require('./categoryStyles');
+const { assertCategoryStyleAllowed, isUserCategory, getCategoryDescription } = require('./categoryStyles');
+const { applyAestheticToPrompt, isKnownAesthetic } = require('./aesthetics');
 const { CATEGORY_PROMPT_MODES } = require('./categoryPromptModes');
 const builders = require('./promptBuilders');
 const {
@@ -207,10 +208,10 @@ function buildImagePromptForRoute({ category, style, title }) {
 }
 
 /**
- * @param {{ category: string, style: string, title: string }} params
- * @returns {{ imagePrompt: string, routingPath: string, usedFallbackPromptBuilder: boolean, routeKind: string }}
+ * @param {{ category: string, style: string, title: string, aesthetic?: string }} params
+ * @returns {{ imagePrompt: string, routingPath: string, usedFallbackPromptBuilder: boolean, routeKind: string, aesthetic: string }}
  */
-function routePromptBuildResult({ category, style, title }) {
+function routePromptBuildResult({ category, style, title, aesthetic }) {
   assertCategoryStyleAllowed(category, style);
   const categoryKey = String(category || '').trim();
   const styleKey = String(style || '').trim();
@@ -224,13 +225,34 @@ function routePromptBuildResult({ category, style, title }) {
     console.warn(`    ⚠ CORE_FALLBACK used for category/style: ${categoryKey} + ${styleKey}`);
   }
 
-  const imagePrompt = buildImagePromptForRoute({ category: categoryKey, style: styleKey, title });
+  let basePrompt = buildImagePromptForRoute({ category: categoryKey, style: styleKey, title });
+
+  // Kategorie uzytkownika nie maja dedykowanego buildera ani wlasnej puli tytulow,
+  // a czesc sciezek (np. Minimalism) wywodzi temat wylacznie z tytulu. Bez tego
+  // bloku tozsamosc takiej kategorii bylaby gubiona. Kategorii wbudowanych
+  // nie dotykamy - ich prompty zostaja bajt w bajt takie same.
+  const userCategory = isUserCategory(categoryKey);
+  if (userCategory) {
+    const focus = getCategoryDescription(categoryKey);
+    if (focus) {
+      basePrompt = `${basePrompt}\n\nCATEGORY FOCUS — ${categoryKey.toUpperCase()}:\nThe subject must clearly belong to this category: ${focus}. Keep this identity unmistakable while respecting the composition and safe print framing rules above.`;
+    }
+  }
+
+  // Estetyka doklejana na koncu jako blok nadpisujacy palete i nastroj.
+  // Bez estetyki prompt zostaje identyczny co do bajta.
+  const aestheticId = isKnownAesthetic(aesthetic) ? String(aesthetic).trim() : '';
+  if (aestheticId) {
+    console.log(`    → Aesthetic: ${aestheticId}`);
+  }
+  const imagePrompt = applyAestheticToPrompt(basePrompt, aestheticId);
 
   return {
     imagePrompt,
     routingPath,
     usedFallbackPromptBuilder,
     routeKind,
+    aesthetic: aestheticId,
   };
 }
 
@@ -239,10 +261,16 @@ function routePromptBuilder(params) {
   return routePromptBuildResult(params).imagePrompt;
 }
 
+/** Ile znakow dokłada estetyka — do walidacji limitu promptu w UI. */
+function measureAestheticOverhead(aestheticId) {
+  return applyAestheticToPrompt('', aestheticId).length;
+}
+
 module.exports = {
   routePromptBuilder,
   routePromptBuildResult,
   getRoutingPathLabel,
   getPromptRouteKind,
   usesStructuredPrompt,
+  measureAestheticOverhead,
 };

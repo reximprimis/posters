@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Testy katalogu modeli i precedencji konfiguracji.
  *
  * Najwazniejszy przypadek: wyczyszczenie nadpisania musi przywrocic wartosc
@@ -63,7 +63,14 @@ check('model tekstowy dotyczy wszystkich trzech sciezek', () => {
 console.log('\nWALIDACJA:');
 
 check('znany model przechodzi', () => {
-  if (!catalog.isKnownModel('imageModel', 'dall-e-3')) throw new Error('dall-e-3 powinien byc znany');
+  if (!catalog.isKnownModel('imageModel', 'gpt-image-1.5')) throw new Error('gpt-image-1.5 powinien byc znany');
+});
+
+check('dall-e-3 jest POZA katalogiem', () => {
+  // Jego budzet promptu to 1436 znakow, a prompty z routera maja 2800-3500.
+  if (catalog.isKnownModel('imageModel', 'dall-e-3')) {
+    throw new Error('dall-e-3 nie moze byc wybieralny — generowanie by sie wywalilo');
+  }
 });
 
 check('nieznany model jest odrzucany', () => {
@@ -83,8 +90,8 @@ check('bez nadpisania wygrywa .env', () => {
 });
 
 check('nadpisanie z panelu wygrywa z .env', () => {
-  const r = catalog.resolveModelSetting('imageModel', { imageModel: 'dall-e-3' });
-  expectEqual(r.value, 'dall-e-3', 'wartosc');
+  const r = catalog.resolveModelSetting('imageModel', { imageModel: 'gpt-image-1.5' });
+  expectEqual(r.value, 'gpt-image-1.5', 'wartosc');
   expectEqual(r.source, 'panel', 'zrodlo');
   expectEqual(r.envValue, 'gpt-image-2', 'wartosc z .env nadal widoczna');
 });
@@ -98,23 +105,28 @@ check('nieznane nadpisanie jest ignorowane, nie wysadza panelu', () => {
 console.log('\nZAPIS DO ENV:');
 
 check('nadpisanie trafia do process.env', () => {
-  catalog.applyModelOverridesToEnv({ imageModel: 'dall-e-3' });
-  expectEqual(process.env.IMAGE_GENERATION_MODEL, 'dall-e-3', 'env po nadpisaniu');
+  catalog.applyModelOverridesToEnv({ imageModel: 'gpt-image-1.5' });
+  expectEqual(process.env.IMAGE_GENERATION_MODEL, 'gpt-image-1.5', 'env po nadpisaniu');
 });
 
 check('wyczyszczenie nadpisania przywraca .env', () => {
-  catalog.applyModelOverridesToEnv({ imageModel: 'dall-e-3' });
+  catalog.applyModelOverridesToEnv({ imageModel: 'gpt-image-1.5' });
   catalog.applyModelOverridesToEnv({});
   expectEqual(process.env.IMAGE_GENERATION_MODEL, 'gpt-image-2', 'env po wyczyszczeniu');
 });
 
 check('envValue nie dryfuje po wielokrotnych zmianach', () => {
+  // Dwie ROZNE wartosci pod rzad — inaczej test nie wykryje dryfu wartosci bazowej.
   catalog.applyModelOverridesToEnv({ imageModel: 'gpt-image-1.5' });
-  catalog.applyModelOverridesToEnv({ imageModel: 'dall-e-3' });
-  const r = catalog.resolveModelSetting('imageModel', { imageModel: 'dall-e-3' });
+  catalog.applyModelOverridesToEnv({ imageModel: 'gpt-image-2' });
+  catalog.applyModelOverridesToEnv({ imageModel: 'gpt-image-1.5' });
+  const r = catalog.resolveModelSetting('imageModel', { imageModel: 'gpt-image-1.5' });
   expectEqual(r.envValue, 'gpt-image-2', 'wartosc bazowa z .env');
+  expectEqual(r.value, 'gpt-image-1.5', 'wartosc aktywna');
   catalog.applyModelOverridesToEnv({});
+  expectEqual(process.env.IMAGE_GENERATION_MODEL, 'gpt-image-2', 'powrot do .env');
 });
 
 console.log(`\n${pass} przeszlo, ${fail} nie przeszlo`);
 process.exit(fail === 0 ? 0 : 1);
+

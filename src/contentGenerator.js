@@ -16,8 +16,8 @@ const {
   filterValidCategoryTitles,
 } = require('./categoryTitlePools');
 
-function buildCoreCreativePrompt({ title, category, style }) {
-  return routePromptBuildResult({ category, style, title });
+function buildCoreCreativePrompt({ title, category, style, aesthetic }) {
+  return routePromptBuildResult({ category, style, title, aesthetic });
 }
 
 /** When no LLM API is configured, still produce a real DALL-E poster prompt (not a raw keyword list from config). */
@@ -613,7 +613,7 @@ Generate now:`;
 
   async generateImagePrompt(title, category, style, options = {}) {
     assertCategoryStyleAllowed(category, style);
-    const routed = buildCoreCreativePrompt({ title, category, style });
+    const routed = buildCoreCreativePrompt({ title, category, style, aesthetic: options.aesthetic });
     const preserveStructure = usesStructuredPrompt(category, style);
     const text = preserveStructure
       ? routed.imagePrompt
@@ -621,6 +621,7 @@ Generate now:`;
     return {
       text,
       routingPath: routed.routingPath,
+      aesthetic: routed.aesthetic,
       usedFallbackPromptBuilder: routed.usedFallbackPromptBuilder,
       promptLlm: {
         promptLlmProvider: 'template',

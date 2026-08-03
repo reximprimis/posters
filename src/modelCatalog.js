@@ -35,12 +35,10 @@ const IMAGE_MODELS = [
     description: 'Poprzednia generacja. Szybszy i tańszy, słabiej trzyma marginesy bezpieczeństwa.',
     badge: '',
   },
-  {
-    id: 'dall-e-3',
-    label: 'DALL·E 3',
-    description: 'Starszy model. Inny limit długości promptu i brak trybu edycji obrazu.',
-    badge: 'LEGACY',
-  },
+  // DALL·E 3 celowo POZA katalogiem. Jego limit promptu to 4000 znakow, z czego
+  // 2564 zjada staly narzut, zostawiajac 1436 znakow na tresc. Nasze prompty
+  // z routera maja 2800-3500 znakow, wiec generowanie by sie wywalilo.
+  // Gdyby kiedys wrocil, najpierw trzeba skrocic warstwy promptu.
 ];
 
 const TEXT_MODELS = [

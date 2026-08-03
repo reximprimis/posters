@@ -3102,3 +3102,15 @@ code {
 .matrix-cell--category_style_prompt { background: var(--f-cream); }
 .matrix-cell--style_generic { background: var(--f-pink); }
 .matrix-cell.is-fallback { background: #fce4e4; border-color: #f8baba; }
+
+/* Wybor stylow przy dodawaniu kategorii */
+.cat-styles-pick { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.cat-styles-label { font-size: 12px; color: #666; }
+.cat-styles-boxes { display: flex; flex-wrap: wrap; gap: 10px; }
+.cat-style-box {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 13px;
+  padding: 5px 10px; border: 1px solid var(--f-hairline); border-radius: var(--f-r-pill);
+  cursor: pointer; background: var(--f-canvas);
+}
+.cat-style-box:has(input:checked) { background: var(--f-lime); border-color: var(--f-primary); }
+.cat-styles-note { font-size: 11px; color: #8a5300; }

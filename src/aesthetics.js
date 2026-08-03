@@ -1,0 +1,162 @@
+/**
+ * ESTETYKA — trzecia os taksonomii generatora.
+ *
+ *   KATEGORIA  = co jest na plakacie (temat)
+ *   STYL       = jak jest wykonany (technika)
+ *   ESTETYKA   = w jakim nastroju i palecie (ten plik)
+ *
+ * Estetyka jest OPCJONALNA i ortogonalna wobec dwoch pozostalych osi. Nie zmienia
+ * tematu ani techniki - nadpisuje wylacznie palete, nastroj i fakture.
+ *
+ * Powod istnienia: trendy typu Japandi czy Boho nie sa ani tematem, ani technika.
+ * Bez tej osi ladowaly w opisach kategorii - patrz "Plakaty dla dzieci", gdzie
+ * do opisu tematu wpisano "Boho-Scandi ... muted earthy pastels on cream".
+ *
+ * Zestaw oparty na researchu rynku wall-art na 2026 (Etsy / POD).
+ */
+
+const AESTHETICS = [
+  {
+    id: 'japandi',
+    label: 'Japandi',
+    description: 'Japoński minimalizm z nordyckim ciepłem. Glina, kamień, piasek, dużo pustej przestrzeni.',
+    badge: 'TOP 2026',
+    palette:
+      'warm clay, stone gray, sand beige, chalk white, muted ash, soft charcoal — low saturation throughout',
+    mood:
+      'serene restraint, quiet warmth, uncluttered calm, natural materials, generous negative space, balanced asymmetry',
+    texture: 'subtle paper grain, matte natural surfaces, soft diffused light, no gloss',
+    avoid: 'bright saturated color, high contrast, ornament, glossy finish, busy detail',
+  },
+  {
+    id: 'wabi-sabi',
+    label: 'Wabi-sabi',
+    description: 'Piękno niedoskonałości i upływu czasu. Surowe faktury, nieregularne krawędzie.',
+    badge: 'TOP 2026',
+    palette: 'raw clay, weathered stone, oatmeal, faded umber, pale ochre, smoke gray',
+    mood:
+      'imperfect and organic, quiet imperfection, traces of age and erosion, handmade irregularity, contemplative stillness',
+    texture:
+      'visible material texture, uneven organic edges, plaster and raw clay surface, gentle wear, tactile depth',
+    avoid: 'crisp geometry, machine precision, glossy surfaces, vivid color, symmetry',
+  },
+  {
+    id: 'boho',
+    label: 'Boho',
+    description: 'Ciepłe ziemiste barwy, naturalne włókna, swobodny nastrój. Sprzedaje się w zestawach.',
+    badge: 'BESTSELLER',
+    palette: 'terracotta, ochre, rust, warm cream, sage green, dusty rose, sun-baked earth tones',
+    mood:
+      'relaxed bohemian warmth, sun-washed and inviting, natural fibers, handcrafted feel, free-spirited but calm',
+    texture: 'woven and fibrous texture, soft matte finish, warm natural light',
+    avoid: 'cool blue tones, corporate minimalism, neon, high-gloss, sterile precision',
+  },
+  {
+    id: 'quiet-luxury',
+    label: 'Quiet luxury',
+    description: 'Stonowana elegancja: akwarelowe przygaszenia w kremie, szałwii i ciepłym beżu.',
+    badge: '',
+    palette: 'cream, sage green, warm beige, soft taupe, pale ivory, muted stone',
+    mood:
+      'understated elegance, refined restraint, expensive simplicity, gallery calm, soft watercolor washes',
+    texture: 'delicate watercolor bleed, fine paper tooth, gentle tonal gradation',
+    avoid: 'loud color, heavy contrast, visible branding, decorative excess, harsh lines',
+  },
+  {
+    id: 'mid-century',
+    label: 'Mid-century',
+    description: 'Ziemiste tony lat 70., uproszczona geometria, retro ciepło.',
+    badge: '',
+    palette: 'muted orange, warm brown, mustard yellow, avocado green, burnt sienna, cream',
+    mood:
+      'retro modernist confidence, simplified geometric forms, flat graphic shapes, 1960s–70s design language, optimistic warmth',
+    texture: 'flat screen-print color areas, slight print misregistration, matte finish',
+    avoid: 'photorealism, gradients, digital gloss, cool pastels, fine detail',
+  },
+  {
+    id: 'scandi',
+    label: 'Skandynawski',
+    description: 'Jasno, przewiewnie, chłodne neutralne barwy i prostota formy.',
+    badge: '',
+    palette: 'soft white, pale gray, birch beige, muted sage, cool light blue, gentle black accents',
+    mood:
+      'airy brightness, functional simplicity, hygge calm, clean lines, plenty of light and open space',
+    texture: 'smooth matte surfaces, pale wood grain, even diffused daylight',
+    avoid: 'heavy saturation, dark heavy tones, ornate detail, visual clutter',
+  },
+];
+
+const BY_ID = new Map(AESTHETICS.map((a) => [a.id, a]));
+
+/** @returns {boolean} */
+function isKnownAesthetic(id) {
+  return BY_ID.has(String(id || '').trim());
+}
+
+/** @returns {object|null} */
+function getAesthetic(id) {
+  return BY_ID.get(String(id || '').trim()) || null;
+}
+
+/** Lista dla UI — bez pol promptowych, ktore uzytkownika nie interesuja. */
+function listAestheticsForUi() {
+  return AESTHETICS.map((a) => ({
+    id: a.id,
+    label: a.label,
+    description: a.description,
+    badge: a.badge,
+    palette: a.palette,
+  }));
+}
+
+/**
+ * Blok nadpisujacy dolaczany na koncu promptu.
+ *
+ * Swiadomie NIE modyfikuje istniejacego tekstu - doklejamy sie na koncu, wiec
+ * prompt bez estetyki zostaje bajt w bajt taki sam jak wczesniej. Model traktuje
+ * pozniejsze instrukcje jako nadrzedne, a slowo OVERRIDE czyni to jednoznacznym.
+ *
+ * @param {string} aestheticId
+ * @returns {string} pusty string gdy brak lub nieznana estetyka
+ */
+function buildAestheticBlock(aestheticId) {
+  const a = getAesthetic(aestheticId);
+  if (!a) return '';
+  return [
+    `AESTHETIC OVERRIDE — ${a.label.toUpperCase()}:`,
+    `This aesthetic takes precedence over any earlier color palette and mood direction, but must NOT change the subject, the composition rules, or the safe print framing above.`,
+    `Color palette: ${a.palette}.`,
+    `Mood and character: ${a.mood}.`,
+    `Surface and texture: ${a.texture}.`,
+    `Avoid: ${a.avoid}.`,
+  ].join('\n');
+}
+
+/**
+ * Dokleja estetyke do gotowego promptu.
+ * @param {string} prompt
+ * @param {string} [aestheticId]
+ * @returns {string}
+ */
+function applyAestheticToPrompt(prompt, aestheticId) {
+  const block = buildAestheticBlock(aestheticId);
+  if (!block) return prompt;
+  return `${prompt}\n\n${block}`;
+}
+
+/** Fragment do promptu tytulow, zeby nazwy pasowaly do nastroju. */
+function describeAestheticForTitles(aestheticId) {
+  const a = getAesthetic(aestheticId);
+  if (!a) return '';
+  return `Aesthetic direction: ${a.label} — ${a.mood}.`;
+}
+
+module.exports = {
+  AESTHETICS,
+  isKnownAesthetic,
+  getAesthetic,
+  listAestheticsForUi,
+  buildAestheticBlock,
+  applyAestheticToPrompt,
+  describeAestheticForTitles,
+};

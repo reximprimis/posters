@@ -141,15 +141,70 @@ const CATEGORY_ROOM_COLLECTIONS = {
 
 const EXPECTED_ALLOWED_COMBINATIONS = 71;
 
+/**
+ * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).
+ *
+ * Wbudowane kategorie maja dedykowane buildery promptow i sa niezmienne.
+ * Kategorie dodane z panelu dzialaja od razu, ale na promptcie generycznym —
+ * ich poziom jest jawnie oznaczony w UI, zeby nikt sie nie oszukal co do jakosci.
+ *
+ * Wczytujemy je tutaj, a nie w preview.js, bo dzieki temu KAZDE wejscie do
+ * systemu (serwer, CLI `node index.js`, skrypty) widzi ten sam zestaw kategorii.
+ * Inaczej batch z terminala nie znalby kategorii dodanej w przegladarce.
+ */
+const USER_CATEGORIES = new Map();
+
+function loadUserCategories() {
+  USER_CATEGORIES.clear();
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const settingsPath = path.resolve(__dirname, '..', 'user_settings.json');
+    if (!fs.existsSync(settingsPath)) return;
+    const raw = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    const extras = Array.isArray(raw && raw.extraCategories) ? raw.extraCategories : [];
+    for (const ec of extras) {
+      const name = String((ec && ec.name) || '').trim();
+      if (!name || Object.prototype.hasOwnProperty.call(CATEGORY_STYLES, name)) continue;
+      const styles = (Array.isArray(ec.styles) ? ec.styles : []).filter((s) => GLOBAL_STYLES.includes(s));
+      USER_CATEGORIES.set(name, {
+        name,
+        description: String(ec.hint || '').trim(),
+        // Bez wyboru stylow kategoria byla martwa — domyslnie dajemy bezpieczny zestaw.
+        styles: styles.length ? styles : ['Photography', 'Minimalism'],
+      });
+    }
+  } catch (_) {
+    // Uszkodzony user_settings.json nie moze wywalic calego generatora.
+  }
+}
+
+loadUserCategories();
+
+/** Po dodaniu lub usunieciu kategorii w panelu. */
+function reloadUserCategories() {
+  loadUserCategories();
+  return USER_CATEGORIES.size;
+}
+
+function isUserCategory(category) {
+  return USER_CATEGORIES.has(String(category || '').trim());
+}
+
+function listUserCategories() {
+  return [...USER_CATEGORIES.values()].map((c) => ({ ...c, styles: [...c.styles] }));
+}
+
 function getAllowedStylesForCategory(category) {
   const key = String(category || '').trim();
-  const list = CATEGORY_STYLES[key];
+  const list = CATEGORY_STYLES[key] || (USER_CATEGORIES.get(key) || {}).styles;
   if (!Array.isArray(list)) return [];
   return list.filter((s) => GLOBAL_STYLES.includes(s));
 }
 
 function isKnownCategory(category) {
-  return Object.prototype.hasOwnProperty.call(CATEGORY_STYLES, String(category || '').trim());
+  const key = String(category || '').trim();
+  return Object.prototype.hasOwnProperty.call(CATEGORY_STYLES, key) || USER_CATEGORIES.has(key);
 }
 
 function isStyleAllowedForCategory(category, style) {
@@ -170,20 +225,34 @@ function assertCategoryStyleAllowed(category, style) {
   }
 }
 
-function getAllAllowedCategoryStylePairs() {
+/** Pary wbudowane — stala liczba, pilnowana walidacja. */
+function getBuiltInCategoryStylePairs() {
   return Object.entries(CATEGORY_STYLES).flatMap(([category, styles]) =>
-    (Array.isArray(styles) ? styles : []).map((style) => ({ category, style }))
+    (Array.isArray(styles) ? styles : []).map((style) => ({ category, style, builtIn: true }))
   );
 }
 
+function getAllAllowedCategoryStylePairs() {
+  const userPairs = [...USER_CATEGORIES.values()].flatMap((c) =>
+    c.styles.map((style) => ({ category: c.name, style, builtIn: false }))
+  );
+  return [...getBuiltInCategoryStylePairs(), ...userPairs];
+}
+
 function validateAllowedPairsCount(expected = EXPECTED_ALLOWED_COMBINATIONS) {
-  const actual = getAllAllowedCategoryStylePairs().length;
+  // Liczymy WYLACZNIE pary wbudowane — kategorie uzytkownika sa zmienne
+  // i nie moga wywalac startu aplikacji przy zmianie ich liczby.
+  const actual = getBuiltInCategoryStylePairs().length;
   if (actual !== expected) {
     throw new Error(
       `CATEGORY_STYLES mismatch. Expected ${expected} allowed combinations, got ${actual}.`
     );
   }
-  console.log(`✓ CATEGORY_STYLES validation OK: ${actual} allowed combinations`);
+  const userCount = USER_CATEGORIES.size;
+  console.log(
+    `✓ CATEGORY_STYLES validation OK: ${actual} allowed combinations` +
+      (userCount ? ` (+ ${userCount} kategorii użytkownika)` : '')
+  );
 }
 
 function assertExpectedCombinationCount(expected = EXPECTED_ALLOWED_COMBINATIONS) {
@@ -211,13 +280,21 @@ function getRoomCollectionsForCategory(category) {
 }
 
 function getCategoryDescription(category) {
-  return CATEGORY_DESCRIPTIONS[String(category || '').trim()] || '';
+  const key = String(category || '').trim();
+  if (CATEGORY_DESCRIPTIONS[key]) return CATEGORY_DESCRIPTIONS[key];
+  // Podpowiedz podana przy dodawaniu kategorii trafia realnie do promptu —
+  // wczesniej byla zbierana w UI i nigdzie nieuzywana.
+  const user = USER_CATEGORIES.get(key);
+  return user ? user.description : '';
 }
 
 function buildCategoriesConfigObject() {
   const out = {};
   for (const cat of CATEGORIES) {
     out[cat] = getCategoryDescription(cat);
+  }
+  for (const c of USER_CATEGORIES.values()) {
+    out[c.name] = c.description;
   }
   return out;
 }
@@ -234,6 +311,10 @@ module.exports = {
   EXPECTED_ALLOWED_COMBINATIONS,
   getAllowedStylesForCategory,
   isKnownCategory,
+  isUserCategory,
+  listUserCategories,
+  reloadUserCategories,
+  getBuiltInCategoryStylePairs,
   isStyleAllowedForCategory,
   assertCategoryStyleAllowed,
   getAllAllowedCategoryStylePairs,

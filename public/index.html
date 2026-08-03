@@ -4592,6 +4592,7 @@
               '<div class="prompt-picker">' +
                 '<label class="prompt-picker-field"><span>Kategoria</span><select id="promptCategory"></select></label>' +
                 '<label class="prompt-picker-field"><span>Styl</span><select id="promptStyle"></select></label>' +
+                '<label class="prompt-picker-field"><span>Estetyka (trend)</span><select id="promptAesthetic"></select></label>' +
                 '<label class="prompt-picker-field"><span>Przykładowy tytuł</span><input id="promptTitle" type="text" value="Przykładowy Tytuł" /></label>' +
               '</div>' +
               '<div id="promptRouteInfo" class="prompt-route"></div>' +
@@ -4615,7 +4616,17 @@
               '<div class="settings-add-form">' +
                 '<input id="newCategoryName" class="settings-input" type="text" placeholder="Nazwa kategorii (np. Śluby i uroczystości)" />' +
                 '<input id="newCategoryHint" class="settings-input" type="text" placeholder="Opis dla AI (po angielsku, opcjonalnie)" />' +
-                '<button id="btnAddCategory" class="settings-add-btn">Dodaj kategorię</button>' +
+                '<div class="cat-styles-pick">' +
+              '<span class="cat-styles-label">Style, które ta kategoria ma obsługiwać</span>' +
+              '<div class="cat-styles-boxes">' +
+                ['Photography','Minimalism','Abstract','Illustration','Line art'].map(function(s) {
+                  var on = (s === 'Photography' || s === 'Minimalism');
+                  return '<label class="cat-style-box"><input type="checkbox" class="new-cat-style" value="' + s + '"' + (on ? ' checked' : '') + ' /> ' + s + '</label>';
+                }).join('') +
+              '</div>' +
+              '<span class="cat-styles-note">Kategoria dodana tutaj działa od razu, ale na promptcie ogólnym. Zakładka Prompty pokazuje jej poziom.</span>' +
+            '</div>' +
+            '<button id="btnAddCategory" class="settings-add-btn">Dodaj kategorię</button>' +
               '</div>' +
               '<p class="settings-add-feedback" id="categoryFeedback"></p>' +
             '</section>' +
@@ -5084,6 +5095,18 @@
         if (stySel) stySel.addEventListener('change', loadPromptPreview);
         var titleInput = document.getElementById('promptTitle');
         if (titleInput) titleInput.addEventListener('change', loadPromptPreview);
+        var aeSel = document.getElementById('promptAesthetic');
+        if (aeSel) {
+          aeSel.addEventListener('change', loadPromptPreview);
+          fetch('/api/aesthetics', { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              aeSel.innerHTML = '<option value="">— bez estetyki (jak dotąd) —</option>' +
+                (d.aesthetics || []).map(function(a) {
+                  return '<option value="' + esc(a.id) + '">' + esc(a.label) + (a.badge ? ' · ' + esc(a.badge) : '') + '</option>';
+                }).join('');
+            });
+        }
       }
       syncPromptStyles();
 
@@ -5121,9 +5144,11 @@
       var out = document.getElementById('promptPreviewText');
       if (!catSel || !stySel || !catSel.value || !stySel.value) return;
 
+      var aeSel = document.getElementById('promptAesthetic');
       var url = '/api/prompts/preview?category=' + encodeURIComponent(catSel.value) +
         '&style=' + encodeURIComponent(stySel.value) +
-        '&title=' + encodeURIComponent((titleInput && titleInput.value) || 'Przykładowy Tytuł');
+        '&title=' + encodeURIComponent((titleInput && titleInput.value) || 'Przykładowy Tytuł') +
+        '&aesthetic=' + encodeURIComponent((aeSel && aeSel.value) || '');
 
       if (out) out.textContent = 'Ładowanie…';
       fetch(url, { cache: 'no-store' })
@@ -5133,6 +5158,8 @@
           if (info) {
             info.innerHTML = '<span class="settings-badge settings-badge--' + (d.isFallback ? 'amber' : 'green') + '">' +
                 esc(d.routeLabel) + '</span>' +
+              (d.isUserCategory ? '<span class="settings-badge settings-badge--amber">kategoria własna · prompt ogólny</span>' : '') +
+              (d.aesthetic ? '<span class="settings-badge settings-badge--ink">estetyka: ' + esc(d.aesthetic) + '</span>' : '') +
               '<code class="prompt-route-path">' + esc(d.routingPath) + '</code>' +
               '<span class="prompt-route-len">' + d.length + ' znaków · szablon ' + esc(d.builder) + '</span>';
           }
@@ -5370,13 +5397,15 @@
       var hint = document.getElementById('newCategoryHint').value.trim();
       var fb = document.getElementById('categoryFeedback');
       if (!name) { fb.textContent = 'Wpisz nazwę kategorii.'; fb.className = 'settings-add-feedback settings-add-feedback--error'; return; }
+      var styles = [].slice.call(document.querySelectorAll('.new-cat-style:checked')).map(function(c) { return c.value; });
+      if (!styles.length) { fb.textContent = 'Zaznacz przynajmniej jeden styl — bez tego kategoria nie wygeneruje nic.'; fb.className = 'settings-add-feedback settings-add-feedback--error'; return; }
       fetch('/api/user-settings/categories/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, hint: hint }),
+        body: JSON.stringify({ name: name, hint: hint, styles: styles }),
       }).then(function(r) { return r.json(); }).then(function(d) {
         if (d.ok) {
-          fb.textContent = '✓ Kategoria „' + name + '" dodana.';
+          fb.textContent = '✓ Kategoria „' + name + '" dodana (' + styles.join(', ') + ').';
           fb.className = 'settings-add-feedback settings-add-feedback--ok';
           document.getElementById('newCategoryName').value = '';
           document.getElementById('newCategoryHint').value = '';

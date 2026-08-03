@@ -1566,16 +1566,27 @@ app.post('/api/user-settings', (req, res) => {
 /** Add a new category */
 app.post('/api/user-settings/categories/add', (req, res) => {
   try {
-    const { name, hint } = req.body || {};
+    const { name, hint, styles } = req.body || {};
     if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Brak nazwy kategorii' });
     const us = readUserSettings();
     const extras = Array.isArray(us.extraCategories) ? us.extraCategories : [];
     if (config.categories[name.trim()] || extras.find(c => c.name === name.trim())) {
       return res.status(409).json({ ok: false, error: 'Kategoria już istnieje' });
     }
-    extras.push({ name: name.trim(), hint: (hint || '').trim() });
+    // Bez stylow kategoria byla martwa - generowanie zwracalo "Unknown category".
+    const picked = (Array.isArray(styles) ? styles : [])
+      .map((s) => String(s || '').trim())
+      .filter((s) => GLOBAL_STYLES.includes(s));
+    const entry = {
+      name: name.trim(),
+      hint: (hint || '').trim(),
+      styles: picked.length ? picked : ['Photography', 'Minimalism'],
+    };
+    extras.push(entry);
     writeUserSettings({ extraCategories: extras });
-    res.json({ ok: true, category: { name: name.trim(), hint: (hint || '').trim() } });
+    // Rdzen taksonomii musi zobaczyc nowa kategorie od razu, bez restartu.
+    require('./src/categoryStyles').reloadUserCategories();
+    res.json({ ok: true, category: entry });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
@@ -1588,6 +1599,7 @@ app.delete('/api/user-settings/categories/:name', (req, res) => {
     const us = readUserSettings();
     const extras = (us.extraCategories || []).filter(c => c.name !== name);
     writeUserSettings({ extraCategories: extras });
+    require('./src/categoryStyles').reloadUserCategories();
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
@@ -1815,18 +1827,25 @@ app.get('/api/prompts/routes', (req, res) => {
   }
 });
 
+/** Katalog estetyk — trzecia oś taksonomii (paleta i nastrój). */
+app.get('/api/aesthetics', (req, res) => {
+  const { listAestheticsForUi } = require('./src/aesthetics');
+  res.json({ ok: true, aesthetics: listAestheticsForUi() });
+});
+
 /** Pełny tekst promptu dla jednej pary kategoria + styl. Bez wywołań API. */
 app.get('/api/prompts/preview', (req, res) => {
   try {
     const category = String(req.query.category || '').trim();
     const style = String(req.query.style || '').trim();
     const title = String(req.query.title || '').trim() || 'Przykładowy Tytuł';
+    const aesthetic = String(req.query.aesthetic || '').trim();
     if (!category || !style) {
       return res.status(400).json({ error: 'Wymagane parametry: category, style' });
     }
 
     const { routePromptBuildResult } = require('./src/promptRouter');
-    const built = routePromptBuildResult({ category, style, title });
+    const built = routePromptBuildResult({ category, style, title, aesthetic });
 
     res.json({
       ok: true,
@@ -1837,6 +1856,8 @@ app.get('/api/prompts/preview', (req, res) => {
       routeLabel: PROMPT_ROUTE_LABELS[built.routeKind] || built.routeKind,
       routingPath: built.routingPath,
       isFallback: built.usedFallbackPromptBuilder,
+      isUserCategory: require('./src/categoryStyles').isUserCategory(category),
+      aesthetic: built.aesthetic,
       builder: require('./src/posterMetadata').PROMPT_BUILDER_VERSION || 'master-prompt-v1',
       length: built.imagePrompt.length,
       prompt: built.imagePrompt,

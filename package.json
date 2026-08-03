@@ -12,6 +12,7 @@
     "audit:duplicates": "node scripts/auditDuplicateTitles.js",
     "test:guard": "node scripts/testDuplicateGuard.js",
     "test:models": "node scripts/testModelCatalog.js",
+    "test:aesthetics": "node scripts/testAesthetics.js",
     "shopify:reconcile": "node scripts/reconcileShopifyStates.js",
     "shopify:headless:check": "node scripts/checkShopifyHeadless.js --limit=250",
     "shopify:thumbs": "node scripts/syncShopifyThumbs.js",
