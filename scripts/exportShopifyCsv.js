@@ -8,7 +8,8 @@ const {
   resolveShopifyThumbsRel,
   summarizeApprovedShopifyStates,
 } = require('../src/shopifyState');
-const { humanizePosterTitle } = require('../src/posterTitle');
+const { humanizePosterTitle, toPosterHandle } = require('../src/posterTitle');
+const { findHandleCollisions } = require('../src/posterNameGuard');
 const { fetchShopifyProductHandles, getHeadlessConfig } = require('../src/shopifyHeadless');
 
 const projectRoot = path.resolve(__dirname, '..');
@@ -114,16 +115,9 @@ function ensureOutputDir() {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
-function toHandle(title) {
-  return (
-    String(title || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[<>:"/\\|?*\x00-\x1f]+/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'poster'
-  );
-}
+// toHandle() zyje teraz w src/posterTitle.js jako toPosterHandle - wspolne zrodlo
+// prawdy dla eksportu i guarda nazw, zeby oba nie mogly sie znowu rozjechac.
+const toHandle = toPosterHandle;
 
 function htmlDescription(text) {
   const t = String(text || '').trim();
@@ -332,6 +326,27 @@ async function main() {
 
   const approvedOnly = !cli.all;
   const posters = dedupePosters(inv.posters || []).filter((p) => (approvedOnly ? p.approvedForPrint === true : true));
+
+  // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
+  // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby
+  // po cichu. Lepiej nie wygenerowac CSV niz wygenerowac taki, ktory gubi produkt.
+  const collisions = findHandleCollisions(posters);
+  if (collisions.length > 0) {
+    const detail = collisions
+      .map(({ handle, posters: group }) => {
+        const items = group
+          .map((p) => `      - "${p.title}" (${p.category || '?'} / ${p.artStyle || '?'}) ${p.imagePath || ''}`)
+          .join('\n');
+        return `  handle "${handle}":\n${items}`;
+      })
+      .join('\n');
+    throw new Error(
+      `Przerwano eksport: ${collisions.length} kolizji handli Shopify.\n${detail}\n` +
+        'Handle musi być unikalny w całym sklepie. Zmień tytuł jednego z plakatów w posters_inventory.json, ' +
+        'a następnie uruchom: npm run audit:duplicates'
+    );
+  }
+
   const headers = pickHeaders();
   const lines = [headers.join(',')];
   const knownHandles = loadHistoryHandles();

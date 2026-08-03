@@ -9,6 +9,8 @@
     "generate-all": "node index.js generate-all 5",
     "generate-botanika": "node index.js generate Botanika 5",
     "stats": "node index.js stats",
+    "audit:duplicates": "node scripts/auditDuplicateTitles.js",
+    "test:guard": "node scripts/testDuplicateGuard.js",
     "shopify:reconcile": "node scripts/reconcileShopifyStates.js",
     "shopify:headless:check": "node scripts/checkShopifyHeadless.js --limit=250",
     "shopify:thumbs": "node scripts/syncShopifyThumbs.js",

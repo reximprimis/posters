@@ -17,6 +17,7 @@ const { humanizePosterTitle, titleFromFileName, isFilenameStyleTitle } = require
 const {
   masterExistsAt,
   collisionErrorMessage,
+  assertHandleGloballyUnique,
   PosterNameCollisionError,
 } = require('./src/posterNameGuard');
 const sharp = require('sharp');
@@ -49,6 +50,18 @@ const INVENTORY_PATH = path.join(__dirname, 'posters_inventory.json');
 const PREVIEW_STAGING_DIR = path.join(__dirname, '.preview-staging');
 const SHOPIFY_EXPORT_SETTINGS_PATH = path.join(__dirname, 'shopify_export_settings.json');
 const USER_SETTINGS_PATH = path.join(__dirname, 'user_settings.json');
+
+/** Rekordy plakatow z inventory; pusta tablica gdy pliku brak lub jest uszkodzony. */
+function readInventoryPosters() {
+  try {
+    if (!fs.existsSync(INVENTORY_PATH)) return [];
+    const data = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data.posters) ? data.posters : [];
+  } catch (_) {
+    return [];
+  }
+}
 
 /**
  * Ceny zsynchronizowane ze sklepem reximprimis.com (PLN, Storefront API, 2026-08-03).
@@ -2061,6 +2074,13 @@ function validateStudioPayload(body) {
       error: collisionErrorMessage(category, style, title),
       code: 'POSTER_NAME_COLLISION',
     };
+  }
+  // Handle Shopify liczy sie z samego tytulu, wiec ten sam tytul w innym stylu
+  // tez jest kolizja - inaczej jeden z plakatow przepadnie przy imporcie.
+  try {
+    assertHandleGloballyUnique(title, readInventoryPosters());
+  } catch (err) {
+    return { error: err.message, code: 'POSTER_NAME_COLLISION' };
   }
   return {
     title,
