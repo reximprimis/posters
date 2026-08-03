@@ -5020,6 +5020,24 @@
       });
     }
 
+    // Estetyki w generatorze — ladowane raz przy starcie, lista jest stala.
+    function loadGeneratorAesthetics() {
+      var sel = document.getElementById('studioAesthetic');
+      if (!sel) return;
+      fetch('/api/aesthetics', { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var current = sel.value;
+          sel.innerHTML = '<option value="">— bez estetyki —</option>' +
+            (d.aesthetics || []).map(function(a) {
+              return '<option value="' + a.id + '"' + (a.id === current ? ' selected' : '') + '>' +
+                a.label + (a.badge ? ' · ' + a.badge : '') + '</option>';
+            }).join('');
+        })
+        .catch(function() {});
+    }
+    loadGeneratorAesthetics();
+
     function renderCategoriesList(categories, extra) {
       var extraNames = (extra || []).map(function(e) { return e.name; });
       var el = document.getElementById('settingCategoriesList');
@@ -6098,6 +6116,11 @@
               <label for="studioStyle">Styl</label>
               <select id="studioStyle"></select>
             </div>
+            <div class="studio-pro-field">
+              <label for="studioAesthetic">Estetyka (trend)</label>
+              <select id="studioAesthetic"></select>
+              <p class="field-hint">Nadpisuje paletę i nastrój. Działa razem ze stylem, nie zamiast niego.</p>
+            </div>
           </div>
           <div class="studio-pro-composer">
             <label class="visually-hidden" for="studioPrompt">Prompt do generatora obrazów</label>
@@ -6689,6 +6712,7 @@
         studioSourceDalle: document.getElementById('studioSourceDalle'),
         studioSourceManual: document.getElementById('studioSourceManual'),
         studioManualUploadRow: document.getElementById('studioManualUploadRow'),
+        studioAesthetic: document.getElementById('studioAesthetic'),
         btnDraftPrompt: document.getElementById('btnDraftPrompt'),
         btnClearStudio: document.getElementById('btnClearStudio'),
         studioUploadInput: document.getElementById('studioUploadInputFile'),
@@ -9552,6 +9576,9 @@
               title,
               category,
               style,
+              // Estetyka wchodzi juz na etapie ukladania promptu, wiec widzisz ja
+              // w polu przed generowaniem i mozesz jeszcze poprawic.
+              aesthetic: (els.studioAesthetic && els.studioAesthetic.value) || '',
             }),
           });
           const data = await res.json().catch(() => ({}));

@@ -2194,8 +2194,16 @@ app.post('/api/draft-image-prompt', async (req, res) => {
     } catch (e) {
       return res.status(e.statusCode || 400).json({ error: e.message });
     }
-    const { text, promptLlm } = await cg.generateImagePrompt(String(title).trim(), category, style, { llmProvider });
-    res.json({ prompt: text, promptLlm });
+    // Estetyka jest opcjonalna — nieznana wartosc jest ignorowana przez router,
+    // wiec prompt bez niej zostaje dokladnie taki jak wczesniej.
+    const aesthetic = String((req.body || {}).aesthetic || '').trim();
+    const { text, promptLlm, aesthetic: usedAesthetic } = await cg.generateImagePrompt(
+      String(title).trim(),
+      category,
+      style,
+      { llmProvider, aesthetic }
+    );
+    res.json({ prompt: text, promptLlm, aesthetic: usedAesthetic || '' });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Błąd serwera' });
   }
