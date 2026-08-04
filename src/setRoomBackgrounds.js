@@ -74,7 +74,8 @@ const ROOMS = [
       'dried branches on top, part of a dining chair visible at the edge, warm wooden floor, ' +
       'soft daylight from the right.',
     wall: 'warm sand beige',
-    zone: { x: 0.245, y: 0.1, w: 0.51, h: 0.42 },
+    // Wyzej i wezej niz salon — przy 0.10/0.51 prawa rama dochodzila do galazek w wazonie.
+    zone: { x: 0.235, y: 0.07, w: 0.48, h: 0.42 },
   },
   {
     id: 'sypialnia',
@@ -85,7 +86,9 @@ const ROOMS = [
       'an upholstered bed headboard against the wall in the lower third, layered linen bedding in muted ' +
       'tones, a small bedside table with a lamp, pale wooden floor, soft morning light.',
     wall: 'soft chalk white',
-    zone: { x: 0.245, y: 0.08, w: 0.51, h: 0.4 },
+    // Mocno w prawo: lozko jest przesuniete wzgledem kadru, wiec strefa liczona
+    // od srodka obrazu zawieszalaby tryptyk obok zaglowka, a nie nad nim.
+    zone: { x: 0.34, y: 0.06, w: 0.51, h: 0.4 },
   },
   {
     id: 'gabinet_ciemny',
@@ -96,7 +99,8 @@ const ROOMS = [
       'a dark wood desk against the wall in the lower third, a closed laptop, a small brass lamp, ' +
       'a chair back visible, dark floor, low directional light from the side.',
     wall: 'deep charcoal green',
-    zone: { x: 0.245, y: 0.1, w: 0.51, h: 0.42 },
+    // Nieco nizej — nad lampa zostawala zbyt duza pusta plaszczyzna.
+    zone: { x: 0.245, y: 0.13, w: 0.51, h: 0.42 },
   },
 ];
 
