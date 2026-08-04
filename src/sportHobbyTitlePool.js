@@ -45,6 +45,84 @@ const SPORT_HOBBY_TITLE_POOL = [
   'Telescope Under Stars',
   'Archery Target Range',
   'Table Tennis Paddle',
+  'Badminton Shuttlecock',
+
+  // Rozszerzenie 2026-08-04. Kierunek: golf i pilka, potem reszta dyscyplin.
+  // Zawsze SPRZET albo PUSTE MIEJSCE, nigdy akcja meczowa z zawodnikami —
+  // patrz blok Rights safety w src/safePrintFraming.js.
+  // Golf
+  'Golf Flag in Wind',
+  'Golf Ball on Tee',
+  'Links Course Dunes',
+  'Bunker Rake Lines',
+  'Putting Green Shadows',
+  'Leather Golf Bag',
+  'Fairway Morning Mist',
+  'Golf Glove and Tees',
+  'Vintage Golf Irons',
+  'Coastal Links Cliff',
+  // Pilka nozna
+  'Football Boots Studs',
+  'Corner Flag in Wind',
+  'Goal Net Close',
+  'Penalty Spot Chalk',
+  'Pitch Mowing Stripes',
+  'Vintage Leather Football',
+  'Floodlight Tower Dusk',
+  'Football on Wet Grass',
+  // Koszykowka i uliczne
+  'Basketball Hoop Net',
+  'Streetball Backboard',
+  'Basketball on Asphalt',
+  'Skate Park Bowl Curve',
+  // Kolarstwo
+  'Bicycle Wheel Spokes',
+  'Racing Bike Handlebars',
+  'Cycling Cap and Gloves',
+  'Alpine Cycling Pass',
+  // Bieganie
+  'Marathon Road Marking',
+  'Trail Running Path',
+  'Stopwatch and Laces',
+  // Woda
+  'Pool Water Surface',
+  'Diving Board Edge',
+  'Surf Wax and Board',
+  'Kayak on Still Water',
+  'Rowing Oars Pair',
+  'Sailing Rope Knot',
+  // Zima
+  'Snowboard on Powder',
+  'Ice Skates on Ice',
+  'Hockey Puck Rink Line',
+  'Alpine Slope Morning',
+  // Sila i walka
+  'Punching Bag Gym Light',
+  'Kettlebell on Floor',
+  'Dumbbell Rack Shadow',
+  'Fencing Mask Still',
+  // Pozostale dyscypliny
+  'Chalk Bag and Holds',
+  'Cricket Bat and Ball',
+  'Rugby Ball on Grass',
+  'Baseball Glove and Ball',
+  'Equestrian Saddle Leather',
+  'Racing Helmet on Shelf',
+  // Hobby
+  'Typewriter on Desk',
+  'Fountain Pen and Ink',
+  'Model Ship in Progress',
+  'Origami Paper Folds',
+  'Puzzle Pieces on Table',
+  'Dart Board Close',
+  'Board Game Dice Set',
+  'Watercolour Brushes Jar',
+  'Embroidery Hoop Linen',
+  'Bonsai Tree Small',
+  'Vintage Map and Compass',
+  'Backpack and Thermos',
+  'Worn Climbing Shoes',
+  'Herb Drying Rack',
 ];
 
 function normalizeTitleKey(title) {
