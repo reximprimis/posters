@@ -741,6 +741,20 @@ app.get('/api/posters', (req, res) => {
       ...(lifestyleHref ? { imagePathLifestyle: lifestyleHref } : {}),
       ...(pdfLinksFramed.length ? { pdfLinksFramed } : {}),
       ...(mockupsOut ? { mockups: mockupsOut } : {}),
+      // Pola zestawu — bez nich karta nie odroznia tryptyku od zwyklego plakatu
+      // i nie ma czym opisac plakietki ani listy paneli.
+      ...(primary.kind === 'set'
+        ? {
+            kind: 'set',
+            layout: primary.layout || '',
+            panelCount: primary.panelCount || (Array.isArray(primary.panels) ? primary.panels.length : 0),
+            panels: (Array.isArray(primary.panels) ? primary.panels : []).map((p) => ({
+              index: p.index,
+              imagePath: '/' + cleanPosterSubPath(String(p.imagePath || '').replace(/\\/g, '/')),
+              pdfPaths: p.pdfPaths || {},
+            })),
+          }
+        : {}),
     });
   }
 

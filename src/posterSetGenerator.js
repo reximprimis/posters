@@ -238,10 +238,79 @@ async function generateSet({
   };
 }
 
+/**
+ * Generuje pliki do druku dla kazdego panelu i dopisuje sciezki do rekordu.
+ *
+ * Kazdy panel to osobny wydruk, wiec kazdy dostaje wlasny komplet rozmiarow.
+ * Przyrostek w nazwie (panel1, panel2...) trzyma pliki rozroznialne w katalogu.
+ *
+ * Panele maja 1280x1920, a druk 50x70 wymaga 5906x8268 — powiekszeniem zajmuje
+ * sie generator PDF przy rasteryzacji, tak samo jak przy pojedynczych plakatach.
+ *
+ * @param {object} record rekord zestawu z generateSet (mutowany)
+ * @returns {Promise<object>} ten sam rekord z wypelnionymi pdfPaths
+ */
+async function buildSetPdfs({ projectRoot, pdfGen, record, onProgress }) {
+  const outDir = path.join(projectRoot, path.dirname(record.imagePath));
+  let done = 0;
+
+  for (const panel of record.panels) {
+    if (onProgress) onProgress({ phase: 'pdf', panel: panel.index, total: record.panels.length });
+    const abs = path.join(projectRoot, panel.imagePath);
+    const results = await pdfGen.createMultisizePDF(abs, record.title, outDir, {
+      nameInfix: `panel${panel.index}`,
+      // Zestawy sa bez marginesu — pelny spad, bez passe-partout.
+      printLayout: 'full',
+      matFrame: false,
+    });
+
+    const rel = {};
+    for (const [sizeKey, value] of Object.entries(results)) {
+      if (typeof value === 'string' && value.startsWith('ERROR')) continue;
+      rel[sizeKey] = path.relative(projectRoot, value).replace(/\\/g, '/');
+    }
+    panel.pdfPaths = rel;
+    done += Object.keys(rel).length;
+  }
+
+  record.setMeta = { ...(record.setMeta || {}), pdfCount: done };
+  return record;
+}
+
+/**
+ * Dopisuje zestaw do inventory.
+ *
+ * Zapis jest JAWNY, bo skaner katalogu posters/ omija katalogi zaczynajace sie
+ * od podkreslenia. Inaczej panorama i kazdy panel trafialyby do biblioteki jako
+ * osobne plakaty i zestaw rozpadalby sie na cztery kafelki.
+ *
+ * @returns {{ added: boolean, total: number }}
+ */
+function saveSetToInventory(projectRoot, record) {
+  const invPath = path.join(projectRoot, 'posters_inventory.json');
+  const inv = fs.existsSync(invPath)
+    ? JSON.parse(fs.readFileSync(invPath, 'utf8'))
+    : { posters: [], createdAt: new Date().toISOString() };
+  if (!Array.isArray(inv.posters)) inv.posters = [];
+
+  const key = String(record.imagePath || '').toLowerCase();
+  const existing = inv.posters.findIndex((p) => String(p.imagePath || '').toLowerCase() === key);
+  if (existing >= 0) {
+    inv.posters[existing] = record;
+  } else {
+    inv.posters.push(record);
+  }
+
+  fs.writeFileSync(invPath, JSON.stringify(inv, null, 2), 'utf8');
+  return { added: existing < 0, total: inv.posters.length };
+}
+
 module.exports = {
   getMaxAttempts,
   setOutputDir,
   buildPanoramaPrompt,
   generateCleanPanorama,
   generateSet,
+  buildSetPdfs,
+  saveSetToInventory,
 };

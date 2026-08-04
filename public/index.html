@@ -1270,6 +1270,16 @@
       color: #e8f4ff;
     }
 
+    /* Zestaw — celowo mocniejszy akcent niz plakietka orientacji. Na siatce
+       tryptyk musi byc rozpoznawalny na pierwszy rzut oka, bo to inny produkt. */
+    .poster-orientation-badge--set {
+      background: rgba(122, 78, 34, 0.78);
+      border-color: rgba(224, 164, 96, 0.6);
+      color: #ffeed8;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
     .poster-card img {
       width: 100%;
       height: 100%;
@@ -7260,6 +7270,11 @@
               imagePathLifestyle: p.imagePathLifestyle || '',
               shopifyState: p.shopifyState || '',
               shopifyIssues: p.shopifyIssues || [],
+              // Zestawy: bez tych pol kafelek nie odrozni tryptyku od plakatu.
+              kind: p.kind || '',
+              layout: p.layout || '',
+              panelCount: p.panelCount || 0,
+              panels: Array.isArray(p.panels) ? p.panels : [],
             });
           }
         }
@@ -7956,11 +7971,20 @@
               } /><span>Druk</span></label>`
             : '';
 
+          // Zestaw pokazuje MINIATURE (panele w ramkach obok siebie), nie panorame.
+          // Panorama to plik roboczy do ciecia — jako kafelek nie mowi nic o produkcie.
+          const isSet = item.kind === 'set';
+          const cardSrc = isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath;
+          const setBadgeText =
+            item.layout === 'tryptyk' ? 'TRYPTYK' : item.layout === 'duo' ? 'DYPTYK' : 'ZESTAW';
+
           card.innerHTML = `
             <figure class="poster-card-figure">
-              <img src="${escapeAttr(item.imagePath)}" alt="${escapeAttr(item.title)}" loading="lazy" />
+              <img src="${escapeAttr(cardSrc)}" alt="${escapeAttr(item.title)}" loading="lazy" />
               <span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
-              <span class="poster-orientation-badge poster-orientation-badge--portrait" data-orientation-badge>Pion</span>
+              <span class="poster-orientation-badge ${
+                isSet ? 'poster-orientation-badge--set' : 'poster-orientation-badge--portrait'
+              }" data-orientation-badge>${escapeHtml(isSet ? setBadgeText : 'Pion')}</span>
               <div class="poster-card-select poster-card-ctrl" role="group" aria-label="Zaznaczenia na karcie">
                 <label class="poster-card-cb poster-card-ctrl">
                   <input type="checkbox" class="lib-cb-remove" ${inRemove ? 'checked' : ''} />
@@ -7997,7 +8021,7 @@
               const isLandscape = nw > nh;
               card.classList.toggle('poster-card--landscape', isLandscape);
               card.classList.toggle('poster-card--portrait', !isLandscape);
-              if (orientationBadge) {
+              if (orientationBadge && !isSet) {
                 orientationBadge.textContent = isLandscape ? 'Poziom' : 'Pion';
                 orientationBadge.classList.toggle('poster-orientation-badge--landscape', isLandscape);
               }
