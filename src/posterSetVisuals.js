@@ -11,6 +11,8 @@
  * od krawedzi do krawedzi.
  */
 
+const fs = require('fs');
+const path = require('path');
 const sharp = require('sharp');
 
 /** Proporcja panelu 2:3 — jak pojedynczy plakat. */
@@ -168,16 +170,53 @@ function buildRoomSvg(W, H) {
 
 /**
  * Salon: zestaw powieszony na scianie wnetrza.
- * Kompozycja pozioma — zestaw jest szerszy niz wysoki, wiec kadr też.
+ *
+ * Tlo to WYGENEROWANE ZDJECIE pustego pokoju z assets/set_rooms/, a panele
+ * wkleja sharp w strefe zdefiniowana dla tego wnetrza. Rysowana ściana zostaje
+ * tylko jako awaryjna — bez pliku tla (swiezy klon, brak assetu) mockup ma
+ * powstac gorszy, ale nie ma prawa wysadzic generowania zestawu.
+ *
+ * @param {string[]} panelPaths
+ * @param {string} outputPath
+ * @param {{ roomId?: string, category?: string, secondary?: boolean }} [opts]
  */
 async function buildSetInterior(panelPaths, outputPath, opts = {}) {
-  const W = 2000;
-  const H = 1500;
-  const room = await sharp(svgBuffer(buildRoomSvg(W, H))).png().toBuffer();
+  const rooms = require('./setRoomBackgrounds');
+  const scene = opts.roomId
+    ? rooms.getRoom(opts.roomId)
+    : opts.secondary
+      ? rooms.getSecondaryRoom(opts.category)
+      : rooms.getPrimaryRoom();
 
-  // Zestaw zajmuje ~62% szerokosci sciany i wisi w gornej czesci — jak w realnym wnetrzu.
-  const targetW = Math.round(W * 0.62);
-  const panelWidth = Math.round(targetW / (panelPaths.length + (panelPaths.length - 1) * DEFAULTS.gapRatio));
+  const roomFile = scene ? path.join(__dirname, '..', 'assets', 'set_rooms', `${scene.id}.png`) : '';
+  const hasRoom = !!roomFile && fs.existsSync(roomFile);
+
+  let base;
+  let W;
+  let H;
+  let zone;
+
+  if (hasRoom) {
+    const meta = await sharp(roomFile).metadata();
+    W = meta.width;
+    H = meta.height;
+    base = await sharp(roomFile).png().toBuffer();
+    zone = scene.zone;
+  } else {
+    W = 2000;
+    H = 1500;
+    base = await sharp(svgBuffer(buildRoomSvg(W, H))).png().toBuffer();
+    // Awaryjna sciana nie ma mebli, wiec zestaw idzie po prostu na srodek.
+    zone = { x: 0.19, y: 0.22, w: 0.62, h: 0.5 };
+  }
+
+  const zoneX = Math.round(zone.x * W);
+  const zoneY = Math.round(zone.y * H);
+  const zoneW = Math.round(zone.w * W);
+
+  // Szerokosc panelu wynika ze STREFY, nie z calego kadru — inaczej ten sam
+  // zestaw wisialby inaczej w kazdym wnetrzu.
+  const panelWidth = Math.round(zoneW / (panelPaths.length + (panelPaths.length - 1) * DEFAULTS.gapRatio));
 
   const set = await composeRow(panelPaths, {
     panelWidth,
@@ -190,11 +229,19 @@ async function buildSetInterior(panelPaths, outputPath, opts = {}) {
   });
   const sm = await sharp(set).metadata();
 
-  const left = Math.round((W - sm.width) / 2);
-  const top = Math.round(H * 0.5 - sm.height / 2);
+  // Rzad niesie wlasny margines na cien, wiec centrujemy go wzgledem strefy
+  // zamiast przykladac do jej lewej krawedzi.
+  const left = Math.round(zoneX + (zoneW - sm.width) / 2);
+  const top = zoneY;
 
-  const buf = await sharp(room)
-    .composite([{ input: set, left, top: Math.max(20, top) }])
+  const buf = await sharp(base)
+    .composite([
+      {
+        input: set,
+        left: Math.max(0, Math.min(left, W - sm.width)),
+        top: Math.max(0, Math.min(top, H - sm.height)),
+      },
+    ])
     .png()
     .toBuffer();
 
