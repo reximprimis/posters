@@ -1272,6 +1272,32 @@
 
     /* Zestaw — celowo mocniejszy akcent niz plakietka orientacji. Na siatce
        tryptyk musi byc rozpoznawalny na pierwszy rzut oka, bo to inny produkt. */
+    /* Zestawy w generatorze — oddzielone linia, bo to inna logika niz seria. */
+    .studio-set-block {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(0, 0, 0, 0.18);
+    }
+    .studio-set-block .studio-auto-cmd {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      margin: 6px 0 8px;
+    }
+    .studio-set-cb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
     .poster-orientation-badge--set {
       background: rgba(122, 78, 34, 0.78);
       border-color: rgba(224, 164, 96, 0.6);
@@ -5159,7 +5185,8 @@
 
     // Estetyki w generatorze — ladowane raz przy starcie, lista jest stala.
     function loadGeneratorAesthetics() {
-      var targets = ['studioAesthetic', 'studioAutoAesthetic'].map(function(id) {
+      // Zestaw dostaje te sama liste, ale bez opcji mieszania — patrz warunek nizej.
+      var targets = ['studioAesthetic', 'studioAutoAesthetic', 'studioSetAesthetic'].map(function(id) {
         return document.getElementById(id);
       }).filter(Boolean);
       if (!targets.length) return;
@@ -5183,6 +5210,90 @@
         .catch(function() {});
     }
     loadGeneratorAesthetics();
+
+    // ── ZESTAWY: kategoria i styl ─────────────────────────────────────────
+    // Opcje kopiowane z selektorow trybu automatycznego zamiast pobierane osobno —
+    // jedno zrodlo prawdy, wiec dodanie kategorii nie wymaga ruszania dwoch miejsc.
+    // Odpadaja pozycje zbiorcze ("wszystkie"), bo zestaw powstaje zawsze dla jednej pary.
+    function syncSetSelects() {
+      [
+        ['studioAutoScope', 'studioSetCategory'],
+        ['studioAutoStyle', 'studioSetStyle'],
+      ].forEach(function(para) {
+        var src = document.getElementById(para[0]);
+        var dst = document.getElementById(para[1]);
+        if (!src || !dst) return;
+        var opcje = Array.prototype.slice.call(src.options).filter(function(o) {
+          return o.value && o.value !== '__all__';
+        });
+        if (!opcje.length || dst.options.length === opcje.length) return;
+        var current = dst.value;
+        dst.innerHTML = opcje.map(function(o) {
+          return '<option value="' + o.value + '"' + (o.value === current ? ' selected' : '') + '>' + o.textContent + '</option>';
+        }).join('');
+      });
+    }
+
+    function buildSetCommand() {
+      var tytul = (document.getElementById('studioSetTitle') || {}).value || '';
+      var uklad = (document.getElementById('studioSetLayout') || {}).value || 'tryptyk';
+      var kat = (document.getElementById('studioSetCategory') || {}).value || '';
+      var styl = (document.getElementById('studioSetStyle') || {}).value || '';
+      var est = (document.getElementById('studioSetAesthetic') || {}).value || '';
+      var bezPdf = !!(document.getElementById('studioSetNoPdf') || {}).checked;
+      var pre = document.getElementById('studioSetCommand');
+      if (!pre) return;
+
+      var czesci = ['npm run set --'];
+      czesci.push('--tytul "' + (tytul.trim() || '…') + '"');
+      if (kat) czesci.push('--kategoria "' + kat + '"');
+      if (styl) czesci.push('--styl "' + styl + '"');
+      // Tryptyk jest domyslny w skrypcie, wiec dopisujemy tylko odstepstwo.
+      if (uklad !== 'tryptyk') czesci.push('--uklad ' + uklad);
+      if (est) czesci.push('--estetyka ' + est);
+      if (bezPdf) czesci.push('--bez-pdf');
+      pre.textContent = czesci.join(' ');
+    }
+
+    function initSetPanel() {
+      ['studioSetTitle', 'studioSetLayout', 'studioSetCategory', 'studioSetStyle', 'studioSetAesthetic', 'studioSetNoPdf']
+        .forEach(function(id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener('input', buildSetCommand);
+          el.addEventListener('change', buildSetCommand);
+          el.addEventListener('focus', syncSetSelects);
+        });
+      var kop = document.getElementById('btnCopyStudioSetCommand');
+      if (kop) {
+        kop.addEventListener('click', function() {
+          var t = (document.getElementById('studioSetCommand') || {}).textContent || '';
+          navigator.clipboard.writeText(t.trim()).then(function() {
+            var stary = kop.textContent;
+            kop.textContent = 'Skopiowano';
+            window.setTimeout(function() { kop.textContent = stary; }, 1400);
+          });
+        });
+      }
+      // Selektory trybu auto wypelniaja sie asynchronicznie i nie wiadomo kiedy
+      // skoncza, wiec probujemy kilka razy zamiast raz po sztywnym opoznieniu.
+      var proby = 0;
+      var timer = window.setInterval(function() {
+        syncSetSelects();
+        buildSetCommand();
+        var kat = document.getElementById('studioSetCategory');
+        if ((kat && kat.options.length) || ++proby > 20) window.clearInterval(timer);
+      }, 400);
+      buildSetCommand();
+    }
+
+    // Ten skrypt wykonuje sie juz PO DOMContentLoaded, wiec nasluch na to zdarzenie
+    // nigdy by nie zadzialal — stad sprawdzenie readyState.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSetPanel);
+    } else {
+      initSetPanel();
+    }
 
     function renderCategoriesList(categories, extra) {
       var extraNames = (extra || []).map(function(e) { return e.name; });
@@ -6338,6 +6449,53 @@
               <p class="studio-auto-hint">
                 <strong>Wykonaj teraz</strong> (pole po prawej) robi to samo co CLI: od razu PNG + 6 PDF + wpis w bibliotece — bez okna podglądu. Alternatywnie wklej polecenie w terminal w katalogu z <code>index.js</code>.
               </p>
+
+              <!-- ZESTAWY. Osobny blok, bo zestaw rzadzi sie inna logika niz seria:
+                   wymaga JEDNEGO konkretnego tytulu (panorama powstaje pod ten motyw,
+                   a potem jest ciata), wiec nie ma czego losowac z puli. -->
+              <div class="studio-set-block">
+                <p class="studio-auto-cmd-label">Zestaw — dyptyk / tryptyk</p>
+                <p class="field-hint">
+                  Jedna panorama cięta na panele, więc motyw przechodzi przez ramy.
+                  Podaj sam tytuł motywu — etykieta „Zestaw 3 plakatów” dojdzie sama.
+                </p>
+                <div class="studio-pro-field">
+                  <label for="studioSetTitle">Tytuł motywu</label>
+                  <input type="text" id="studioSetTitle" placeholder="np. Misty Lake at Dawn" autocomplete="off" />
+                </div>
+                <div class="studio-pro-field">
+                  <label for="studioSetLayout">Układ</label>
+                  <select id="studioSetLayout">
+                    <option value="tryptyk">Tryptyk — 3 plakaty</option>
+                    <option value="duo">Dyptyk — 2 plakaty</option>
+                  </select>
+                </div>
+                <div class="studio-pro-field">
+                  <label for="studioSetCategory">Kategoria</label>
+                  <select id="studioSetCategory"></select>
+                </div>
+                <div class="studio-pro-field">
+                  <label for="studioSetStyle">Styl</label>
+                  <select id="studioSetStyle"></select>
+                </div>
+                <div class="studio-pro-field">
+                  <label for="studioSetAesthetic">Estetyka (trend)</label>
+                  <select id="studioSetAesthetic"></select>
+                </div>
+                <label class="studio-set-cb">
+                  <input type="checkbox" id="studioSetNoPdf" />
+                  <span>Bez PDF-ów — sama grafika i wizualizacje, do obejrzenia</span>
+                </label>
+
+                <p class="studio-auto-cmd-label studio-auto-cmd-label--secondary">Polecenie do terminala</p>
+                <pre class="studio-auto-cmd" id="studioSetCommand">npm run set -- --tytul "…"</pre>
+                <button type="button" class="studio-pro-chip" id="btnCopyStudioSetCommand">Kopiuj polecenie</button>
+                <p class="field-hint">
+                  Zestaw powstaje 4–6 minut: panorama, kontrola linii cięcia (powtarzana aż będzie czysta),
+                  panele, pięć wizualizacji i PDF-y. Dlatego uruchamia się go z terminala, a nie z przeglądarki —
+                  w terminalu widać postęp każdej próby.
+                </p>
+              </div>
             </div>
             <div class="studio-auto-side">
               <p class="studio-auto-cmd-label">Uruchomienie z przeglądarki</p>
