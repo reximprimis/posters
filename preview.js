@@ -471,7 +471,12 @@ function collectImageFilesRecursively(rootDir) {
     for (const e of entries) {
       const abs = path.join(cur, e.name);
       if (e.isDirectory()) {
-        stack.push(abs);
+        // Katalogi zaczynajace sie od podkreslenia sa poza skanem. Zestawy
+        // (posters/_zestawy) sa reprezentowane przez JEDEN rekord z panelami,
+        // a nie przez pojedyncze pliki — bez tego skaner dopisywal panorame
+        // i kazdy panel jako osobny plakat i biblioteka pokazywala 4 kafelki
+        // zamiast jednego.
+        if (!e.name.startsWith('_')) stack.push(abs);
         continue;
       }
       if (!e.isFile()) continue;
