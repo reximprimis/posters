@@ -95,12 +95,12 @@ check('prefiks i rozmiar naprawiaja zbyt krotkie tytuly', () => {
   expectTrue(n.includes('30x40'), 'rozmiar w nazwie');
 });
 
-check('nazwa NIE konczy sie jednostka "cm"', () => {
-  // AI Allegro brala koncowe "cm" za marke i nadpisywala kolumne BRAND
-  // wartoscia "CM". Jednostka nalezy do kolumny SIZE, nie do nazwy.
+check('nazwa ZAWIERA jednostke cm — Allegro parsuje z niej wymiary', () => {
+  // Proba usuniecia "cm" z nazwy sprawila, ze Allegro przestalo wypelniac
+  // wysokosc i szerokosc produktu. Kolumna SIZE sama tego nie zalatwia.
   for (const size of ['13x18', '21x30', '30x40', '50x70']) {
     const n = allegro.buildName({ title: 'Tańczące lisy w blasku księżyca', sizeKey: size, prefix: 'Plakat' });
-    if (/\bcm\.?$/i.test(n)) throw new Error(`nazwa konczy sie jednostka: ${n}`);
+    if (!/\bcm$/i.test(n)) throw new Error(`nazwa bez jednostki, Allegro nie odczyta wymiarow: ${n}`);
   }
 });
 

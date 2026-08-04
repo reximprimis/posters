@@ -92,12 +92,20 @@ const DEFAULT_SETTINGS = {
  * lamie wymogi Allegro (min 12 znakow, min 3 slowa), a wtedy Allegro nadaje
  * produktowi wlasna nazwe.
  */
+/**
+ * Nazwa oferty ZAWIERA jednostke "cm" i to jest celowe.
+ *
+ * Probowalem ja usunac, bo AI Allegro brala koncowe "cm" za marke. Skutek byl
+ * gorszy: Allegro parsuje wymiary produktu WLASNIE Z NAZWY, wiec bez jednostki
+ * przestalo wypelniac wysokosc i szerokosc, a marka i tak zostala pusta.
+ * Kolumna SIZE sama tego nie zalatwia.
+ *
+ * Marke rozwiazuje sie po stronie Allegro — mapowaniem kolumny BRAND
+ * w "Ustawieniach importu", tak samo jak kategorii. Nie da sie tego wymusic
+ * ksztaltem nazwy.
+ */
 function buildName({ title, sizeKey, prefix }) {
-  // Rozmiar BEZ jednostki na koncu. Gdy nazwa konczyla sie slowem "cm",
-  // AI Allegro brala je za marke i ustawiala "Marka: CM", ignorujac kolumne
-  // BRAND. Jednostka jest w kolumnie SIZE, wiec w nazwie jest zbedna.
-  const sizeLabel = String(SIZE_LABELS[sizeKey] || sizeKey).replace(/\s*cm\s*$/i, '').trim();
-  const parts = [String(prefix || '').trim(), String(title || '').trim(), sizeLabel];
+  const parts = [String(prefix || '').trim(), String(title || '').trim(), SIZE_LABELS[sizeKey] || sizeKey];
   return parts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
 }
 
