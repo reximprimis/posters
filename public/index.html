@@ -6651,6 +6651,15 @@
           <img id="modalPreviewMockupInteriorImg" src="" alt="Mockup salon" />
           <span class="modal-preview-thumb-label">Salon</span>
         </button>
+        <!-- Tylko zestawy: drugi salon dobrany do kategorii i arkusze bez ram. -->
+        <button type="button" class="modal-preview-thumb modal-preview-thumb--mockup" id="modalPreviewMockupInterior2Btn" aria-pressed="false" title="Mockup — salon 2" hidden>
+          <img id="modalPreviewMockupInterior2Img" src="" alt="Mockup salon 2" />
+          <span class="modal-preview-thumb-label">Salon 2</span>
+        </button>
+        <button type="button" class="modal-preview-thumb modal-preview-thumb--mockup" id="modalPreviewMockupSheetsBtn" aria-pressed="false" title="Arkusze bez ram" hidden>
+          <img id="modalPreviewMockupSheetsImg" src="" alt="Arkusze bez ram" />
+          <span class="modal-preview-thumb-label">Arkusze</span>
+        </button>
       </div>
       <div class="modal-poster-preview-main">
       <div class="modal-poster-window">
@@ -8672,6 +8681,10 @@
         const mkups = item.mockups || {};
         const frameUrl = mockupUrlFromRel(mkups.frame || '');
         const interiorUrl = mockupUrlFromRel(mkups.interior || '');
+        // Tylko zestawy — pojedyncze plakaty tych mockupow nie maja, wiec
+        // przyciski zostana ukryte tak samo jak przy braku salonu.
+        const interior2Url = mockupUrlFromRel(mkups.interior2 || '');
+        const sheetsUrl = mockupUrlFromRel(mkups.sheets || '');
 
         const mkRow = (label, value) => {
           const v = String(value || '').trim();
@@ -8727,6 +8740,20 @@
             miBtn.hidden = true;
           }
         }
+        for (const [btnId, imgId, url] of [
+          ['modalPreviewMockupInterior2Btn', 'modalPreviewMockupInterior2Img', interior2Url],
+          ['modalPreviewMockupSheetsBtn', 'modalPreviewMockupSheetsImg', sheetsUrl],
+        ]) {
+          const b = document.getElementById(btnId);
+          const im = document.getElementById(imgId);
+          if (!b || !im) continue;
+          if (url) {
+            im.src = url;
+            b.hidden = false;
+          } else {
+            b.hidden = true;
+          }
+        }
         if (thumbsEl) thumbsEl.hidden = false;
 
         if (btn) btn.textContent = mkups.frame ? 'Regeneruj mockupy' : 'Generuj mockupy';
@@ -8764,11 +8791,18 @@
       });
 
       // Mockup preview thumb click handlers
-      ['modalPreviewMockupFrameBtn', 'modalPreviewMockupInteriorBtn'].forEach(function(id, idx) {
-        const thumbBtn = document.getElementById(id);
+      // Pary przycisk-obrazek zamiast wyboru po indeksie: przy trzech i wiecej
+      // miniaturach warunek na idx przestaje sie skalowac.
+      [
+        ['modalPreviewMockupFrameBtn', 'modalPreviewMockupFrameImg'],
+        ['modalPreviewMockupInteriorBtn', 'modalPreviewMockupInteriorImg'],
+        ['modalPreviewMockupInterior2Btn', 'modalPreviewMockupInterior2Img'],
+        ['modalPreviewMockupSheetsBtn', 'modalPreviewMockupSheetsImg'],
+      ].forEach(function(pair) {
+        const thumbBtn = document.getElementById(pair[0]);
         if (!thumbBtn) return;
         thumbBtn.addEventListener('click', function() {
-          const imgEl = document.getElementById(idx === 0 ? 'modalPreviewMockupFrameImg' : 'modalPreviewMockupInteriorImg');
+          const imgEl = document.getElementById(pair[1]);
           if (!imgEl || !els.modalImg) return;
           els.modalImg.src = imgEl.src;
           // Update aria-pressed for all thumbs

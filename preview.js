@@ -709,7 +709,17 @@ app.get('/api/posters', (req, res) => {
       if (srcMockups) {
         const fh = toHref(srcMockups.frame);
         const ih = toHref(srcMockups.interior);
-        if (fh || ih) mockupsOut = { frame: fh, interior: ih, generatedAt: srcMockups.generatedAt };
+        // Dwa dodatkowe kadry ma tylko zestaw; dla plakatow wyjda puste i UI je ukryje.
+        const ih2 = toHref(srcMockups.interior2);
+        const sh = toHref(srcMockups.sheets);
+        if (fh || ih)
+          mockupsOut = {
+            frame: fh,
+            interior: ih,
+            ...(ih2 ? { interior2: ih2 } : {}),
+            ...(sh ? { sheets: sh } : {}),
+            generatedAt: srcMockups.generatedAt,
+          };
       }
     }
 
