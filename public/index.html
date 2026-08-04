@@ -4494,6 +4494,122 @@
         grid-column: 1;
       }
     }
+
+    /* ─────────────────────────────────────────────────────────────
+       PASEK FILTROW BIBLIOTEKI — przeprojektowany 2026-08-04
+
+       Poprzedni uklad byl wysoka kolumna boczna z trzema zagniezdzonymi
+       kontenerami przewijania. Konkurowaly o wysokosc, przez co listy
+       Kategoria i Styl zapadaly sie do zera, a sekcje nachodzily na siebie.
+
+       Teraz: jeden wiersz, a panele rozwijaja sie ABSOLUTNIE nad trescia.
+       Panel pozycjonowany absolutnie jest poza przeplywem, wiec z zasady
+       nie moze sciskac ukladu ani byc przez niego sciskany.
+       ───────────────────────────────────────────────────────────── */
+
+    .library-browse-surface {
+      display: block;
+      /* Musi byc widoczny, inaczej uciac by rozwiniete panele. */
+      overflow: visible;
+      min-height: 0;
+    }
+
+    .library-filters {
+      padding: clamp(0.6rem, 1.4vw, 0.9rem);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      position: relative;
+      z-index: 30;
+    }
+
+    .libbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+
+    .libbar-search { flex: 1 1 15rem; min-width: 0; display: flex; }
+    .libbar-search-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: inherit;
+      font: inherit;
+      font-size: 0.86rem;
+    }
+    .libbar-search-input:focus { outline: 2px solid var(--f-primary, #000); outline-offset: 1px; }
+
+    /* Rozwijany panel */
+    .libpop { position: relative; flex: 0 0 auto; }
+    .libpop > summary { list-style: none; cursor: pointer; }
+    .libpop > summary::-webkit-details-marker { display: none; }
+
+    .libpop-trigger {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      padding: 0.5rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      white-space: nowrap;
+      font-size: 0.86rem;
+    }
+    .libpop[open] > summary .libpop-trigger,
+    .libpop-trigger:hover { border-color: var(--f-primary, #000); }
+    .libpop-trigger::after { content: '▾'; opacity: 0.5; font-size: 0.7rem; }
+    .libpop-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.55; }
+    .libpop-value { font-weight: 600; max-width: 11rem; overflow: hidden; text-overflow: ellipsis; }
+    .libpop-count { font-size: 0.72rem; opacity: 0.55; }
+
+    .libpop-panel {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 60;
+      min-width: 15rem;
+      max-width: 22rem;
+      max-height: min(50vh, 22rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.35rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    }
+    /* Ostatnie panele otwieraja sie w lewo, zeby nie wychodzic poza ekran. */
+    #popStatus .libpop-panel, #popMockup .libpop-panel { left: auto; right: 0; }
+
+    /* Podwojona klasa: bije regule bazowa .filter-category-listbox { flex: 1 },
+       ktora narzucalaby baze 0 i zapadala liste. */
+    .libpop-panel .filter-category-listbox.libpop-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 0;
+      max-height: none;
+      overflow: visible;
+      list-style: none;
+    }
+
+    .libpop-seg { display: flex; flex-direction: column; gap: 2px; }
+
+    .libbar-actions { display: flex; gap: 0.4rem; align-items: center; margin-left: auto; }
+    .libbar-actions .btn-filter-apply { padding: 0.5rem 1.1rem; font-size: 0.86rem; white-space: nowrap; }
+
+    @media (max-width: 700px) {
+      .libpop, .libpop > summary { width: 100%; }
+      .libpop-trigger { width: 100%; }
+      .libpop-panel { left: 0; right: 0; max-width: none; }
+      .libbar-actions { width: 100%; margin-left: 0; }
+      .libbar-actions .btn-filter-apply { flex: 1; }
+    }
   </style>
 </head>
 <body>
@@ -6257,68 +6373,75 @@
         </div>
       </header>
       <div class="library-browse-surface">
-        <aside class="library-browse-sidebar" aria-label="Panel filtrów i kategorii">
-          <div class="library-filters" id="libraryFilterBatch">
-        <div class="library-filters-primary">
-        <h3 class="visually-hidden">Filtry biblioteki</h3>
-        <div class="search-wrap library-search-wrap">
-          <label for="search">Szukaj</label>
-          <input type="search" id="search" class="search-input" placeholder="Tytuł, kategoria, styl, prompt…" autocomplete="off" />
-        </div>
-        <div class="filter-category-wrap filter-category-wrap--sidebar">
-          <span class="filter-category-heading filter-category-heading--sidebar filter-category-heading--sidebar-only" id="categoryFilterHeading">Kategoria</span>
-          <div class="filter-category filter-category--sidebar" id="filterCategoryRoot">
-            <div class="filter-category-panel--sidebar filter-category-panel--list-only">
-              <ul
-                class="filter-category-listbox filter-category-listbox--sidebar"
-                id="categoryFilterListbox"
-                role="listbox"
-                aria-label="Kategorie plakatów"
-              ></ul>
+        <!-- Pasek filtrow: jeden wiersz zamiast wysokiej kolumny.
+             Panele rozwijaja sie ABSOLUTNIE nad trescia, wiec nie moga sciskac
+             ukladu — poprzedni panel boczny zapadal listy do zera wysokosci. -->
+        <div class="library-filters" id="libraryFilterBatch">
+          <h3 class="visually-hidden">Filtry biblioteki</h3>
+
+          <div class="libbar">
+            <div class="libbar-search">
+              <label class="visually-hidden" for="search">Szukaj</label>
+              <input type="search" id="search" class="libbar-search-input" placeholder="Szukaj: tytuł, kategoria, styl, prompt…" autocomplete="off" />
+            </div>
+
+            <details class="libpop" id="popCategory">
+              <summary class="libpop-trigger">
+                <span class="libpop-label">Kategoria</span>
+                <span class="libpop-value" id="categoryFilterTriggerLabel">Wszystkie kategorie</span>
+                <span class="libpop-count" id="categoryFilterTriggerCount">—</span>
+              </summary>
+              <div class="libpop-panel">
+                <ul class="filter-category-listbox libpop-list" id="categoryFilterListbox" role="listbox" aria-label="Kategorie plakatów"></ul>
+              </div>
+            </details>
+
+            <details class="libpop" id="popStyle">
+              <summary class="libpop-trigger">
+                <span class="libpop-label">Styl</span>
+                <span class="libpop-value" id="styleFilterTriggerLabel">Wszystkie style</span>
+              </summary>
+              <div class="libpop-panel">
+                <ul class="filter-category-listbox libpop-list" id="libraryStyleFilterListbox" role="listbox" aria-label="Styl plakatu"></ul>
+              </div>
+            </details>
+
+            <details class="libpop" id="popStatus">
+              <summary class="libpop-trigger">
+                <span class="libpop-label">Status</span>
+                <span class="libpop-value" id="statusFilterTriggerLabel">Wszystkie</span>
+              </summary>
+              <div class="libpop-panel">
+                <div class="libpop-seg" id="statusFilterGroup" role="group" aria-label="Status wydruku">
+                  <button type="button" class="filter-status-btn" data-status="all" aria-pressed="true">Wszystkie</button>
+                  <button type="button" class="filter-status-btn" data-status="new" aria-pressed="false">Nowy (niewybrany do druku)</button>
+                  <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Zatwierdzony (gotowy do druku)</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="libpop" id="popMockup">
+              <summary class="libpop-trigger">
+                <span class="libpop-label">Mockup</span>
+                <span class="libpop-value" id="mockupFilterTriggerLabel">Wszystkie</span>
+              </summary>
+              <div class="libpop-panel">
+                <div class="libpop-seg" id="mockupFilterGroup" role="group" aria-label="Mockupy Shopify">
+                  <button type="button" class="filter-status-btn" data-mockup="all" aria-pressed="true">Wszystkie</button>
+                  <button type="button" class="filter-status-btn" data-mockup="missing" aria-pressed="false">Bez mockupu</button>
+                  <button type="button" class="filter-status-btn" data-mockup="has" aria-pressed="false">Z mockupem</button>
+                </div>
+              </div>
+            </details>
+
+            <div class="libbar-actions">
+              <button type="button" class="btn btn-primary btn-filter-apply" id="filterApplyBtn">Zastosuj</button>
+              <button type="button" class="btn-filter-clear" id="filterClearBtn">Wyczyść</button>
             </div>
           </div>
-          <p class="library-category-draft library-category-draft--after-list" aria-live="polite">
-            <span class="library-category-draft-name" id="categoryFilterTriggerLabel">Wszystkie kategorie</span>
-            <span class="library-category-draft-meta" id="categoryFilterTriggerCount">—</span>
-          </p>
+
+          <p class="filter-pending-hint" id="filterPendingHint" hidden aria-live="polite"></p>
         </div>
-        <div class="filter-style-wrap filter-style-wrap--sidebar">
-          <span class="filter-category-heading filter-category-heading--sidebar filter-category-heading--sidebar-only">Styl</span>
-          <div class="filter-category filter-category--sidebar">
-            <div class="filter-category-panel--sidebar filter-category-panel--list-only">
-              <ul
-                class="filter-category-listbox filter-category-listbox--sidebar"
-                id="libraryStyleFilterListbox"
-                role="listbox"
-                aria-label="Styl plakatu"
-              ></ul>
-            </div>
-          </div>
-        </div>
-        <div class="filter-status-wrap">
-          <span class="filter-category-heading filter-category-heading--sidebar">Status wydruku</span>
-          <div class="filter-status-seg" id="statusFilterGroup" role="group" aria-label="Status wydruku">
-            <button type="button" class="filter-status-btn" data-status="all" aria-pressed="true">Wszystkie</button>
-            <button type="button" class="filter-status-btn" data-status="new" aria-pressed="false">Nowy (niewybrany do druku)</button>
-            <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Zatwierdzony (gotowy do druku)</button>
-          </div>
-        </div>
-        <div class="filter-status-wrap">
-          <span class="filter-category-heading filter-category-heading--sidebar">Mockupy Shopify</span>
-          <div class="filter-status-seg" id="mockupFilterGroup" role="group" aria-label="Mockupy Shopify">
-            <button type="button" class="filter-status-btn" data-mockup="all" aria-pressed="true">Wszystkie</button>
-            <button type="button" class="filter-status-btn" data-mockup="missing" aria-pressed="false">Bez mockupu</button>
-            <button type="button" class="filter-status-btn" data-mockup="has" aria-pressed="false">Z mockupem</button>
-          </div>
-        </div>
-        </div>
-        <div class="library-filters-actions">
-          <button type="button" class="btn btn-primary btn-filter-apply btn-filter-apply--block" id="filterApplyBtn">Zastosuj filtry</button>
-          <button type="button" class="btn-filter-clear" id="filterClearBtn">Wyczyść</button>
-        </div>
-        <p class="filter-pending-hint filter-pending-hint--sidebar" id="filterPendingHint" hidden aria-live="polite"></p>
-          </div>
-        </aside>
         <div class="library-browse-main">
           <div class="library-browse-main-inner">
             <p class="filter-results-meta" id="filterResultsMeta" aria-live="polite"></p>
@@ -9824,6 +9947,72 @@
       loadGenerationConfig();
       syncStatusFilterButtons();
       load();
+    })();
+  </script>
+
+  <script>
+    // Pasek filtrow biblioteki: zachowanie rozwijanych paneli.
+    // Sam wybor filtrow obsluguje istniejacy kod — tutaj tylko otwieranie,
+    // zamykanie i etykiety na przyciskach.
+    (function () {
+      var pops = function () { return [].slice.call(document.querySelectorAll('.libpop')); };
+
+      // Tylko jeden panel otwarty naraz.
+      document.addEventListener('toggle', function (ev) {
+        var d = ev.target;
+        if (!d.classList || !d.classList.contains('libpop') || !d.open) return;
+        pops().forEach(function (o) { if (o !== d) o.open = false; });
+      }, true);
+
+      document.addEventListener('click', function (ev) {
+        if (!ev.target.closest('.libpop')) pops().forEach(function (o) { o.open = false; });
+      });
+
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') pops().forEach(function (o) { o.open = false; });
+      });
+
+      // Etykieta przycisku = aktualnie wybrana opcja.
+      function syncLabel(listId, labelId, domyslna) {
+        var list = document.getElementById(listId);
+        var label = document.getElementById(labelId);
+        if (!list || !label) return;
+        var sel = list.querySelector('[aria-selected="true"]');
+        var nazwa = sel ? (sel.querySelector('.filter-category-option-name') || sel).textContent.trim() : '';
+        label.textContent = nazwa || domyslna;
+      }
+
+      function syncSeg(groupId, labelId) {
+        var g = document.getElementById(groupId);
+        var label = document.getElementById(labelId);
+        if (!g || !label) return;
+        var on = g.querySelector('[aria-pressed="true"]');
+        label.textContent = on ? on.textContent.trim().replace(/\s*\(.*\)$/, '') : 'Wszystkie';
+      }
+
+      function syncAll() {
+        syncLabel('libraryStyleFilterListbox', 'styleFilterTriggerLabel', 'Wszystkie style');
+        syncSeg('statusFilterGroup', 'statusFilterTriggerLabel');
+        syncSeg('mockupFilterGroup', 'mockupFilterTriggerLabel');
+      }
+
+      // Po kliknieciu w opcje: odswiez etykiety i zamknij panel.
+      document.addEventListener('click', function (ev) {
+        if (!ev.target.closest('.libpop-panel')) return;
+        window.setTimeout(function () {
+          syncAll();
+          var d = ev.target.closest('.libpop');
+          if (d && !ev.target.closest('.libpop-seg')) d.open = false;
+        }, 30);
+      });
+
+      // Listy sa wypelniane asynchronicznie — obserwujemy zmiany zamiast zgadywac termin.
+      ['categoryFilterListbox', 'libraryStyleFilterListbox'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) new MutationObserver(syncAll).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
+      });
+
+      syncAll();
     })();
   </script>
 </body>

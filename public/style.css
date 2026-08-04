@@ -896,12 +896,15 @@ body {
 .library-reload-hero-icon { font-size: 1em !important; line-height: 1 !important; }
 .library-reload-hero-wrap { margin-bottom: 0 !important; }
 
-/* ── LIBRARY SURFACE (2-col) ────────────────────────────── */
+/* ── LIBRARY SURFACE ────────────────────────────────────────
+   Ukad jednokolumnowy: pasek filtrow na gorze, siatka pod nim.
+   Wczesniej byla tu siatka 2-kolumnowa z panelem bocznym o wysokosci
+   ograniczonej do wysokosci okna. Listy Kategoria i Styl byly jedynymi
+   elementami z min-height:0, wiec caly deficyt wysokosci spadal na nie
+   i zapadaly sie do zera. Panel boczny zostal zastapiony paskiem
+   z panelami rozwijanymi absolutnie — patrz .libbar w index.html. */
 .library-browse-surface {
-  display: grid !important;
-  grid-template-columns: 260px 1fr !important;
-  grid-template-areas: 'browse-side browse-main' !important;
-  align-items: start !important;
+  display: block !important;
   border-top: 1px solid var(--f-hairline) !important;
   border-radius: 0 !important;
   background: none !important;
@@ -909,25 +912,12 @@ body {
   border-left: none !important;
   border-right: none !important;
   border-bottom: none !important;
+  /* Musi zostac widoczny — inaczej uciac by rozwiniete panele filtrow. */
   overflow: visible !important;
   min-height: 0 !important;
 }
 
-.library-browse-sidebar {
-  grid-area: browse-side !important;
-  position: sticky !important;
-  top: 56px !important;
-  align-self: start !important;
-  max-height: calc(100vh - 56px) !important;
-  overflow-y: auto !important;
-  padding: var(--f-lg) !important;
-  border-right: 1px solid var(--f-hairline) !important;
-  background: var(--f-surface) !important;
-  border-radius: 0 !important;
-}
-
 .library-browse-main {
-  grid-area: browse-main !important;
   min-width: 0 !important;
   background: var(--f-canvas) !important;
 }
@@ -2826,11 +2816,7 @@ code {
 
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .library-browse-surface {
-    grid-template-columns: 1fr !important;
-    grid-template-areas: 'browse-main' !important;
-  }
-  .library-browse-sidebar { display: none !important; }
+  /* Surface jest juz jednokolumnowy na kazdej szerokosci — nic tu nie trzeba. */
   .figma-nav-inner { padding: 0 var(--f-lg) !important; }
   .studio-auto-layout { grid-template-columns: 1fr !important; }
 }
