@@ -92,7 +92,16 @@ check('prefiks i rozmiar naprawiaja zbyt krotkie tytuly', () => {
   expectTrue(allegro.validateName('Soft Flow').length > 0, 'goly tytul niepoprawny');
   const n = allegro.buildName({ title: 'Soft Flow', sizeKey: '30x40', prefix: 'Plakat' });
   expectEqual(allegro.validateName(n).length, 0, 'nazwa zbudowana poprawna');
-  expectTrue(n.includes('30x40 cm'), 'rozmiar w nazwie');
+  expectTrue(n.includes('30x40'), 'rozmiar w nazwie');
+});
+
+check('nazwa NIE konczy sie jednostka "cm"', () => {
+  // AI Allegro brala koncowe "cm" za marke i nadpisywala kolumne BRAND
+  // wartoscia "CM". Jednostka nalezy do kolumny SIZE, nie do nazwy.
+  for (const size of ['13x18', '21x30', '30x40', '50x70']) {
+    const n = allegro.buildName({ title: 'Tańczące lisy w blasku księżyca', sizeKey: size, prefix: 'Plakat' });
+    if (/\bcm\.?$/i.test(n)) throw new Error(`nazwa konczy sie jednostka: ${n}`);
+  }
 });
 
 check('nazwa nie przekracza 75 znakow', () => {

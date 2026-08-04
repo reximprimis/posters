@@ -63,18 +63,25 @@ const DEFAULT_SETTINGS = {
   printStyle: 'ramka',
   stock: 100,
   /**
-   * Ciag kategorii dopasowywany przez AI Allegro do jego wlasnego drzewa.
+   * WAZNE — jak Allegro naprawde uzywa tej kolumny.
    *
-   * Pierwsza proba ("Dom i Ogród/Wyposażenie wnętrz/Dekoracje/Obrazy i plakaty")
-   * NIE zostala rozpoznana — oferty dostaly "kategoria: brak". Wartosc ponizej
-   * odwzorowuje sciezke, ktora Allegro samo podpowiedzialo w oknie wyboru
-   * kategorii, wiec dopasowanie jest znacznie pewniejsze.
+   * CATEGORY nie przypisuje kategorii Allegro. To nazwa kategorii W TWOIM
+   * SYSTEMIE. Allegro zbiera wszystkie unikalne wartosci z pliku i pokazuje je
+   * w zakladce "Ustawienia importu", gdzie mapujesz je na swoje drzewo — RAZ,
+   * a nie przy kazdym imporcie.
+   *
+   * Dwie wczesniejsze proby ("Dom i Ogród/Wyposażenie.../Obrazy i plakaty",
+   * potem "Dom i Ogród - Wyposażenie - Dekoracje ścienne - Plakaty") daly
+   * "kategoria: brak", bo probowaly udawac sciezke Allegro. To nie tak dziala.
+   *
+   * Dlatego wysylamy NASZA kategorie w formacie z dokumentacji Allegro
+   * ("Clothes, men's hoodies" — przecinek, dwa poziomy). Dzieki temu liczba
+   * wartosci do zmapowania rowna sie liczbie naszych kategorii, a nie liczbie
+   * ofert, i mapowanie robi sie raz na kategorie.
    */
-  category: 'Dom i Ogród - Wyposażenie - Dekoracje ścienne - Plakaty',
-  /** Kategorie, ktore na Allegro maja wlasne, trafniejsze miejsce w drzewie. */
-  categoryMap: {
-    'Plakaty dla dzieci': 'Dom i Ogród - Dekoracje - Obrazki i plakaty dla dzieci',
-  },
+  categoryPrefix: 'Plakaty',
+  /** Uzywane, gdy plakat nie ma kategorii — nie powinno sie zdarzyc. */
+  category: 'Plakaty',
   brand: 'REXIMPRIMIS',
   material: 'Papier',
   namePrefix: 'Plakat',
@@ -86,7 +93,11 @@ const DEFAULT_SETTINGS = {
  * produktowi wlasna nazwe.
  */
 function buildName({ title, sizeKey, prefix }) {
-  const parts = [String(prefix || '').trim(), String(title || '').trim(), SIZE_LABELS[sizeKey] || sizeKey];
+  // Rozmiar BEZ jednostki na koncu. Gdy nazwa konczyla sie slowem "cm",
+  // AI Allegro brala je za marke i ustawiala "Marka: CM", ignorujac kolumne
+  // BRAND. Jednostka jest w kolumnie SIZE, wiec w nazwie jest zbedna.
+  const sizeLabel = String(SIZE_LABELS[sizeKey] || sizeKey).replace(/\s*cm\s*$/i, '').trim();
+  const parts = [String(prefix || '').trim(), String(title || '').trim(), sizeLabel];
   return parts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
 }
 
@@ -98,6 +109,24 @@ function validateName(name) {
   if (n.length > NAME_MAX) problems.push(`za długa (${n.length} zn., max ${NAME_MAX})`);
   if (n.split(/\s+/).filter(Boolean).length < NAME_MIN_WORDS) problems.push('mniej niż 3 słowa');
   return problems;
+}
+
+/**
+ * Wartosc kolumny CATEGORY: "Plakaty, <nasza kategoria>".
+ *
+ * Format przecinkowy wprost z dokumentacji Allegro ("Clothes, men's hoodies").
+ * Pole trafia w cudzyslowy przy zapisie CSV, bo zawiera przecinek — separator
+ * pliku. To jest zgodne z wymogami Allegro.
+ *
+ * Liczba unikalnych wartosci = liczba naszych kategorii, wiec mapowanie
+ * w "Ustawieniach importu" robi sie raz na kategorie, nie raz na oferte.
+ */
+function buildCategoryValue(posterCategory, cfg) {
+  const prefix = String((cfg && cfg.categoryPrefix) || 'Plakaty').trim();
+  const own = String(posterCategory || '').trim();
+  if (!own) return String((cfg && cfg.category) || prefix);
+  if (own.toLowerCase() === prefix.toLowerCase()) return prefix;
+  return `${prefix}, ${own}`;
 }
 
 const DOUBLE_QUOTE = String.fromCharCode(34);
@@ -206,7 +235,7 @@ function buildRows({ posters, settings, content, imageUrl }) {
         PRICE: price,
         MPN: sku,
         DESCRIPTION: description,
-        CATEGORY: (cfg.categoryMap && cfg.categoryMap[poster.category]) || cfg.category,
+        CATEGORY: buildCategoryValue(poster.category, cfg),
         BRAND: cfg.brand,
         COLOR: '', // Plakat nie ma jednego koloru — zostawiamy Allegro.
         SIZE: SIZE_LABELS[sizeKey],
@@ -237,5 +266,6 @@ module.exports = {
   validateName,
   formatPrice,
   sanitizeDescription,
+  buildCategoryValue,
   buildRows,
 };
