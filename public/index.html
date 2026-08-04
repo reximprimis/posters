@@ -8348,7 +8348,10 @@
         if (!modalPosterItem) return;
         const full = String(modalPosterItem.imagePath || '').trim();
         const framed = String(modalPosterItem.imagePathFramed || '').trim();
-        const canFramed = !!framed;
+        // Zestawy sa wylacznie full bleed — wariant z passe-partout nie istnieje
+        // jako produkt, wiec przycisk RAMKA znika, a nie tylko sie wyszarza.
+        const isSet = modalPosterItem.kind === 'set';
+        const canFramed = !!framed && !isSet;
         const v = variant === 'framed' && canFramed ? 'framed' : 'full';
         const src = v === 'framed' ? framed : full;
         if (!src) return;
@@ -8364,6 +8367,7 @@
           els.modalPreviewFramedBtn.classList.toggle('is-active', on);
           els.modalPreviewFramedBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
           els.modalPreviewFramedBtn.disabled = !canFramed;
+          els.modalPreviewFramedBtn.hidden = isSet;
         }
         fetchModalTechnicalMeta(src);
         if (els.modalLightbox && !els.modalLightbox.hidden) {
