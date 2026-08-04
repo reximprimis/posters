@@ -169,6 +169,69 @@ function buildRoomSvg(W, H) {
 }
 
 /**
+ * "Co dostajesz": same arkusze, bez ram, na jasnym tle.
+ *
+ * Idzie jako OSTATNIE zdjecie w galerii. Zdjecia z ramami sprzedaja, ale nie
+ * odpowiadaja na pytanie "ile tego wlasciwie przyjdzie w paczce" — a klient
+ * kupuje papier, nie oprawe. Ramy na pozostalych kadrach sa uzasadnione tym,
+ * ze panorama ma ciagly horyzont i bez ram trzy panele czytaja sie jak jedna
+ * rozcieta grafika; tutaj odstepy i cien robia to samo rozdzielenie.
+ *
+ * @param {string[]} panelPaths
+ * @param {string} outputPath
+ * @param {{ panelWidth?: number, background?: string }} [opts]
+ */
+async function buildSetSheets(panelPaths, outputPath, opts = {}) {
+  const o = mergeOptions(opts);
+  const panelWidth = Math.round(o.panelWidth || 900);
+  const panelHeight = Math.round(panelWidth / PANEL_RATIO);
+  const gap = Math.round(panelWidth * 0.16); // szerzej niz przy ramach — arkusze musza czytac sie osobno
+  const margin = Math.round(panelWidth * 0.22);
+
+  const W = panelWidth * panelPaths.length + gap * (panelPaths.length - 1) + margin * 2;
+  const H = panelHeight + margin * 2;
+
+  const rozmycie = Math.max(6, Math.round(panelWidth * 0.022));
+  const nakladki = [];
+
+  for (let i = 0; i < panelPaths.length; i++) {
+    const left = margin + i * (panelWidth + gap);
+
+    // Cien pod arkuszem — bez niego papier wyglada jak wklejony prostokat.
+    // Wezszy od arkusza, zeby sugerowal lezacy papier, a nie uniesiona rame.
+    const cien = await sharp({
+      create: {
+        width: panelWidth,
+        height: panelHeight,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0.18 },
+      },
+    })
+      .blur(rozmycie)
+      .png()
+      .toBuffer();
+
+    const arkusz = await sharp(panelPaths[i])
+      .resize(panelWidth, panelHeight, { fit: 'cover', position: 'centre' })
+      .png()
+      .toBuffer();
+
+    nakladki.push({ input: cien, left, top: margin + Math.round(rozmycie * 0.8) });
+    nakladki.push({ input: arkusz, left, top: margin });
+  }
+
+  const buf = await sharp({
+    create: { width: W, height: H, channels: 4, background: o.background },
+  })
+    .composite(nakladki)
+    .png()
+    .toBuffer();
+
+  await sharp(buf).jpeg({ quality: 92 }).toFile(outputPath);
+  return outputPath;
+}
+
+/**
  * Salon: zestaw powieszony na scianie wnetrza.
  *
  * Tlo to WYGENEROWANE ZDJECIE pustego pokoju z assets/set_rooms/, a panele
@@ -256,5 +319,6 @@ module.exports = {
   composeRow,
   buildSetThumbnail,
   buildSetPackshot,
+  buildSetSheets,
   buildSetInterior,
 };
