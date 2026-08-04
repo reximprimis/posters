@@ -62,7 +62,19 @@ const DEFAULT_SETTINGS = {
   // konkurencja na tym rynku i tak lepiej wygladaja w miniaturze oferty.
   printStyle: 'ramka',
   stock: 100,
-  category: 'Dom i Ogród/Wyposażenie wnętrz/Dekoracje/Obrazy i plakaty',
+  /**
+   * Ciag kategorii dopasowywany przez AI Allegro do jego wlasnego drzewa.
+   *
+   * Pierwsza proba ("Dom i Ogród/Wyposażenie wnętrz/Dekoracje/Obrazy i plakaty")
+   * NIE zostala rozpoznana — oferty dostaly "kategoria: brak". Wartosc ponizej
+   * odwzorowuje sciezke, ktora Allegro samo podpowiedzialo w oknie wyboru
+   * kategorii, wiec dopasowanie jest znacznie pewniejsze.
+   */
+  category: 'Dom i Ogród - Wyposażenie - Dekoracje ścienne - Plakaty',
+  /** Kategorie, ktore na Allegro maja wlasne, trafniejsze miejsce w drzewie. */
+  categoryMap: {
+    'Plakaty dla dzieci': 'Dom i Ogród - Dekoracje - Obrazki i plakaty dla dzieci',
+  },
   brand: 'REXIMPRIMIS',
   material: 'Papier',
   namePrefix: 'Plakat',
@@ -194,7 +206,7 @@ function buildRows({ posters, settings, content, imageUrl }) {
         PRICE: price,
         MPN: sku,
         DESCRIPTION: description,
-        CATEGORY: cfg.category,
+        CATEGORY: (cfg.categoryMap && cfg.categoryMap[poster.category]) || cfg.category,
         BRAND: cfg.brand,
         COLOR: '', // Plakat nie ma jednego koloru — zostawiamy Allegro.
         SIZE: SIZE_LABELS[sizeKey],

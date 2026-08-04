@@ -673,6 +673,65 @@ Output only the finished English description, nothing else.`;
       return '';
     }
   }
+
+  /**
+   * Tresc sprzedazowa w jezyku innym niz angielski — nazwa oferty i opis.
+   *
+   * To NIE jest doslowne tlumaczenie. Nazwa plakatu na polskim marketplace
+   * powinna brzmiec naturalnie i zawierac slowa, ktorych kupujacy realnie szuka,
+   * a nie byc kalka z angielskiego. Angielski tytul zostaje w kartotece jako
+   * zrodlo i tozsamosc produktu.
+   *
+   * @param {{ title, category, style, description, language, llmProvider }} params
+   * @returns {Promise<{ name: string, description: string }>}
+   */
+  async generateLocalizedListing({ title, category, style, description, language, llmProvider } = {}) {
+    const provider = this.resolveLlmProvider(llmProvider);
+    if (!provider) return { name: '', description: '' };
+
+    const LANG_NAMES = { pl: 'Polish', de: 'German' };
+    const langName = LANG_NAMES[String(language || '').toLowerCase()];
+    if (!langName) throw new Error(`Nieobsługiwany język tłumaczenia: ${language}`);
+
+    const userMsg = `You localize wall-art product copy for a marketplace in ${langName}.
+
+Source (English):
+Title: ${String(title || '').trim()}
+Category: ${String(category || '').trim()}
+Art style: ${String(style || '').trim()}
+Description: ${String(description || '').trim()}
+
+Write a natural ${langName} product name and description for a poster listing.
+
+Rules for the NAME:
+- Natural ${langName}, NOT a literal translation of the English title.
+- 3 to 6 words, describing what is actually on the poster.
+- Words a real buyer would search for in ${langName}.
+- Do NOT include the word for "poster", size, or dimensions — those are added separately.
+- No quotation marks.
+
+Rules for the DESCRIPTION:
+- Exactly 2 or 3 sentences, one paragraph, fluent ${langName}.
+- Same meaning and mood as the English source.
+- No headings, bullets, emojis, prices, sizes, or shipping talk.
+- Do not wrap the text in quotation marks.
+
+Return STRICT JSON, nothing else:
+{"name": "...", "description": "..."}`;
+
+    try {
+      const raw = await this.llmComplete(userMsg, 420, provider, { temperature: 0.5 });
+      const cleaned = String(raw || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return {
+        name: String(parsed.name || '').trim().replace(/^["']|["']$/g, ''),
+        description: sanitizeListingDescription(parsed.description || ''),
+      };
+    } catch (error) {
+      console.warn(`localized listing ${language}:`, error.message);
+      return { name: '', description: '' };
+    }
+  }
 }
 
 /** Single paragraph; trim noise. */
