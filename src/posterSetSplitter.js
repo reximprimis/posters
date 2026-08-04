@@ -153,11 +153,119 @@ async function splitIntoPanels(sourceAbsPath, layoutId, opts = {}) {
   return { layout: { ...layout, panelCount: layout.cols * layout.rows }, panels };
 }
 
+/**
+ * Szerokosc badanego pasa przy linii ciecia, jako ulamek szerokosci panelu.
+ * Waski pas wystarczy — chodzi o to, co realnie znajdzie sie przy krawedzi ramy.
+ */
+const CUT_PROBE_RATIO = 0.06;
+
+/**
+ * Ile razy pas przy ciecu moze byc bardziej szczegolowy od calego obrazu,
+ * zanim uznamy ciecie za zle. Ustalone na tescie: panorama, w ktorej lodka
+ * wypadla na ciecu, dala okolo 1,35x.
+ */
+const CUT_DETAIL_LIMIT = 1.25;
+
+/**
+ * Gestosc krawedzi — miara tego, czy w danym miejscu jest KONKRETNY OBIEKT.
+ *
+ * Nie odchylenie standardowe jasnosci: to zbyt zgrubna miara. Na pelnej
+ * wysokosci panoramy dominuje ja uklad niebo-gory-woda, a mala lodka na linii
+ * ciecia ledwo nia rusza. Filtr Laplace'a reaguje na kontury, wiec pojedynczy
+ * obiekt na spokojnym tle wyraznie podnosi wynik.
+ *
+ * Przyjmuje BUFOR, nie potok sharp: stats() czyta obraz wejsciowy i pomija
+ * wczesniejsze operacje, wiec wycinek trzeba najpierw zmaterializowac.
+ */
+/** Na ile poziomych blokow dzielimy pas przy pomiarze. */
+const PROBE_BLOCKS = 12;
+
+/**
+ * Najwiekszy szczegol w pasie, liczony blokami.
+ *
+ * Swiadomie MAKSIMUM z blokow, a nie srednia z calego pasa. Lodka zajmuje waski
+ * pas w pionie; przy usrednianiu po calej wysokosci ginie w tle galezi i gor —
+ * zmierzone 22,62 przy sredniej calego obrazu 22,89, czyli nie do odroznienia.
+ * Maksimum z blokow wylapuje obiekt tam, gdzie faktycznie jest.
+ *
+ * Przyjmuje BUFOR, nie potok sharp: stats() i raw() czytaja obraz wejsciowy
+ * pomijajac wczesniejsze operacje, wiec wycinek trzeba zmaterializowac.
+ */
+async function measureEdgeEnergy(buffer) {
+  const img = sharp(buffer)
+    .greyscale()
+    .convolve({ width: 3, height: 3, kernel: [-1, -1, -1, -1, 8, -1, -1, -1, -1] });
+  const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
+
+  const blockH = Math.max(1, Math.floor(info.height / PROBE_BLOCKS));
+  let best = 0;
+  for (let b = 0; b < PROBE_BLOCKS; b++) {
+    const top = b * blockH;
+    const bottom = b === PROBE_BLOCKS - 1 ? info.height : top + blockH;
+    let sum = 0;
+    let count = 0;
+    for (let y = top; y < bottom; y++) {
+      const row = y * info.width;
+      for (let x = 0; x < info.width; x++) {
+        sum += data[row + x];
+        count += 1;
+      }
+    }
+    const avg = count ? sum / count : 0;
+    if (avg > best) best = avg;
+  }
+  return best;
+}
+
+/**
+ * Sprawdza, czy linie ciecia wypadaja na spokojnym tle.
+ *
+ * Powod: model potrafi zignorowac instrukcje z promptu. W tescie panoramy
+ * lodka wypadla dokladnie na ciecu miedzy panelem 1 a 2 — przy odstepie
+ * 3-5 cm miedzy ramami wyglada to na blad, a nie zamysl.
+ *
+ * Ta sama zasada, co pikselowa walidacja marginesow pojedynczych plakatow:
+ * nie ufamy promptowi, tylko sprawdzamy wynik.
+ *
+ * @returns {Promise<{ ok: boolean, cuts: {x, detail, ratio, ok}[], baseline: number }>}
+ */
+async function inspectCutLines(sourceAbsPath, layoutId) {
+  const layout = BY_ID.get(String(layoutId || '').trim());
+  if (!layout) throw new Error(`Nieznany układ zestawu: ${layoutId}`);
+
+  const meta = await sharp(sourceAbsPath).metadata();
+  const srcW = meta.width;
+  const srcH = meta.height;
+  const baseline = await measureEdgeEnergy(await sharp(sourceAbsPath).png().toBuffer());
+
+  const panelW = Math.floor(srcW / layout.cols);
+  const probe = Math.max(8, Math.round(panelW * CUT_PROBE_RATIO));
+
+  const cuts = [];
+  for (let c = 1; c < layout.cols; c++) {
+    const x = c * panelW;
+    const left = Math.max(0, x - Math.floor(probe / 2));
+    const width = Math.min(probe, srcW - left);
+    const strip = await sharp(sourceAbsPath)
+      .extract({ left, top: 0, width, height: srcH })
+      .png()
+      .toBuffer();
+    const detail = await measureEdgeEnergy(strip);
+    const ratio = baseline > 0 ? detail / baseline : 0;
+    cuts.push({ x, detail: Number(detail.toFixed(2)), ratio: Number(ratio.toFixed(3)), ok: ratio <= CUT_DETAIL_LIMIT });
+  }
+
+  return { ok: cuts.every((c) => c.ok), cuts, baseline: Number(baseline.toFixed(2)) };
+}
+
 module.exports = {
   LAYOUTS,
   MODEL_MAX_PIXELS,
   MODEL_MAX_RATIO,
   MODEL_MAX_EDGE,
+  CUT_DETAIL_LIMIT,
+  measureEdgeEnergy,
+  inspectCutLines,
   isKnownLayout,
   planLayout,
   listLayouts,
