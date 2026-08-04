@@ -13,6 +13,7 @@
     "test:guard": "node scripts/testDuplicateGuard.js",
     "test:models": "node scripts/testModelCatalog.js",
     "test:aesthetics": "node scripts/testAesthetics.js",
+    "test:marketplaces": "node scripts/testMarketplaces.js",
     "shopify:reconcile": "node scripts/reconcileShopifyStates.js",
     "shopify:headless:check": "node scripts/checkShopifyHeadless.js --limit=250",
     "shopify:thumbs": "node scripts/syncShopifyThumbs.js",
@@ -36,3 +37,4 @@
     "uuid": "^13.0.0"
   }
 }
+
