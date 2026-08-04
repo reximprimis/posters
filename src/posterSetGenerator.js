@@ -13,7 +13,7 @@ const sharp = require('sharp');
 
 const { routePromptBuildResult } = require('./promptRouter');
 const { planLayout, splitIntoPanels, inspectCutLines, isKnownLayout } = require('./posterSetSplitter');
-const { buildSetThumbnail, buildSetPackshot, buildSetInterior } = require('./posterSetVisuals');
+const { buildSetThumbnail, buildSetPackshot, buildSetInterior, buildSetSheets } = require('./posterSetVisuals');
 const { makeSafeFileBase, assertHandleGloballyUnique } = require('./posterNameGuard');
 const { getAesthetic } = require('./aesthetics');
 
@@ -191,10 +191,18 @@ async function generateSet({
   const thumbAbs = path.join(outDir, `${base}_zestaw_thumb.jpg`);
   const packAbs = path.join(outDir, `${base}_mockup_frame.jpg`);
   const interiorAbs = path.join(outDir, `${base}_mockup_interior.jpg`);
+  const interior2Abs = path.join(outDir, `${base}_mockup_interior2.jpg`);
+  const sheetsAbs = path.join(outDir, `${base}_arkusze.jpg`);
 
   await buildSetThumbnail(panelPaths, thumbAbs);
   await buildSetPackshot(panelPaths, packAbs);
+  // Salon 1 — zawsze nad sofa, ten sam kadr dla kazdego zestawu, zeby siatka byla spojna.
   await buildSetInterior(panelPaths, interiorAbs);
+  // Salon 2 — dobierany do kategorii, zeby Cyberpunk nie dostawal tego samego
+  // jasnego wnetrza co Japonia.
+  await buildSetInterior(panelPaths, interior2Abs, { secondary: true, category });
+  // "Co dostajesz" — arkusze bez ram, ostatnie zdjecie w galerii.
+  await buildSetSheets(panelPaths, sheetsAbs);
 
   const rel = (abs) => path.relative(projectRoot, abs).replace(/\\/g, '/');
   const aestheticInfo = getAesthetic(aesthetic);
@@ -219,7 +227,13 @@ async function generateSet({
       height: p.height,
       pdfPaths: {},
     })),
-    mockups: { frame: rel(packAbs), interior: rel(interiorAbs), generatedAt: new Date().toISOString() },
+    mockups: {
+      frame: rel(packAbs),
+      interior: rel(interiorAbs),
+      interior2: rel(interior2Abs),
+      sheets: rel(sheetsAbs),
+      generatedAt: new Date().toISOString(),
+    },
     // Zestawy sa wylacznie bez marginesu.
     printLayout: 'full',
     matFrame: false,
