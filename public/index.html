@@ -8473,6 +8473,27 @@
             })
             .join('')}</div>`;
         };
+        // Zestaw nie ma wlasnych PDF-ow — do druku ida PANELE. Kolumna na panel,
+        // zeby przy zamowieniu bylo widac, ze kazda ramka to osobny plik.
+        if (item && item.kind === 'set' && Array.isArray(item.panels) && item.panels.length) {
+          els.modalPdfVariantsGrid.innerHTML = item.panels
+            .map((p) => {
+              const links = Array.isArray(p.pdfLinks) ? p.pdfLinks : [];
+              return `
+                <section class="modal-pdf-variant-col">
+                  <div class="modal-pdf-variant-head">
+                    <p class="modal-pdf-variant-title">Panel ${escapeHtml(String(p.index))} z ${escapeHtml(
+                String(item.panels.length)
+              )}</p>
+                    <span class="modal-pdf-variant-count">${links.length} formatów</span>
+                  </div>
+                  ${mkLinks(links)}
+                </section>`;
+            })
+            .join('');
+          return;
+        }
+
         const fullLinks = item && Array.isArray(item.pdfLinks) ? item.pdfLinks : [];
         const framedLinks = item && Array.isArray(item.pdfLinksFramed) ? item.pdfLinksFramed : [];
         els.modalPdfVariantsGrid.innerHTML = `

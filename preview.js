@@ -751,7 +751,9 @@ app.get('/api/posters', (req, res) => {
             panels: (Array.isArray(primary.panels) ? primary.panels : []).map((p) => ({
               index: p.index,
               imagePath: '/' + cleanPosterSubPath(String(p.imagePath || '').replace(/\\/g, '/')),
-              pdfPaths: p.pdfPaths || {},
+              // Ten sam builder co dla zwyklych plakatow: sciezki dyskowe zamienia
+              // na webowe i odsiewa pliki, ktorych na dysku juz nie ma.
+              pdfLinks: buildPdfLinksFromRaw(p.pdfPaths),
             })),
           }
         : {}),
