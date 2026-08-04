@@ -23,7 +23,9 @@
     "shopify:export:all": "node scripts/exportShopifyCsv.js --all",
     "shopify:export:missing-live": "node scripts/exportShopifyCsv.js --only-missing-on-store --timestamped",
     "start": "node index.js",
-    "preview": "node preview.js"
+    "preview": "node preview.js",
+    "set": "node scripts/generateSet.js",
+    "set:rooms": "node scripts/generateSetRooms.js"
   },
   "keywords": [],
   "author": "",
@@ -39,4 +41,3 @@
     "uuid": "^13.0.0"
   }
 }
-
