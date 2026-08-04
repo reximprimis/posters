@@ -53,9 +53,59 @@ function toPosterHandle(title) {
   );
 }
 
+/**
+ * Etykiety zestawow. Angielski jest zrodlem (tak jak reszta katalogu),
+ * polski sluzy Allegro i tlumaczeniu na karcie produktu.
+ */
+const SET_LABELS = {
+  duo: { count: 2, en: 'Set of 2 Prints', pl: 'Zestaw 2 plakatów' },
+  tryptyk: { count: 3, en: 'Set of 3 Prints', pl: 'Zestaw 3 plakatów' },
+};
+
+/**
+ * Tytul zestawu: etykieta z liczba sztuk PRZED tytulem motywu.
+ *
+ * To nie jest zabieg marketingowy, tylko wymog techniczny. Handle Shopify
+ * liczy sie z SAMEGO tytulu, wiec zestaw i pojedynczy plakat o tym samym
+ * motywie daly by identyczny handle i jeden z produktow przepadlby przy
+ * imporcie. Etykieta rozroznia je globalnie.
+ *
+ * Przy okazji mowi klientowi wprost, ile sztuk dostaje — bez tego
+ * zamowienie zestawu konczy sie reklamacja.
+ *
+ * @param {string} title motyw, np. "Misty Lake at Dawn"
+ * @param {string} layout 'duo' | 'tryptyk'
+ * @param {{ language?: 'en' | 'pl' }} [opts]
+ * @returns {string}
+ */
+function buildSetTitle(title, layout, opts = {}) {
+  const motyw = String(title || '').trim();
+  const label = SET_LABELS[String(layout || '').trim()];
+  if (!label) throw new Error(`Nieznany układ zestawu: ${layout}`);
+  if (!motyw) throw new Error('Zestaw musi mieć tytuł motywu.');
+
+  const lang = opts.language === 'pl' ? 'pl' : 'en';
+  return `${label[lang]} — ${motyw}`;
+}
+
+/** Odzyskuje motyw z tytulu zestawu — potrzebne przy tlumaczeniach i eksporcie. */
+function stripSetLabel(setTitle) {
+  const t = String(setTitle || '').trim();
+  for (const label of Object.values(SET_LABELS)) {
+    for (const lang of ['en', 'pl']) {
+      const prefix = `${label[lang]} — `;
+      if (t.startsWith(prefix)) return t.slice(prefix.length);
+    }
+  }
+  return t;
+}
+
 module.exports = {
   humanizePosterTitle,
   titleFromFileName,
   isFilenameStyleTitle,
   toPosterHandle,
+  SET_LABELS,
+  buildSetTitle,
+  stripSetLabel,
 };
