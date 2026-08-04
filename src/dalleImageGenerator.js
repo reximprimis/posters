@@ -56,12 +56,23 @@ function isGptImage2Model(model) {
   return /^gpt-image-2/i.test(model) || /^chatgpt-image-2/i.test(model);
 }
 
+/**
+ * Maksymalna dlugosc krawedzi obrazu w gpt-image-2.
+ *
+ * Ustalone empirycznie: API odrzuca 4064x2032 komunikatem "The longest edge
+ * must be less than or equal to 3840", mimo ze rozmiar spelnia limit pikseli
+ * i proporcji. Bez tego warunku walidator przepuszczal rozmiary, ktore
+ * konczyly sie bledem 400 dopiero po wywolaniu API.
+ */
+const GPT_IMAGE_MAX_EDGE = 3840;
+
 function isValidGptImage2Size(size) {
   const m = String(size).match(/^(\d+)x(\d+)$/);
   if (!m) return false;
   const w = parseInt(m[1], 10);
   const h = parseInt(m[2], 10);
   if (w % 16 !== 0 || h % 16 !== 0) return false;
+  if (w > GPT_IMAGE_MAX_EDGE || h > GPT_IMAGE_MAX_EDGE) return false;
   const pixels = w * h;
   if (pixels < 655360 || pixels > 8294400) return false;
   const ratio = w / h;
