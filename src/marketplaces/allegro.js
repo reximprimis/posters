@@ -60,7 +60,10 @@ const DEFAULT_SETTINGS = {
   selectedSizes: ['21x30', '30x40', '40x50', '50x70'],
   // Wersja z bialym marginesem (passe-partout) — tak plakaty prezentuje
   // konkurencja na tym rynku i tak lepiej wygladaja w miniaturze oferty.
+  // Wariant bez marginesu na Allegro nie idzie w ogole.
   printStyle: 'ramka',
+  /** Trzy zdjecia: miniatura oferty, aranzacja wnetrza, packshot ramy. */
+  maxImages: 3,
   stock: 100,
   /**
    * WAZNE — jak Allegro naprawde uzywa tej kolumny.
@@ -198,19 +201,21 @@ function buildRows({ posters, settings, content, imageUrl }) {
     const framed = cfg.printStyle === 'ramka';
     const mainThumb = framed ? poster.imagePathFramedThumb : poster.imagePathThumb;
     const mockups = (poster && poster.mockups) || {};
-    // Kolejnosc ma znaczenie: pierwszy obraz jest miniatura oferty. Potem
-    // wnetrze i packshot ramy, bo zdjecia aranzacyjne najmocniej sprzedaja,
-    // a na koncu wariant alternatywny.
-    const images = [
-      mainThumb,
-      mockups.interior,
-      mockups.frame,
-      framed ? poster.imagePathThumb : poster.imagePathFramedThumb,
-    ]
+    /**
+     * Trzy zdjecia, wszystkie w wersji z marginesem.
+     *
+     * Wersja bez marginesu (full bleed) NIE trafia na Allegro — sprzedajemy tu
+     * wylacznie wariant z passe-partout, wiec pokazywanie drugiego wariantu
+     * mylilo by kupujacego co do tego, co dostanie.
+     *
+     * Kolejnosc: miniatura oferty, potem aranzacja wnetrza i packshot ramy —
+     * zdjecia aranzacyjne sprzedaja najmocniej.
+     */
+    const images = [mainThumb, mockups.interior, mockups.frame]
       .map((p) => imageUrl(p))
       .filter(Boolean)
       .filter((url, i, arr) => arr.indexOf(url) === i)
-      .slice(0, IMAGE_SLOTS);
+      .slice(0, Math.min(cfg.maxImages || DEFAULT_SETTINGS.maxImages, IMAGE_SLOTS));
 
     if (!images.length) {
       warnings.push(`Pomijam „${poster.title}” — brak obrazu do wystawienia.`);
