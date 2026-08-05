@@ -28,8 +28,23 @@ function getMaxAttempts() {
 }
 
 /** Katalog zestawow — poza zwyklymi plakatami, zeby skaner ich nie mieszal. */
-function setOutputDir(projectRoot, category, style) {
-  return path.join(projectRoot, 'posters', '_zestawy', category, String(style || '').toLowerCase());
+/**
+ * Katalog wyjsciowy zestawu.
+ *
+ * Podanie `fileBase` daje KAZDEMU ZESTAWOWI WLASNY KATALOG — tak samo jak przy
+ * pojedynczych plakatach. Zestaw to kilkanascie plikow (panorama, panele, piec
+ * wizualizacji, a po zatwierdzeniu 12-18 PDF-ow), wiec bez tego katalog stylu
+ * zapycha sie po kilku zestawach.
+ *
+ * @param {string} projectRoot
+ * @param {string} category
+ * @param {string} style
+ * @param {string} [fileBase] bezpieczna nazwa bazowa zestawu
+ */
+function setOutputDir(projectRoot, category, style, fileBase) {
+  const dir = path.join(projectRoot, 'posters', '_zestawy', category, String(style || '').toLowerCase());
+  const base = String(fileBase || '').trim();
+  return base ? path.join(dir, base) : dir;
 }
 
 /**
@@ -203,10 +218,11 @@ async function generateSet({
   assertHandleGloballyUnique(title, existingPosters);
 
   const plan = planLayout(layout);
-  const outDir = setOutputDir(projectRoot, category, style);
+  // Kazdy zestaw dostaje wlasny katalog — patrz setOutputDir.
+  const base = makeSafeFileBase(title);
+  const outDir = setOutputDir(projectRoot, category, style, base);
   fs.mkdirSync(outDir, { recursive: true });
 
-  const base = makeSafeFileBase(title);
   const panoramaAbs = path.join(outDir, `${base}.png`);
 
   const motyw = String(subjectTitle || '').trim() || title;
