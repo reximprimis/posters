@@ -48,12 +48,33 @@ function indeksPlikow() {
   let nieznalezione = 0;
   const przyklady = [];
 
-  const napraw = (wartosc) => {
+  /**
+   * @param {string} wartosc sciezka do sprawdzenia
+   * @param {string} katalogPlakatu katalog wskazany przez imagePath — ma PIERWSZENSTWO
+   */
+  const napraw = (wartosc, katalogPlakatu) => {
     const rel = norm(wartosc);
     if (!rel) return wartosc;
+
+    const nazwa = path.basename(rel);
+
+    // Katalog plakatu ZAWSZE pierwszy. Ten sam plakat potrafi miec kopie plikow
+    // w dwoch katalogach stylu (np. "Line art" i "Illustration"); szukanie po
+    // samej nazwie wybieralo wtedy przypadkowa i rozjezdzalo rekord na dwa miejsca.
+    if (katalogPlakatu) {
+      const wKatalogu = katalogPlakatu + '/' + nazwa;
+      if (fs.existsSync(path.join(ROOT, wKatalogu))) {
+        if (wKatalogu !== rel) {
+          naprawione++;
+          if (przyklady.length < 5) przyklady.push(rel + '\n      -> ' + wKatalogu);
+        }
+        return wKatalogu;
+      }
+    }
+
     if (fs.existsSync(path.join(ROOT, rel))) return wartosc;
 
-    const kandydaci = idx.get(path.basename(rel).toLowerCase()) || [];
+    const kandydaci = idx.get(nazwa.toLowerCase()) || [];
     // Jednoznaczne dopasowanie albo nic — przy kilku plikach o tej samej nazwie
     // w roznych kategoriach zgadywanie moglo by podmienic plakat na inny.
     if (kandydaci.length !== 1) {
@@ -66,24 +87,28 @@ function indeksPlikow() {
   };
 
   for (const p of inv.posters || []) {
-    for (const pole of ['imagePath', 'imagePathThumb', 'imagePathFramed', 'imagePathFramedThumb', 'imagePathLifestyle']) {
-      if (p[pole]) p[pole] = napraw(p[pole]);
+    // imagePath naprawiamy pierwszy — reszta pol rownia sie do jego katalogu.
+    if (p.imagePath) p.imagePath = napraw(p.imagePath, '');
+    const katalog = p.imagePath ? path.dirname(norm(p.imagePath)) : '';
+
+    for (const pole of ['imagePathThumb', 'imagePathFramed', 'imagePathFramedThumb', 'imagePathLifestyle']) {
+      if (p[pole]) p[pole] = napraw(p[pole], katalog);
     }
     for (const grupa of ['pdfPaths', 'pdfPathsFramed']) {
       if (p[grupa] && typeof p[grupa] === 'object') {
-        for (const k of Object.keys(p[grupa])) p[grupa][k] = napraw(p[grupa][k]);
+        for (const k of Object.keys(p[grupa])) p[grupa][k] = napraw(p[grupa][k], katalog);
       }
     }
-    if (Array.isArray(p.pdfs)) p.pdfs = p.pdfs.map(napraw);
+    if (Array.isArray(p.pdfs)) p.pdfs = p.pdfs.map((x) => napraw(x, katalog));
     if (p.mockups) {
       for (const k of ['frame', 'interior', 'interior2', 'sheets']) {
-        if (p.mockups[k]) p.mockups[k] = napraw(p.mockups[k]);
+        if (p.mockups[k]) p.mockups[k] = napraw(p.mockups[k], katalog);
       }
     }
     for (const panel of p.panels || []) {
-      if (panel.imagePath) panel.imagePath = napraw(panel.imagePath);
+      if (panel.imagePath) panel.imagePath = napraw(panel.imagePath, katalog);
       if (panel.pdfPaths) {
-        for (const k of Object.keys(panel.pdfPaths)) panel.pdfPaths[k] = napraw(panel.pdfPaths[k]);
+        for (const k of Object.keys(panel.pdfPaths)) panel.pdfPaths[k] = napraw(panel.pdfPaths[k], katalog);
       }
     }
   }
