@@ -276,10 +276,19 @@ async function buildSetInterior(panelPaths, outputPath, opts = {}) {
   const zoneX = Math.round(zone.x * W);
   const zoneY = Math.round(zone.y * H);
   const zoneW = Math.round(zone.w * W);
+  const zoneH = Math.round(zone.h * H);
 
   // Szerokosc panelu wynika ze STREFY, nie z calego kadru — inaczej ten sam
   // zestaw wisialby inaczej w kazdym wnetrzu.
-  const panelWidth = Math.round(zoneW / (panelPaths.length + (panelPaths.length - 1) * DEFAULTS.gapRatio));
+  const n = panelPaths.length;
+  const zSzerokosci = zoneW / (n + (n - 1) * DEFAULTS.gapRatio);
+
+  // ...ale wysokosc tez musi sie zmiescic. Panel ma 2:3, wiec przy DWOCH panelach
+  // zamiast trzech kazdy jest poltora raza szerszy — i tyle samo wyzszy. Bez tego
+  // ograniczenia dyptyk schodzil na mebel: ramy dotykaly oparcia sofy, a w jadalni
+  // wchodzily w galazki. Bierzemy mniejsza z dwoch mozliwych szerokosci.
+  const zWysokosci = zoneH * PANEL_RATIO;
+  const panelWidth = Math.round(Math.min(zSzerokosci, zWysokosci));
 
   const set = await composeRow(panelPaths, {
     panelWidth,
@@ -290,7 +299,16 @@ async function buildSetInterior(panelPaths, outputPath, opts = {}) {
     marginRatio: 0.05,
     ...opts,
   });
-  const sm = await sharp(set).metadata();
+  let gotowy = set;
+  let sm = await sharp(gotowy).metadata();
+
+  // Ostatnie zabezpieczenie: composeRow dokłada wlasny margines na cien, wiec
+  // zlozony rzad bywa wyzszy niz same panele. Jesli mimo wszystko nie miesci sie
+  // w strefie, zmniejszamy CALOSC — inaczej ramy wchodza na mebel.
+  if (sm.height > zoneH) {
+    gotowy = await sharp(gotowy).resize({ height: zoneH }).png().toBuffer();
+    sm = await sharp(gotowy).metadata();
+  }
 
   // Rzad niesie wlasny margines na cien, wiec centrujemy go wzgledem strefy
   // zamiast przykladac do jej lewej krawedzi.
@@ -300,7 +318,7 @@ async function buildSetInterior(panelPaths, outputPath, opts = {}) {
   const buf = await sharp(base)
     .composite([
       {
-        input: set,
+        input: gotowy,
         left: Math.max(0, Math.min(left, W - sm.width)),
         top: Math.max(0, Math.min(top, H - sm.height)),
       },
