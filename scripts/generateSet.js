@@ -39,7 +39,10 @@ function arg(nazwa, domyslna) {
   const style = arg('styl');
   const layout = String(arg('uklad', 'tryptyk'));
   const aesthetic = String(arg('estetyka', ''));
-  const bezPdf = !!arg('bez-pdf', false);
+  // PDF-y NIE powstaja przy generowaniu — dopiero po zatwierdzeniu do druku
+  // w aplikacji. Tryptyk to 18 plikow i okolo minuty pracy, a wiekszosc zestawow
+  // odpada na ogladzie. --z-pdf wymusza je od razu, gdy wiadomo, ze zestaw wchodzi.
+  const zPdf = !!arg('z-pdf', false);
 
   if (!motyw || !category || !style) {
     console.error('Brakuje argumentow. Przyklad:');
@@ -48,7 +51,7 @@ function arg(nazwa, domyslna) {
     console.error('');
     console.error('  --uklad tryptyk|duo   (domyslnie tryptyk)');
     console.error('  --estetyka japandi    (domyslnie bez estetyki)');
-    console.error('  --bez-pdf             (pomija generowanie PDF-ow)');
+    console.error('  --z-pdf               (PDF-y od razu; domyslnie po zatwierdzeniu do druku)');
     process.exit(1);
   }
 
@@ -85,7 +88,7 @@ function arg(nazwa, domyslna) {
 
   record.shopDescription = buildSetDescription({ layout, motyw });
 
-  if (!bezPdf) {
+  if (zPdf) {
     await buildSetPdfs({
       projectRoot: ROOT,
       pdfGen: new PdfGenerator(),
@@ -102,10 +105,11 @@ function arg(nazwa, domyslna) {
   console.log(`  prob panoramy: ${record.setMeta.attempts} (odrzuconych ${record.setMeta.rejectedAttempts})`);
   console.log(`  panele:        ${record.panelCount}`);
   console.log(`  wizualizacje:  packshot, salon, salon 2, arkusze`);
-  console.log(`  PDF-y:         ${bezPdf ? 'pominiete' : record.panelCount * 6}`);
+  console.log(`  PDF-y:         ${zPdf ? record.panelCount * 6 : 'po zatwierdzeniu do druku'}`);
   console.log('');
   console.log('  Zestaw jest w bibliotece jako JEDEN kafelek, niezatwierdzony do druku.');
-  console.log('  Obejrzyj go w aplikacji i dopiero tam zatwierdz.');
+  console.log('  Obejrzyj go w aplikacji i dopiero tam zatwierdz — pliki do druku');
+  console.log('  powstana automatycznie po zatwierdzeniu.');
 })().catch((e) => {
   console.error('BLAD:', e.message);
   process.exit(1);

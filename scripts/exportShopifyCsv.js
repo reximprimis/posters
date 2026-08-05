@@ -325,7 +325,21 @@ async function main() {
   if (reconcileSummary.changed > 0) fs.writeFileSync(inventoryPath, JSON.stringify(inv, null, 2), 'utf8');
 
   const approvedOnly = !cli.all;
-  const posters = dedupePosters(inv.posters || []).filter((p) => (approvedOnly ? p.approvedForPrint === true : true));
+  const wszystkie = dedupePosters(inv.posters || []).filter((p) => (approvedOnly ? p.approvedForPrint === true : true));
+
+  // ZESTAWY NIE WCHODZA do tego eksportu.
+  //
+  // Dyptyk i tryptyk maja wlasna cene (mnoznik 1,85x / 2,70x), inny zestaw zdjec
+  // i inny opis. Ten eksport nic o tym nie wie, wiec zestaw poszedlby do sklepu
+  // z cena POJEDYNCZEGO plakatu — klient kuplby trzy plakaty w cenie jednego.
+  // Do czasu powstania eksportu zestawow pomijamy je swiadomie i glosno.
+  const posters = wszystkie.filter((p) => p && p.kind !== 'set');
+  const pominieteZestawy = wszystkie.length - posters.length;
+  if (pominieteZestawy > 0) {
+    console.log(
+      `⚠ Pominieto ${pominieteZestawy} zestaw(ow) — eksport zestawow z wlasnym cennikiem jeszcze nie istnieje.`
+    );
+  }
 
   // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
   // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby

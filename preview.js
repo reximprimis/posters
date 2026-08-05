@@ -228,6 +228,54 @@ async function generateMockupsForPosterIds(posterIds) {
   }
 }
 
+/**
+ * PDF-y paneli zestawu — generowane DOPIERO po zatwierdzeniu do druku.
+ *
+ * Przy generowaniu zestawu ich nie robimy: tryptyk to 18 plikow po kilkanascie MB
+ * i okolo minuty pracy, a wiekszosc zestawow odpada na ogladzie. Do druku ida
+ * PANELE, nie panorama, wiec kazdy panel dostaje wlasny komplet rozmiarow.
+ */
+async function generateSetPdfsForPosterIds(posterIds) {
+  if (!fs.existsSync(INVENTORY_PATH)) return;
+  const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+  if (!Array.isArray(inventory.posters)) return;
+
+  const { buildSetPdfs } = require('./src/posterSetGenerator');
+  const PdfGenerator = require('./src/pdfGenerator');
+  let changed = false;
+
+  for (const id of posterIds) {
+    const rec = inventory.posters.find((p) => p && p.id === id);
+    if (!rec || rec.kind !== 'set' || !Array.isArray(rec.panels) || !rec.panels.length) continue;
+
+    // Pomijamy, gdy pliki juz sa — zatwierdzenie mozna cofnac i nadac ponownie.
+    const maKomplet = rec.panels.every((p) => {
+      const sciezki = Object.values(p.pdfPaths || {});
+      return sciezki.length > 0 && sciezki.every((s) => fs.existsSync(path.join(__dirname, s)));
+    });
+    if (maKomplet) {
+      console.log(`  [zestaw-pdf] Pliki juz sa, pomijam: ${rec.title}`);
+      continue;
+    }
+
+    try {
+      console.log(`  [zestaw-pdf] Generuje dla: ${rec.title}`);
+      await buildSetPdfs({
+        projectRoot: __dirname,
+        pdfGen: new PdfGenerator(),
+        record: rec,
+        onProgress: (p) => console.log(`  [zestaw-pdf] panel ${p.panel}/${p.total}`),
+      });
+      changed = true;
+      console.log(`  [zestaw-pdf] Gotowe: ${rec.title}`);
+    } catch (err) {
+      console.warn(`  [zestaw-pdf] Blad dla ${rec.title}: ${err.message}`);
+    }
+  }
+
+  if (changed) fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
+}
+
 function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
   for (const k of imageKeys || []) {
     if (k) approvalAssetsQueue.add(String(k));
@@ -249,15 +297,29 @@ function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
       }
       approvalAssetsQueue.clear();
       if (posterIds.length === 0) return;
+
+      // Zestawy MUSZA ominac pipeline pojedynczych plakatow. Ich imagePath wskazuje
+      // panorame (np. 3840x1920), wiec enforceMasterStandard przerobilby ja na plotno
+      // plakatu 2:3 i zniszczyl material zrodlowy. Do druku i tak ida PANELE, nie panorama.
+      const setIds = new Set();
+      for (const p of inventory.posters) {
+        if (p && p.kind === 'set' && p.id && posterIds.includes(p.id)) setIds.add(p.id);
+      }
+      const plainIds = posterIds.filter((id) => !setIds.has(id));
+
+      if (setIds.size) await generateSetPdfsForPosterIds([...setIds]);
+      if (plainIds.length === 0) return;
+
+      const posterIdsPlain = plainIds;
       const gen = getBatchGenerator();
-      await gen.enforceMasterStandardForPosterIds(posterIds);
+      await gen.enforceMasterStandardForPosterIds(posterIdsPlain);
       await autoFillMissingShopListingsByImageKeys([...seen]);
-      await gen.applyUniformFrameForPosterIds(posterIds);
-      await gen.applyShopThumbnailsForPosterIds(posterIds);
-      await gen.applyFullPrintPdfsForPosterIds(posterIds);
-      await gen.applyFramedPrintPdfsForPosterIds(posterIds);
+      await gen.applyUniformFrameForPosterIds(posterIdsPlain);
+      await gen.applyShopThumbnailsForPosterIds(posterIdsPlain);
+      await gen.applyFullPrintPdfsForPosterIds(posterIdsPlain);
+      await gen.applyFramedPrintPdfsForPosterIds(posterIdsPlain);
       // Mockupy generowane na końcu (wymagają OpenAI API, ~30-60s/plakat)
-      await generateMockupsForPosterIds(posterIds);
+      await generateMockupsForPosterIds(posterIdsPlain);
     } catch (e) {
       console.error('approval background generation failed:', e && e.message ? e.message : e);
     } finally {

@@ -5257,7 +5257,7 @@
       // Tryptyk jest domyslny w skrypcie, wiec dopisujemy tylko odstepstwo.
       if (uklad !== 'tryptyk') czesci.push('--uklad ' + uklad);
       if (est) czesci.push('--estetyka ' + est);
-      if (bezPdf) czesci.push('--bez-pdf');
+      if (bezPdf) czesci.push('--z-pdf');
       pre.textContent = czesci.join(' ');
     }
 
@@ -6490,7 +6490,7 @@
                 </div>
                 <label class="studio-set-cb">
                   <input type="checkbox" id="studioSetNoPdf" />
-                  <span>Bez PDF-ów — sama grafika i wizualizacje, do obejrzenia</span>
+                  <span>PDF-y od razu — normalnie powstają dopiero po zatwierdzeniu do druku</span>
                 </label>
 
                 <p class="studio-auto-cmd-label studio-auto-cmd-label--secondary">Polecenie do terminala</p>
@@ -6498,8 +6498,8 @@
                 <button type="button" class="studio-pro-chip" id="btnCopyStudioSetCommand">Kopiuj polecenie</button>
                 <p class="field-hint">
                   Zestaw powstaje 4–6 minut: panorama, kontrola linii cięcia (powtarzana aż będzie czysta),
-                  panele, pięć wizualizacji i PDF-y. Dlatego uruchamia się go z terminala, a nie z przeglądarki —
-                  w terminalu widać postęp każdej próby.
+                  panele i pięć wizualizacji. Pliki do druku powstają dopiero po zatwierdzeniu zestawu
+                  w bibliotece. Uruchamia się go z terminala, a nie z przeglądarki — tam widać postęp każdej próby.
                 </p>
               </div>
             </div>
