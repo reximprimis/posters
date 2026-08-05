@@ -193,6 +193,16 @@ const PROBE_BLOCKS = 12;
  */
 async function measureEdgeEnergy(buffer) {
   const img = sharp(buffer)
+    // KANAL ALPHA MUSI ZOSTAC SCALONY Z TLEM PRZED FILTREM.
+    //
+    // Na obrazie z alpha splot zwraca same zera — metryka mowi wtedy "brak
+    // szczegolow" o KAZDYM obrazie i obie kontrole (linie ciecia oraz tresc
+    // paneli) przepuszczaja wszystko. Panorama sklejona z paneli ma 4 kanaly,
+    // wprost wygenerowana 3, wiec blad ujawnial sie tylko na czesci plikow.
+    //
+    // Musi byc flatten, NIE removeAlpha: samo odrzucenie kanalu zostawia obraz
+    // w trybie, w ktorym splot nadal zwraca zera (sprawdzone na obu wariantach).
+    .flatten({ background: '#ffffff' })
     .greyscale()
     .convolve({ width: 3, height: 3, kernel: [-1, -1, -1, -1, 8, -1, -1, -1, -1] });
   const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
@@ -258,14 +268,84 @@ async function inspectCutLines(sourceAbsPath, layoutId) {
   return { ok: cuts.every((c) => c.ok), cuts, baseline: Number(baseline.toFixed(2)) };
 }
 
+/**
+ * Ile najubozszy panel moze byc slabszy od NAJBOGATSZEGO, zanim uznamy go za pusty.
+ *
+ * Prog dobrany z pomiarow istniejacych zestawow, nie z sufitu:
+ *   dyptyki (zrownowazone, przyjete)      0,92 - 1,00
+ *   tryptyk "Mgielne Jezioro" (przyjety)  0,30
+ *   tryptyk "Dunes at Last Light"         0,28
+ *   tryptyk "Bamboo Grove"                0,14
+ *   panorama odrzucona przez uzytkownika  ponizej 0,15 (srodek "jak czysta kartka")
+ *
+ * 0,25 odrzuca przypadki, ktore uzytkownik odrzucal recznie, i przepuszcza te,
+ * ktore przyjmowal. Zmiana: SET_PANEL_CONTENT_LIMIT.
+ */
+const PANEL_CONTENT_LIMIT = Number(process.env.SET_PANEL_CONTENT_LIMIT) > 0
+  ? Number(process.env.SET_PANEL_CONTENT_LIMIT)
+  : 0.25;
+
+/**
+ * Sprawdza, czy KAZDY panel ma wlasna tresc.
+ *
+ * Powod jest bezposrednim skutkiem kontroli ciec: kazda odrzucona proba wzmacnia
+ * polecenie "odsun obiekty od linii ciecia i zostaw tam czyste tlo". Tryptyk ma
+ * DWIE linie ciecia i obie otaczaja panel srodkowy, wiec po kilku probach model
+ * oproznia dokladnie ten obszar — cieciа wychodza czyste, a srodkowy plakat jest
+ * pusty jak kartka. Mechanizm optymalizowal jedno kryterium i psul drugie.
+ *
+ * Dyptyku to nie dotyczy: jego jedyne ciecie wypada MIEDZY panelami, nie wokol
+ * zadnego z nich.
+ *
+ * @returns {Promise<{ ok: boolean, panels: {index, energy, ratio, ok}[] }>}
+ */
+async function inspectPanelContent(sourceAbsPath, layoutId) {
+  const layout = BY_ID.get(String(layoutId || '').trim());
+  if (!layout) throw new Error(`Nieznany układ zestawu: ${layoutId}`);
+
+  const meta = await sharp(sourceAbsPath).metadata();
+  const panelW = Math.floor(meta.width / layout.cols);
+  const panelH = Math.floor(meta.height / layout.rows);
+
+  const energie = [];
+  let index = 0;
+  for (let r = 0; r < layout.rows; r++) {
+    for (let c = 0; c < layout.cols; c++) {
+      index += 1;
+      const buf = await sharp(sourceAbsPath)
+        .extract({ left: c * panelW, top: r * panelH, width: panelW, height: panelH })
+        .png()
+        .toBuffer();
+      energie.push({ index, energy: await measureEdgeEnergy(buf) });
+    }
+  }
+
+  // Odniesieniem jest najbogatszy panel, nie srednia — przy jednym pustym panelu
+  // srednia sama sie obniza i pusty panel przestaje odstawac.
+  const max = Math.max(...energie.map((e) => e.energy));
+  const panels = energie.map((e) => {
+    const ratio = max > 0 ? e.energy / max : 0;
+    return {
+      index: e.index,
+      energy: Number(e.energy.toFixed(2)),
+      ratio: Number(ratio.toFixed(3)),
+      ok: ratio >= PANEL_CONTENT_LIMIT,
+    };
+  });
+
+  return { ok: panels.every((p) => p.ok), panels };
+}
+
 module.exports = {
   LAYOUTS,
   MODEL_MAX_PIXELS,
   MODEL_MAX_RATIO,
   MODEL_MAX_EDGE,
   CUT_DETAIL_LIMIT,
+  PANEL_CONTENT_LIMIT,
   measureEdgeEnergy,
   inspectCutLines,
+  inspectPanelContent,
   isKnownLayout,
   planLayout,
   listLayouts,

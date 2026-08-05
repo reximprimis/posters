@@ -12,7 +12,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const { routePromptBuildResult } = require('./promptRouter');
-const { planLayout, splitIntoPanels, inspectCutLines, isKnownLayout } = require('./posterSetSplitter');
+const { planLayout, splitIntoPanels, inspectCutLines, inspectPanelContent, isKnownLayout } = require('./posterSetSplitter');
 const { buildSetThumbnail, buildSetPackshot, buildSetInterior, buildSetSheets } = require('./posterSetVisuals');
 const { makeSafeFileBase, assertHandleGloballyUnique } = require('./posterNameGuard');
 const { getAesthetic } = require('./aesthetics');
@@ -110,32 +110,60 @@ async function generateCleanPanorama({ imageGen, promptBase, layout, outAbs, onP
   process.env.POSTER_UPSCALE_ON_SAVE = '0';
 
   try {
+    let ostatniPowod = 'szczegół na linii cięcia';
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      // Wskazowka mowi, CZEGO CHCEMY, nie tylko czego nie chcemy.
+      //
+      // Pierwotna wersja brzmiala "odsun WSZYSTKIE obiekty daleko od linii ciecia
+      // i zostaw tam czyste tlo". Tryptyk ma dwie linie ciecia i obie otaczaja
+      // panel srodkowy, wiec po kilku probach model oproznial dokladnie ten obszar
+      // — ciecia wychodzily czyste, a srodkowy plakat pusty jak kartka.
+      // Teraz kazdy panel musi miec wlasny motyw, a spokojne maja byc tylko
+      // WASKIE pasy dokladnie na ciecach.
       const nudge =
         attempt === 1
           ? ''
-          : `\n\nATTEMPT ${attempt}: the previous version placed detail on a cut line. Move ALL objects far away from the cut lines and leave those areas as plain open background.`;
+          : `\n\nATTEMPT ${attempt}: the previous version was rejected (${ostatniPowod}). ` +
+            'Keep ONLY a narrow vertical band exactly at each cut line free of important detail. ' +
+            'EVERY panel of the set must still contain its own distinct focal subject — ' +
+            'none of them may end up as empty background or flat sky. ' +
+            'Redistribute the composition so the subjects sit in the MIDDLE of each panel.';
 
       if (onProgress) onProgress({ phase: 'generate', attempt, maxAttempts });
       await imageGen.generateImage('set', '', '', outAbs, { customPrompt: promptBase + nudge });
 
       if (onProgress) onProgress({ phase: 'inspect', attempt, maxAttempts });
       const inspection = await inspectCutLines(outAbs, layout);
+      const content = await inspectPanelContent(outAbs, layout);
 
-      if (inspection.ok) {
-        return { path: outAbs, attempts: attempt, inspection, rejected };
+      if (inspection.ok && content.ok) {
+        return { path: outAbs, attempts: attempt, inspection, content, rejected };
       }
-      rejected.push({ attempt, cuts: inspection.cuts });
-      console.warn(
-        `    ⚠ Próba ${attempt}/${maxAttempts}: szczegół na linii cięcia (${inspection.cuts
-          .map((c) => `${c.ratio}×`)
-          .join(', ')}) — powtarzam.`
-      );
+
+      if (!inspection.ok) {
+        ostatniPowod = 'detail landed on a cut line';
+        rejected.push({ attempt, powod: 'ciecie', cuts: inspection.cuts });
+        console.warn(
+          `    ⚠ Próba ${attempt}/${maxAttempts}: szczegół na linii cięcia (${inspection.cuts
+            .map((c) => `${c.ratio}×`)
+            .join(', ')}) — powtarzam.`
+        );
+      } else {
+        const puste = content.panels.filter((p) => !p.ok).map((p) => p.index);
+        ostatniPowod = 'one panel was almost empty';
+        rejected.push({ attempt, powod: 'pusty panel', panels: content.panels });
+        console.warn(
+          `    ⚠ Próba ${attempt}/${maxAttempts}: panel ${puste.join(', ')} niemal pusty (${content.panels
+            .map((p) => `${p.ratio}×`)
+            .join(', ')}) — powtarzam.`
+        );
+      }
     }
 
     throw new Error(
-      `Nie udało się uzyskać czystych linii cięcia w ${maxAttempts} próbach. ` +
-        `Zmień temat lub podnieś SET_CUT_MAX_ATTEMPTS.`
+      `Nie udało się uzyskać poprawnej panoramy w ${maxAttempts} próbach ` +
+        `(czyste cięcia + treść w każdym panelu). Zmień temat lub podnieś SET_CUT_MAX_ATTEMPTS.`
     );
   } finally {
     // Zmienne srodowiskowe sa globalne — bez przywrocenia zepsulibysmy
