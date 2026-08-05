@@ -103,6 +103,23 @@ const PRINT_STYLES = [
   { label: 'White Border', code: 'ramka' },
 ];
 
+/**
+ * Cena zestawu = cena pojedynczego plakatu tego rozmiaru × mnoznik.
+ *
+ * Lekki rabat wzgledem kupna osobno (3 × 43 zl = 129 zl, tryptyk 116 zl) jest
+ * finansowany oszczednoscia na wysylce i obsludze: zestaw to JEDNA paczka i jedno
+ * zamowienie zamiast trzech. Marza na zestawie wychodzi wyzsza niz na trzech
+ * plakatach sprzedanych osobno, mimo nizszej ceny jednostkowej.
+ *
+ * Poziom sprawdzony wzgledem rynku: przy 2,70x nasza cena PRZEKRESLONA wypada
+ * niemal 1:1 z cena konkurencji z Etsy po jej rabacie (232 vs 228 zl na 30x40),
+ * a nasza cena promocyjna jest o polowe nizsza.
+ */
+const DEFAULT_SET_MULTIPLIERS = { duo: 1.85, tryptyk: 2.7 };
+
+/** Zestawy sa WYLACZNIE full bleed — nie maja wariantu z passe-partout. */
+const SET_PRINT_STYLES = [{ label: 'Full Bleed', code: 'full' }];
+
 const SIZE_KEYS = SIZE_DEFS.map((s) => s.key);
 const DEFAULT_PRICES = Object.fromEntries(SIZE_DEFS.map((s) => [s.key, s.price]));
 
@@ -252,6 +269,7 @@ function loadSettings() {
     prices: { ...DEFAULT_PRICES },
     selectedSizes: [...SIZE_KEYS],
     compareAtMultiplier: DEFAULT_COMPARE_AT_MULTIPLIER,
+    setMultipliers: { ...DEFAULT_SET_MULTIPLIERS },
   };
   if (!fs.existsSync(settingsPath)) return base;
   try {
@@ -271,10 +289,21 @@ function loadSettings() {
       const m = Number(String(raw.compareAtMultiplier).replace(',', '.'));
       if (Number.isFinite(m) && m >= 1) compareAtMultiplier = m;
     }
+    // Mnozniki zestawow sa USTAWIENIEM, nie stala — zmiana ceny dyptyku czy
+    // tryptyku ma byc jedna liczba w pliku, bez ruszania kodu.
+    const setMultipliers = { ...base.setMultipliers };
+    if (raw && raw.setMultipliers && typeof raw.setMultipliers === 'object') {
+      for (const k of Object.keys(setMultipliers)) {
+        const m = Number(String(raw.setMultipliers[k]).replace(',', '.'));
+        if (Number.isFinite(m) && m > 0) setMultipliers[k] = m;
+      }
+    }
+
     return {
       prices,
       selectedSizes: selectedSizes.length ? selectedSizes : [...SIZE_KEYS],
       compareAtMultiplier,
+      setMultipliers,
     };
   } catch (_) {
     return base;
@@ -332,19 +361,11 @@ async function main() {
   const approvedOnly = !cli.all;
   const wszystkie = dedupePosters(inv.posters || []).filter((p) => (approvedOnly ? p.approvedForPrint === true : true));
 
-  // ZESTAWY NIE WCHODZA do tego eksportu.
-  //
-  // Dyptyk i tryptyk maja wlasna cene (mnoznik 1,85x / 2,70x), inny zestaw zdjec
-  // i inny opis. Ten eksport nic o tym nie wie, wiec zestaw poszedlby do sklepu
-  // z cena POJEDYNCZEGO plakatu — klient kuplby trzy plakaty w cenie jednego.
-  // Do czasu powstania eksportu zestawow pomijamy je swiadomie i glosno.
+  // Zestawy ida OSOBNA petla — maja wlasny cennik (mnoznik za uklad), brak
+  // wariantu z passe-partout i inny zestaw zdjec. Trzymanie ich poza glowna
+  // petla sprawia, ze wiersze plakatow pozostaja bajt w bajt niezmienione.
   const posters = wszystkie.filter((p) => p && p.kind !== 'set');
-  const pominieteZestawy = wszystkie.length - posters.length;
-  if (pominieteZestawy > 0) {
-    console.log(
-      `⚠ Pominieto ${pominieteZestawy} zestaw(ow) — eksport zestawow z wlasnym cennikiem jeszcze nie istnieje.`
-    );
-  }
+  const zestawy = wszystkie.filter((p) => p && p.kind === 'set');
 
   // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
   // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby
@@ -503,6 +524,133 @@ async function main() {
     exportedHandles.add(handle);
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // ZESTAWY (dyptyk / tryptyk)
+  //
+  // Osobna petla, a nie rozszerzenie petli plakatow — dzieki temu wiersze
+  // plakatow pozostaja bajt w bajt takie same i da sie to zweryfikowac suma
+  // kontrolna. Zestaw rozni sie od plakatu w trzech rzeczach: cena (mnoznik),
+  // brak wariantu z passe-partout i wlasny zestaw zdjec.
+  // ─────────────────────────────────────────────────────────────────────────
+  let zestawowWyeksportowanych = 0;
+  let zestawowPominietych = 0;
+
+  for (const z of zestawy) {
+    const mnoznik = Number(settings.setMultipliers[z.layout]);
+    if (!Number.isFinite(mnoznik) || mnoznik <= 0) {
+      console.log(`⚠ Zestaw "${z.title}" — brak mnoznika dla ukladu "${z.layout}", pomijam.`);
+      zestawowPominietych += 1;
+      continue;
+    }
+
+    const handle = toPosterHandle(z.title);
+    if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
+    if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
+
+    // Miniatura zestawu (panele obok siebie) — to ona identyfikuje produkt.
+    const thumbRel = z.imagePathThumb && fileExists(z.imagePathThumb) ? normalizeRelPath(z.imagePathThumb) : '';
+    if (!thumbRel) {
+      console.log(`⚠ Zestaw "${z.title}" — brak miniatury, pomijam.`);
+      zestawowPominietych += 1;
+      continue;
+    }
+
+    const mk = z.mockups || {};
+    const url = (rel) => (rel && fileExists(rel) ? toPublicUrl(normalizeRelPath(rel)) : '');
+    // Kolejnosc galerii ustalona z uzytkownikiem: salon sprzedaje, packshot
+    // pokazuje komplet ram, drugi salon daje inny kontekst, arkusze mowia
+    // wprost, ile sztuk przyjdzie w paczce.
+    const ZDJECIA = [
+      url(mk.interior),
+      url(mk.frame),
+      url(mk.interior2),
+      url(mk.sheets),
+      toPublicUrl(thumbRel),
+    ].filter(Boolean);
+
+    const sztuk = z.panelCount || (z.layout === 'duo' ? 2 : 3);
+    const title = humanizePosterTitle(z.title);
+    const body = htmlDescription(z.shopDescription || '');
+    const tags = [
+      'poster',
+      'zestaw',
+      z.layout === 'duo' ? 'dyptyk' : 'tryptyk',
+      `zestaw_${sztuk}`,
+      slugifyTag(z.category || ''),
+      slugifyTag(z.artStyle || ''),
+      ...sizeDefs.map((s) => `size_${s.key}`),
+    ].filter(Boolean).join(', ');
+
+    let rowIndex = 0;
+    for (const printStyle of SET_PRINT_STYLES) {
+      for (const size of sizeDefs) {
+        const pierwszy = rowIndex === 0;
+        // Cena rozmiaru × mnoznik ukladu, zaokraglona do peldnych groszy.
+        const cena = (Number(String(size.price).replace(',', '.')) * mnoznik).toFixed(2);
+        const imageSrcCell = rowIndex < ZDJECIA.length ? ZDJECIA[rowIndex] : '';
+        const row = {
+          Handle: handle,
+          Title: pierwszy ? title : '',
+          'Body (HTML)': pierwszy ? body : '',
+          Vendor: pierwszy ? 'REXIMPRIMIS' : '',
+          'Product Category': '',
+          Type: pierwszy ? 'poster set' : '',
+          Tags: pierwszy ? tags : '',
+          Published: pierwszy ? (z.approvedForPrint ? 'true' : 'false') : '',
+          'Option1 Name': pierwszy ? 'Print Style' : '',
+          'Option1 Value': printStyle.label,
+          'Option1 Linked To': '',
+          'Option2 Name': pierwszy ? 'Size' : '',
+          'Option2 Value': size.label,
+          'Option2 Linked To': '',
+          'Option3 Name': '',
+          'Option3 Value': '',
+          'Option3 Linked To': '',
+          'Variant SKU': '',
+          'Variant Grams': '',
+          'Variant Inventory Tracker': '',
+          'Variant Inventory Qty': '',
+          'Variant Inventory Policy': 'deny',
+          'Variant Fulfillment Service': 'manual',
+          'Variant Price': cena,
+          'Variant Compare At Price': compareAtFor(cena, settings.compareAtMultiplier),
+          'Variant Requires Shipping': 'true',
+          'Variant Taxable': 'true',
+          'Unit Price Total Measure': '',
+          'Unit Price Total Measure Unit': '',
+          'Unit Price Base Measure': '',
+          'Unit Price Base Measure Unit': '',
+          'Variant Barcode': '',
+          'Image Src': imageSrcCell,
+          'Image Position': imageSrcCell ? String(rowIndex + 1) : '',
+          'Image Alt Text': imageSrcCell && pierwszy ? title : '',
+          'Gift Card': pierwszy ? 'false' : '',
+          'SEO Title': pierwszy && title ? `${title} | REXIMPRIMIS` : '',
+          'SEO Description': pierwszy ? String(z.shopDescription || '').slice(0, 160) : '',
+          'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
+          'Kolor (product.metafields.shopify.color-pattern)': '',
+          'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
+          'Obsługiwany format (product.metafields.shopify.format-supported)': '',
+          'Styl oprawki (product.metafields.shopify.frame-style)': '',
+          'Materiał (product.metafields.shopify.material)': '',
+          'Typ mocowania (product.metafields.shopify.mounting-type)': '',
+          'Orientacja (product.metafields.shopify.orientation)': '',
+          'Kształt (product.metafields.shopify.shape)': '',
+          'Motyw (product.metafields.shopify.theme)': '',
+          'Variant Image': imageSrcCell || toPublicUrl(thumbRel),
+          'Variant Weight Unit': 'kg',
+          'Variant Tax Code': '',
+          'Cost per item': '',
+          Status: pierwszy ? (z.approvedForPrint ? 'active' : 'draft') : '',
+        };
+        lines.push(makeRow(headers, row));
+        rowIndex += 1;
+      }
+    }
+    exportedHandles.add(handle);
+    zestawowWyeksportowanych += 1;
+  }
+
   const csvText = lines.join('\n') + '\n';
   fs.writeFileSync(outputCsvPath, csvText, 'utf8');
   let outputUsedPath = outputCsvPath;
@@ -515,7 +663,19 @@ async function main() {
   if (exportedHandles.size > 0) saveHistoryHandles(knownHandles, [...exportedHandles]);
 
   console.log(`Shopify CSV exported: ${outputUsedPath}`);
-  console.log(`Products exported: ${Math.max(0, Math.floor((lines.length - 1) / (sizeDefs.length * PRINT_STYLES.length)))}, rows: ${lines.length - 1}`);
+  // Zestaw ma o polowe mniej wierszy niz plakat (jeden print style zamiast dwoch),
+  // wiec liczba produktow nie da sie wyliczyc z samej liczby wierszy.
+  const wierszyZestawow = zestawowWyeksportowanych * sizeDefs.length * SET_PRINT_STYLES.length;
+  const wierszyPlakatow = lines.length - 1 - wierszyZestawow;
+  console.log(
+    `Products exported: ${Math.max(0, Math.floor(wierszyPlakatow / (sizeDefs.length * PRINT_STYLES.length)))}` +
+      ` + ${zestawowWyeksportowanych} zestaw(ow), rows: ${lines.length - 1}`
+  );
+  if (zestawowWyeksportowanych > 0) {
+    const opis = Object.entries(settings.setMultipliers).map(([k, v]) => `${k} ×${v}`).join(', ');
+    console.log(`Mnozniki cen zestawow: ${opis}`);
+  }
+  if (zestawowPominietych > 0) console.log(`Skipped (zestawy): ${zestawowPominietych}`);
   console.log(`Sizes used: ${sizeDefs.map((s) => `${s.key}:${s.price}`).join(', ')}`);
   console.log(
     `Inventory state summary: ready=${reconcileSummary.ready}, pending_assets=${reconcileSummary.pending_assets}, legacy_blocked=${reconcileSummary.legacy_blocked}`

@@ -14,5 +14,9 @@
     "40x50",
     "50x70"
   ],
-  "compareAtMultiplier": 2
+  "compareAtMultiplier": 2,
+  "setMultipliers": {
+    "duo": 1.85,
+    "tryptyk": 2.7
+  }
 }
