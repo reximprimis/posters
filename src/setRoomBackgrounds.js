@@ -69,10 +69,15 @@ const ROOMS = [
     label: 'Jadalnia — nad komodą',
     anchor: 'sideboard',
     room: 'a warm contemporary dining room',
+    // Rekwizyty musza byc NISKIE. Pierwsza wersja miala wazon z wysokimi
+    // galazkami dokladnie tam, gdzie konczy sie prawa rama — przy kazdym
+    // zestawie zderzaly sie wizualnie z oprawa.
     furniture:
-      'a light oak sideboard against the wall in the lower third, a ceramic bowl and a small vase with ' +
-      'dried branches on top, part of a dining chair visible at the edge, warm wooden floor, ' +
-      'soft daylight from the right.',
+      'a light oak sideboard against the wall in the lower third, with only LOW objects on top: ' +
+      'a shallow ceramic bowl and a small closed vase, both no taller than a hand. ' +
+      'NO tall branches, NO dried stems, NO plants, NO lamps and nothing else rising above the ' +
+      'sideboard — the wall above it must stay completely clear. ' +
+      'Part of a dining chair visible at the edge, warm wooden floor, soft daylight from the right.',
     wall: 'warm sand beige',
     // Wyzej i wezej niz salon — przy 0.10/0.51 prawa rama dochodzila do galazek w wazonie.
     zone: { x: 0.235, y: 0.07, w: 0.48, h: 0.42 },
