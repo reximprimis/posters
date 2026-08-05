@@ -5244,7 +5244,10 @@
       var pre = document.getElementById('studioSetCommand');
       if (!pre) return;
 
-      var czesci = ['npm run set --'];
+      // Bezposrednie wywolanie node, NIE "npm run set --": na Windows npm gubi
+      // flagi przekazane po podwojnym myslniku — do skryptu dochodza same wartosci
+      // bez nazw argumentow i generowanie konczy sie komunikatem o brakujacych polach.
+      var czesci = ['node scripts/generateSet.js'];
       czesci.push('--tytul "' + (tytul.trim() || '…') + '"');
       if (kat) czesci.push('--kategoria "' + kat + '"');
       if (styl) czesci.push('--styl "' + styl + '"');
@@ -6488,7 +6491,7 @@
                 </label>
 
                 <p class="studio-auto-cmd-label studio-auto-cmd-label--secondary">Polecenie do terminala</p>
-                <pre class="studio-auto-cmd" id="studioSetCommand">npm run set -- --tytul "…"</pre>
+                <pre class="studio-auto-cmd" id="studioSetCommand">node scripts/generateSet.js --tytul "…"</pre>
                 <button type="button" class="studio-pro-chip" id="btnCopyStudioSetCommand">Kopiuj polecenie</button>
                 <p class="field-hint">
                   Zestaw powstaje 4–6 minut: panorama, kontrola linii cięcia (powtarzana aż będzie czysta),

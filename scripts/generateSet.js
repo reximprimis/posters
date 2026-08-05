@@ -1,9 +1,12 @@
 /**
  * Generowanie zestawu (dyptyk / tryptyk) z wiersza polecen.
  *
- *   npm run set -- --tytul "Misty Lake at Dawn" --kategoria Japonia --styl Illustration
- *   npm run set -- --tytul "..." --kategoria Japonia --styl Illustration --uklad duo
- *   npm run set -- --tytul "..." --kategoria Japonia --styl Illustration --bez-pdf
+ *   node scripts/generateSet.js --tytul "Misty Lake at Dawn" --kategoria Japonia --styl Illustration
+ *   node scripts/generateSet.js --tytul "..." --kategoria Japonia --styl Illustration --uklad duo
+ *   node scripts/generateSet.js --tytul "..." --kategoria Japonia --styl Illustration --bez-pdf
+ *
+ * UWAGA: wywoluj przez `node`, nie `npm run set --`. Na Windows npm gubi flagi
+ * przekazane po podwojnym mysliniku i do skryptu docieraja same wartosci.
  *
  * Przebieg: panorama -> kontrola linii ciecia (powtarza az do czystego) -> panele
  * -> piec wizualizacji -> PDF-y kazdego panelu -> zapis do kartoteki.
@@ -40,7 +43,8 @@ function arg(nazwa, domyslna) {
 
   if (!motyw || !category || !style) {
     console.error('Brakuje argumentow. Przyklad:');
-    console.error('  npm run set -- --tytul "Misty Lake at Dawn" --kategoria Japonia --styl Illustration');
+    console.error('  node scripts/generateSet.js --tytul "Misty Lake at Dawn" --kategoria Japonia --styl Illustration');
+    console.error('  (nie uzywaj `npm run set --` — na Windows npm gubi flagi)');
     console.error('');
     console.error('  --uklad tryptyk|duo   (domyslnie tryptyk)');
     console.error('  --estetyka japandi    (domyslnie bez estetyki)');
@@ -67,6 +71,8 @@ function arg(nazwa, domyslna) {
     category,
     style,
     title: tytulZestawu,
+    // Do promptu idzie sam motyw — inaczej model maluje "Set of 3 Prints".
+    subjectTitle: motyw,
     aesthetic,
     layout,
     existingPosters: inv.posters,

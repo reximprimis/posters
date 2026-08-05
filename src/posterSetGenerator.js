@@ -159,6 +159,13 @@ async function generateSet({
   category,
   style,
   title,
+  // Motyw do PROMPTU, oddzielony od tytulu produktu.
+  //
+  // Tytul zestawu zawiera etykiete ("Set of 3 Prints — ..."), ktora jest konieczna
+  // dla unikalnosci handla, ale jako opis tematu jest trujaca: model rozpoznal
+  // z niej temat jako "set" i zamiast gaju bambusowego malowalby "zestaw".
+  // Do promptu ma isc sam motyw; etykieta zostaje przy nazwie produktu.
+  subjectTitle,
   aesthetic = '',
   layout = 'tryptyk',
   existingPosters = [],
@@ -174,7 +181,8 @@ async function generateSet({
   const base = makeSafeFileBase(title);
   const panoramaAbs = path.join(outDir, `${base}.png`);
 
-  const prompt = buildPanoramaPrompt({ category, style, title, aesthetic, layout });
+  const motyw = String(subjectTitle || '').trim() || title;
+  const prompt = buildPanoramaPrompt({ category, style, title: motyw, aesthetic, layout });
   const gen = await generateCleanPanorama({
     imageGen,
     promptBase: prompt,
