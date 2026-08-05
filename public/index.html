@@ -6605,6 +6605,25 @@
               </div>
             </details>
 
+            <!-- Typ produktu. To CZWARTA os obok kategorii, stylu i estetyki:
+                 bycie tryptykiem jest niezalezne od tematu, wiec japonski tryptyk
+                 zostaje w Japonii, a nie ląduje w osobnej kategorii "Zestawy". -->
+            <details class="libpop" id="kindFilterPop">
+              <summary class="libpop-trigger">
+                <span class="libpop-label">Typ</span>
+                <span class="libpop-value" id="kindFilterTriggerLabel">Wszystkie</span>
+              </summary>
+              <div class="libpop-panel">
+                <div class="libpop-seg" id="kindFilterGroup" role="group" aria-label="Typ produktu">
+                  <button type="button" class="filter-status-btn" data-kind="all" aria-pressed="true">Wszystkie</button>
+                  <button type="button" class="filter-status-btn" data-kind="single" aria-pressed="false">Pojedyncze</button>
+                  <button type="button" class="filter-status-btn" data-kind="set" aria-pressed="false">Zestawy</button>
+                  <button type="button" class="filter-status-btn" data-kind="duo" aria-pressed="false">Dyptyki</button>
+                  <button type="button" class="filter-status-btn" data-kind="tryptyk" aria-pressed="false">Tryptyki</button>
+                </div>
+              </div>
+            </details>
+
             <div class="libbar-actions">
               <button type="button" class="btn btn-primary btn-filter-apply" id="filterApplyBtn">Zastosuj</button>
               <button type="button" class="btn-filter-clear" id="filterClearBtn">Wyczyść</button>
@@ -6961,6 +6980,9 @@
         filterPendingHint: document.getElementById('filterPendingHint'),
         statusFilterGroup: document.getElementById('statusFilterGroup'),
         mockupFilterGroup: document.getElementById('mockupFilterGroup'),
+        kindFilterGroup: document.getElementById('kindFilterGroup'),
+        kindFilterTriggerLabel: document.getElementById('kindFilterTriggerLabel'),
+        kindFilterPop: document.getElementById('kindFilterPop'),
         modalApprovedPrint: document.getElementById('modalApprovedPrint'),
         modalApprovalFeedback: document.getElementById('modalApprovalFeedback'),
         posterGrid: document.getElementById('posterGrid'),
@@ -7259,6 +7281,9 @@
       /** Filtr stylu: all | dokładna nazwa z artStyle */
       let activeStyleFilter = 'all';
       let draftStyleFilter = 'all';
+      /** Filtr typu produktu: all | single | set | duo | tryptyk */
+      let activeKindFilter = 'all';
+      let draftKindFilter = 'all';
       /** Style z /api/generation-config (kolejność listy filtra) */
       let configArtStylesList = [];
       /** Kategorie z /api/generation-config (kanoniczna lista dla studio + filtrów biblioteki). */
@@ -7550,6 +7575,41 @@
         updatePendingHint();
       }
 
+      const KIND_FILTER_LABELS = {
+        all: 'Wszystkie',
+        single: 'Pojedyncze',
+        set: 'Zestawy',
+        duo: 'Dyptyki',
+        tryptyk: 'Tryptyki',
+      };
+
+      function syncKindFilterButtons() {
+        if (!els.kindFilterGroup) return;
+        els.kindFilterGroup.querySelectorAll('.filter-status-btn').forEach((btn) => {
+          const on = btn.getAttribute('data-kind') === draftKindFilter;
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.classList.toggle('is-active', on);
+        });
+        if (els.kindFilterTriggerLabel) {
+          els.kindFilterTriggerLabel.textContent = KIND_FILTER_LABELS[draftKindFilter] || 'Wszystkie';
+        }
+      }
+
+      function setDraftKindFilter(s) {
+        draftKindFilter = KIND_FILTER_LABELS[s] ? s : 'all';
+        syncKindFilterButtons();
+        updatePendingHint();
+      }
+
+      /** Czy pozycja przechodzi filtr typu. "set" lapie oba uklady naraz. */
+      function itemMatchesKindFilter(item) {
+        if (activeKindFilter === 'all') return true;
+        const jestZestawem = item && item.kind === 'set';
+        if (activeKindFilter === 'single') return !jestZestawem;
+        if (activeKindFilter === 'set') return jestZestawem;
+        return jestZestawem && item.layout === activeKindFilter;
+      }
+
       function syncStatusFilterButtons() {
         if (!els.statusFilterGroup) return;
         els.statusFilterGroup.querySelectorAll('.filter-status-btn').forEach((btn) => {
@@ -7572,7 +7632,8 @@
           draftCategory !== activeCategory ||
           draftStatusFilter !== activeStatusFilter ||
           draftMockupFilter !== activeMockupFilter ||
-          draftStyleFilter !== activeStyleFilter
+          draftStyleFilter !== activeStyleFilter ||
+          draftKindFilter !== activeKindFilter
         );
       }
 
@@ -7592,6 +7653,7 @@
         activeStatusFilter = draftStatusFilter;
         activeMockupFilter = draftMockupFilter;
         activeStyleFilter = draftStyleFilter;
+        activeKindFilter = draftKindFilter;
         updatePendingHint();
         renderGrid();
       }
@@ -7605,6 +7667,8 @@
         activeMockupFilter = 'all';
         draftStyleFilter = 'all';
         activeStyleFilter = 'all';
+        draftKindFilter = 'all';
+        activeKindFilter = 'all';
         searchQuery = '';
         if (els.search) els.search.value = '';
         syncCategoryFilterTrigger();
@@ -7612,6 +7676,7 @@
         syncStyleFilterSelection();
         syncStatusFilterButtons();
         syncMockupFilterButtons();
+        syncKindFilterButtons();
         updatePendingHint();
         renderGrid();
       }
@@ -7737,6 +7802,9 @@
         if (activeStatusFilter === 'approved') msg += ' · tylko: zatwierdzone do druku';
         if (activeMockupFilter === 'missing') msg += ' · tylko: bez mockupu Shopify';
         if (activeMockupFilter === 'has') msg += ' · tylko: z mockupem Shopify';
+        if (activeKindFilter !== 'all') {
+          msg += ' · tylko: ' + (KIND_FILTER_LABELS[activeKindFilter] || '').toLowerCase();
+        }
         if (activeStyleFilter !== 'all') msg += ` · styl: ${activeStyleFilter}`;
         if (searchQuery.trim()) msg += ' · wyszukiwanie tekstowe';
         els.filterResultsMeta.textContent = total === 0 && filteredLen === 0 ? '' : msg;
@@ -8100,6 +8168,7 @@
         if (activeStatusFilter === 'approved' && !item.approvedForPrint) return false;
         if (activeMockupFilter === 'missing' && itemHasMockups(item)) return false;
         if (activeMockupFilter === 'has' && !itemHasMockups(item)) return false;
+        if (!itemMatchesKindFilter(item)) return false;
         if (!searchQuery.trim()) return true;
         const q = searchQuery.trim().toLowerCase();
         const inPrompt = (item.prompt || '').toLowerCase().includes(q);
@@ -9038,12 +9107,14 @@
           draftStatusFilter = activeStatusFilter;
           draftMockupFilter = activeMockupFilter;
           draftStyleFilter = activeStyleFilter;
+          draftKindFilter = activeKindFilter;
           if (els.search) els.search.value = searchQuery;
           categoryCountMap = buildCategoryCountMap(rawCategories);
           renderCategoryFilterList(cats);
           renderLibraryStyleFilterList();
           syncStatusFilterButtons();
           syncMockupFilterButtons();
+          syncKindFilterButtons();
           updatePendingHint();
           renderGrid();
           syncSelectionBasketsWithLibrary();
@@ -9259,6 +9330,15 @@
           if (!btn || !els.mockupFilterGroup.contains(btn)) return;
           const mk = btn.getAttribute('data-mockup');
           if (mk) setDraftMockupFilter(mk);
+        });
+      }
+
+      if (els.kindFilterGroup) {
+        els.kindFilterGroup.addEventListener('click', (e) => {
+          const btn = e.target.closest('.filter-status-btn');
+          if (!btn || !els.kindFilterGroup.contains(btn)) return;
+          const k = btn.getAttribute('data-kind');
+          if (k) setDraftKindFilter(k);
         });
       }
 
