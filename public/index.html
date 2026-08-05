@@ -3151,6 +3151,9 @@
 
     .modal-listing-text {
       margin: 0;
+      /* Opis niesie wlasne akapity i punkty, wiec znaki nowej linii musza byc
+         widoczne — inaczej lista "• ..." skleja sie w jeden ciag tekstu. */
+      white-space: pre-wrap;
       font-family: "DM Sans", system-ui, -apple-system, sans-serif;
       font-size: 0.95rem;
       line-height: 1.65;
