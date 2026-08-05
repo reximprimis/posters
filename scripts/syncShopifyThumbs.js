@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { reconcileInventoryShopifyStates, evaluatePosterShopifyState } = require('../src/shopifyState');
+const { reconcileInventoryShopifyStates, evaluatePosterShopifyState, flattenPosterDir } = require('../src/shopifyState');
 
 const projectRoot = path.resolve(__dirname, '..');
 const inventoryPath = path.join(projectRoot, 'posters_inventory.json');
@@ -23,7 +23,9 @@ function copyIfExists(relPath) {
   const srcAbs = path.join(projectRoot, rel);
   if (!fs.existsSync(srcAbs) || !fs.statSync(srcAbs).isFile()) return null;
   const cleaned = rel.startsWith('posters/') ? rel.slice('posters/'.length) : rel;
-  const outAbs = path.join(outRoot, cleaned);
+  // shopify_thumbs/ zostaje PLASKI. W posters/ kazdy plakat ma wlasny katalog,
+  // ale odtworzenie go tutaj zmienialoby adresy CDN w zywym sklepie.
+  const outAbs = path.join(outRoot, flattenPosterDir(cleaned));
   ensureDirForFile(outAbs);
   fs.copyFileSync(srcAbs, outAbs);
   return path.relative(projectRoot, outAbs).replace(/\\/g, '/');

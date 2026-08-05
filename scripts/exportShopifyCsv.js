@@ -6,6 +6,7 @@ const {
   evaluatePosterShopifyState,
   reconcileInventoryShopifyStates,
   resolveShopifyThumbsRel,
+  flattenPosterDir,
   summarizeApprovedShopifyStates,
 } = require('../src/shopifyState');
 const { humanizePosterTitle, toPosterHandle } = require('../src/posterTitle');
@@ -171,7 +172,11 @@ function toPublicUrl(relPath) {
   const base = String(process.env.SHOPIFY_IMAGE_BASE_URL || '').trim().replace(/\/+$/, '');
   if (!base) return '';
   const shopRel = resolveShopifyThumbsRel(projectRoot, p);
-  const cleaned = shopRel || (p.startsWith('posters/') ? p.slice('posters/'.length) : p);
+  // Sciezka awaryjna dotyczy plakatow jeszcze niezsynchronizowanych do
+  // shopify_thumbs. Musi byc PLASKA, bo tak zapisze je synchronizacja —
+  // inaczej adres wskazywalby katalog plakatu, ktorego tam nigdy nie bedzie.
+  const surowa = p.startsWith('posters/') ? p.slice('posters/'.length) : p;
+  const cleaned = shopRel || flattenPosterDir(surowa);
   return `${base}/${encodeURI(cleaned)}`;
 }
 

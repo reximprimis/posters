@@ -12,11 +12,28 @@ function safeDirSegment(name) {
   );
 }
 
-function getPosterOutputDir(category, style) {
+/**
+ * Katalog wyjsciowy plakatu.
+ *
+ * Podanie `fileBase` daje KAZDEMU PLAKATOWI WLASNY KATALOG:
+ *   posters/Kategoria/styl/Tytul/Tytul_30x40.pdf
+ *
+ * Bez niego pliki wszystkich plakatow ladowaly w jednym katalogu stylu —
+ * po kilkunastu plakatach robilo sie tam ponad sto plikow i nie dalo sie
+ * niczego znalezc. Nazwy plikow zostaja pelne, zeby plik wyslany do drukarni
+ * albo wypakowany z archiwum nadal mowil, ktorego plakatu dotyczy.
+ *
+ * @param {string} category
+ * @param {string} style
+ * @param {string} [fileBase] bezpieczna nazwa bazowa plakatu
+ */
+function getPosterOutputDir(category, style, fileBase) {
   assertCategoryStyleAllowed(category, style);
   const catSeg = safeDirSegment(category);
   const styleSeg = String(style || '').trim();
-  return path.join(config.outputDir, catSeg, styleSeg);
+  const dir = path.join(config.outputDir, catSeg, styleSeg);
+  const baseSeg = safeDirSegment(fileBase);
+  return fileBase && baseSeg !== 'unknown' ? path.join(dir, baseSeg) : dir;
 }
 
 module.exports = {

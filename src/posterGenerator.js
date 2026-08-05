@@ -452,11 +452,12 @@ class PosterBatchGenerator {
       throw new Error('Plik podglądu nie istnieje — wygeneruj podgląd ponownie');
     }
 
-    const outputDir = posterOutputDir(category, style);
+    // Kazdy plakat dostaje wlasny katalog — patrz getPosterOutputDir.
+    const safeFileBase = makeSafeFileBase(title);
+    const outputDir = posterOutputDir(category, style, safeFileBase);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    const safeFileBase = makeSafeFileBase(title);
     const finalAbs = path.join(outputDir, `${safeFileBase}.png`);
 
     assertMasterPathAvailable(category, style, title, commitOpts);
@@ -563,14 +564,15 @@ class PosterBatchGenerator {
     const generatePrintPdfs = options.generatePrintPdfs === true;
     assertCategoryStyleAllowed(category, style);
 
-    const outputDir = posterOutputDir(category, style);
+    assertMasterPathAvailable(category, style, title, options);
+
+    // Kazdy plakat dostaje wlasny katalog — patrz getPosterOutputDir.
+    const safeFileBase = makeSafeFileBase(title);
+    const outputDir = posterOutputDir(category, style, safeFileBase);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    assertMasterPathAvailable(category, style, title, options);
-
-    const safeFileBase = makeSafeFileBase(title);
     const imagePath = path.join(outputDir, `${safeFileBase}.png`);
     const tempPath = tempGenerationPathFromFinal(imagePath);
 
@@ -732,7 +734,9 @@ class PosterBatchGenerator {
 
       assertMasterPathAvailable(categoryKey, style, title, options);
 
-      const outputDir = posterOutputDir(categoryKey, style);
+      // Kazdy plakat dostaje wlasny katalog — patrz getPosterOutputDir.
+      const safeFileBase = makeSafeFileBase(title);
+      const outputDir = posterOutputDir(categoryKey, style, safeFileBase);
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
@@ -755,7 +759,6 @@ class PosterBatchGenerator {
       console.log(`  → Prompt: ${imagePrompt}`);
 
       console.log(`  → Generating image...`);
-      const safeFileBase = makeSafeFileBase(title);
       const imagePath = path.join(outputDir, `${safeFileBase}.png`);
       const tempPath = tempGenerationPathFromFinal(imagePath);
       const matStyle = resolveMatStyleFromOptions(options);

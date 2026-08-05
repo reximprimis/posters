@@ -20,8 +20,10 @@ function makeSafeFileBase(title) {
 }
 
 function resolveMasterAbsPath(category, style, title) {
-  const outputDir = getPosterOutputDir(category, style);
   const safeFileBase = makeSafeFileBase(title);
+  // Katalog per plakat — bez fileBase guard szukalby mastera w starym,
+  // plaskim ukladzie i przepuscilby duplikat pod ta sama nazwa.
+  const outputDir = getPosterOutputDir(category, style, safeFileBase);
   return path.join(outputDir, `${safeFileBase}.png`);
 }
 

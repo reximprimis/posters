@@ -34,28 +34,81 @@ function withFramedSuffix(relPath) {
  * @param {string} relPath e.g. posters/Botanika/Photography/foo_thumb.jpg
  * @returns {string} path relative to shopify_thumbs/, or '' if not found
  */
+/**
+ * Usuwa katalog plakatu ze sciezki wzglednej.
+ *
+ *   Botanika/photography/Golden_Blossom/Golden_Blossom_thumb.jpg
+ *   -> Botanika/photography/Golden_Blossom_thumb.jpg
+ *
+ * W posters/ kazdy plakat ma wlasny katalog, ale shopify_thumbs/ MUSI zostac
+ * PLASKI: to on jest serwowany przez CDN do zywego sklepu, a przebudowa jego
+ * struktury unieruchomilaby ponad 2000 zdjec do czasu ponownego importu CSV.
+ *
+ * Zwraca sciezke bez zmian, gdy nie ma czego usuwac. Wynik trzeba traktowac
+ * jako KANDYDATA i sprawdzic na dysku — nazwa pliku bywa prefiksowana nazwa
+ * STYLU (katalog "Abstract", plik "Abstract_Circuitry_..."), wiec bezwarunkowe
+ * splaszczenie usunelo by katalog stylu.
+ *
+ * @param {string} rel sciezka wzgledna, bez przedrostka posters/
+ * @returns {string}
+ */
+function flattenPosterDir(rel) {
+  const cz = String(rel || '').split('/').filter(Boolean);
+  // Uklad to Kategoria/styl/[Tytul/]plik. Katalog plakatu istnieje dopiero przy
+  // CZTERECH segmentach — przy trzech przedostatni jest katalogiem STYLU i jego
+  // usuniecie wysylaloby pliki w zle miejsce (np. "Abstract/Abstract_Circuitry").
+  if (cz.length < 4) return rel;
+  const plik = cz[cz.length - 1];
+  const katalog = cz[cz.length - 2];
+  if (!katalog || !plik.toLowerCase().startsWith(katalog.toLowerCase())) return rel;
+  cz.splice(cz.length - 2, 1);
+  return cz.join('/');
+}
+
 function resolveShopifyThumbsRel(projectRoot, relPath) {
   let rel = normalizeRelPath(relPath);
   if (!rel) return '';
   if (rel.startsWith('posters/')) rel = rel.slice('posters/'.length);
   if (rel.startsWith('shopify_thumbs/')) rel = rel.slice('shopify_thumbs/'.length);
 
-  const shopRoot = path.join(projectRoot, 'shopify_thumbs');
-  const parts = rel.split('/').filter(Boolean);
-  if (!parts.length) return '';
+  // SPLASZCZENIE KATALOGU PLAKATU.
+  //
+  // W posters/ kazdy plakat ma wlasny katalog (Tytul/Tytul_thumb.jpg), ale
+  // shopify_thumbs/ pozostaje PLASKI — to on jest serwowany przez CDN do zywego
+  // sklepu i przebudowa jego struktury unieruchomilaby ponad 2000 zdjec do czasu
+  // ponownego importu CSV. Katalog posredni odpada, gdy jego nazwa jest prefiksem
+  // nazwy pliku, czyli dokladnie w ukladzie, ktory tworzy migracja.
+  // Splaszczenie jest DRUGA proba, nie pierwsza — patrz flattenPosterDir.
+  const splaszczona = flattenPosterDir(rel);
+  const kandydaci = splaszczona === rel ? [rel] : [rel, splaszczona];
 
-  let walk = shopRoot;
-  const resolved = [];
-  for (const part of parts) {
-    if (!fs.existsSync(walk)) return '';
-    const entries = fs.readdirSync(walk);
-    const hit = entries.find((e) => e.toLowerCase() === part.toLowerCase());
-    if (!hit) return '';
-    resolved.push(hit);
-    walk = path.join(walk, hit);
+  const shopRoot = path.join(projectRoot, 'shopify_thumbs');
+  for (const kandydat of kandydaci) {
+    const parts = kandydat.split('/').filter(Boolean);
+    if (!parts.length) continue;
+
+    let walk = shopRoot;
+    const resolved = [];
+    let ok = true;
+    for (const part of parts) {
+      if (!fs.existsSync(walk)) {
+        ok = false;
+        break;
+      }
+      const entries = fs.readdirSync(walk);
+      const hit = entries.find((e) => e.toLowerCase() === part.toLowerCase());
+      if (!hit) {
+        ok = false;
+        break;
+      }
+      resolved.push(hit);
+      walk = path.join(walk, hit);
+    }
+    if (!ok) continue;
+    if (!fs.existsSync(walk) || !fs.statSync(walk).isFile()) continue;
+    return resolved.join('/');
   }
-  if (!fs.existsSync(walk) || !fs.statSync(walk).isFile()) return '';
-  return resolved.join('/');
+  return '';
 }
 
 /**
@@ -200,6 +253,7 @@ module.exports = {
   fileExists,
   withThumbSuffix,
   withFramedSuffix,
+  flattenPosterDir,
   resolveShopifyThumbsRel,
   evaluatePosterShopifyState,
   reconcileInventoryShopifyStates,
