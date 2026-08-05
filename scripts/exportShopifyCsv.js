@@ -581,8 +581,14 @@ async function main() {
       ...sizeDefs.map((s) => `size_${s.key}`),
     ].filter(Boolean).join(', ');
 
+    // ZESTAW MA TYLKO JEDNA OS WARIANTOW: rozmiar.
+    //
+    // Plakat ma dwie (Print Style + Size), bo istnieje w wersji pelnej i z bialym
+    // marginesem. Zestaw jest wylacznie full bleed, wiec druga os miala by jedna
+    // wartosc — Shopify wyswietlalby wtedy rozwijana liste z jednym wyborem,
+    // co na karcie produktu wyglada jak niedokonczony produkt.
     let rowIndex = 0;
-    for (const printStyle of SET_PRINT_STYLES) {
+    {
       for (const size of sizeDefs) {
         const pierwszy = rowIndex === 0;
         // Cena rozmiaru × mnoznik ukladu, zaokraglona do peldnych groszy.
@@ -597,11 +603,12 @@ async function main() {
           Type: pierwszy ? 'poster set' : '',
           Tags: pierwszy ? tags : '',
           Published: pierwszy ? (z.approvedForPrint ? 'true' : 'false') : '',
-          'Option1 Name': pierwszy ? 'Print Style' : '',
-          'Option1 Value': printStyle.label,
+          // Rozmiar jest JEDYNA osia wariantow zestawu — patrz komentarz wyzej.
+          'Option1 Name': pierwszy ? 'Size' : '',
+          'Option1 Value': size.label,
           'Option1 Linked To': '',
-          'Option2 Name': pierwszy ? 'Size' : '',
-          'Option2 Value': size.label,
+          'Option2 Name': '',
+          'Option2 Value': '',
           'Option2 Linked To': '',
           'Option3 Name': '',
           'Option3 Value': '',
@@ -665,7 +672,8 @@ async function main() {
   console.log(`Shopify CSV exported: ${outputUsedPath}`);
   // Zestaw ma o polowe mniej wierszy niz plakat (jeden print style zamiast dwoch),
   // wiec liczba produktow nie da sie wyliczyc z samej liczby wierszy.
-  const wierszyZestawow = zestawowWyeksportowanych * sizeDefs.length * SET_PRINT_STYLES.length;
+  // Zestaw ma jedna os wariantow (rozmiar), plakat dwie — stad rozne mnozniki.
+  const wierszyZestawow = zestawowWyeksportowanych * sizeDefs.length;
   const wierszyPlakatow = lines.length - 1 - wierszyZestawow;
   console.log(
     `Products exported: ${Math.max(0, Math.floor(wierszyPlakatow / (sizeDefs.length * PRINT_STYLES.length)))}` +
