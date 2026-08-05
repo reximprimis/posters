@@ -50,8 +50,32 @@ function main() {
   let skipped = 0;
   let skippedNotReady = 0;
 
+  // ZESTAWY — osobna petla.
+  //
+  // evaluatePosterShopifyState sprawdza warunki pisane dla pojedynczego plakatu
+  // (master, wariant z ramka, jego miniatura), ktorych zestaw z zalozenia nie ma,
+  // wiec zawsze wypadalby jako "not ready" i jego zdjecia nigdy nie trafialy do
+  // shopify_thumbs. Skutek: produkt w sklepie bez ani jednego zdjecia.
+  let zestawyPliki = 0;
+  let zestawySzt = 0;
+  for (const z of posters) {
+    if (!z || z.kind !== 'set' || z.approvedForPrint !== true) continue;
+    const mk = z.mockups || {};
+    // Komplet galerii zestawu: cztery wizualizacje + miniatura.
+    const doKopii = [mk.interior, mk.frame, mk.interior2, mk.sheets, z.imagePathThumb];
+    let skopiowane = 0;
+    for (const rel of doKopii) {
+      if (rel && copyIfExists(rel)) skopiowane += 1;
+    }
+    if (skopiowane) {
+      zestawyPliki += skopiowane;
+      zestawySzt += 1;
+    }
+  }
+
   for (const p of posters) {
     if (!p || p.approvedForPrint !== true) continue;
+    if (p.kind === 'set') continue; // obsluzone wyzej
     const evalState = evaluatePosterShopifyState(projectRoot, p);
     if (evalState.state !== 'ready') {
       skippedNotReady += 1;
@@ -79,6 +103,7 @@ function main() {
   console.log(`Framed thumbs copied: ${framedCopied}`);
   console.log(`Mockup frame copied: ${mockupFrameCopied}`);
   console.log(`Mockup interior copied: ${mockupInteriorCopied}`);
+  console.log(`Zestawy: ${zestawySzt} (plikow: ${zestawyPliki})`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
   console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
   console.log(
