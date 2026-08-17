@@ -33,9 +33,40 @@ const DEFAULTS = {
 function mergeOptions(opts = {}) {
   const out = { ...DEFAULTS };
   for (const [k, v] of Object.entries(opts)) {
+    // null przechodzi swiadomie — dla background oznacza "bez tla".
+    // Pomijamy tylko undefined, czyli pole faktycznie nieustawione.
     if (v !== undefined) out[k] = v;
   }
   return out;
+}
+
+/**
+ * Zapis wizualizacji. Rozszerzenie decyduje o formacie:
+ *   .png  — zachowuje przezroczystosc (paleta tnie wage, przy plaskich
+ *           cieniach i papierze roznica jest niewidoczna),
+ *   inne  — splaszcza na podany kolor i zapisuje JPEG.
+ *
+ * Dzieki temu ta sama funkcja obsluguje oba warianty i nie trzeba duplikowac
+ * logiki w kazdej wizualizacji.
+ */
+/**
+ * Gorna granica szerokosci zdjec produktowych.
+ *
+ * Shopify i tak skaluje je do okolo 2000 px, a kazdy dodatkowy piksel to waga,
+ * ktora klient pobiera przy otwarciu karty — arkusze tryptyku potrafily miec
+ * 3300 px i ponad 2 MB.
+ */
+const MAX_SZEROKOSC = 2000;
+
+async function zapisz(buf, outputPath, tloDlaJpeg) {
+  const meta = await sharp(buf).metadata();
+  if (meta.width > MAX_SZEROKOSC) buf = await sharp(buf).resize(MAX_SZEROKOSC).toBuffer();
+  if (/\.png$/i.test(outputPath)) {
+    await sharp(buf).png({ palette: true, quality: 90, effort: 7 }).toFile(outputPath);
+  } else {
+    await sharp(buf).flatten({ background: tloDlaJpeg }).jpeg({ quality: 92 }).toFile(outputPath);
+  }
+  return outputPath;
 }
 
 function svgBuffer(svg) {
@@ -91,13 +122,23 @@ async function composeRow(panelPaths, opts = {}) {
   const canvasW = rowW + margin * 2;
   const canvasH = rowH + margin * 2;
 
-  const base = await sharp(
-    svgBuffer(`<svg width="${canvasW}" height="${canvasH}" xmlns="http://www.w3.org/2000/svg">
+  // background === null oznacza PRZEZROCZYSTE plotno. Potrzebne, bo packshot
+  // i arkusze maja sie wtopic w dowolny kolor strony — takze w sezonowa zmiane
+  // kolorystyki sklepu, ktora inaczej wymagalaby generowania wszystkiego od nowa.
+  const base =
+    cfg.background === null
+      ? await sharp({
+          create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+        })
+          .png()
+          .toBuffer()
+      : await sharp(
+          svgBuffer(`<svg width="${canvasW}" height="${canvasH}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="${cfg.background}"/>
     </svg>`)
-  )
-    .png()
-    .toBuffer();
+        )
+          .png()
+          .toBuffer();
 
   const layers = [];
   let x = margin;
@@ -136,8 +177,8 @@ async function buildSetThumbnail(panelPaths, outputPath, opts = {}) {
 
 /** Packshot: same ramy na czystym, neutralnym tle. */
 async function buildSetPackshot(panelPaths, outputPath, opts = {}) {
-  const buf = await composeRow(panelPaths, { panelWidth: 760, background: '#f4f2ee', ...opts });
-  await sharp(buf).jpeg({ quality: 90 }).toFile(outputPath);
+  const buf = await composeRow(panelPaths, { panelWidth: 760, background: null, ...opts });
+  await zapisz(buf, outputPath, '#f4f2ee');
   return outputPath;
 }
 
@@ -287,7 +328,7 @@ async function buildSetStack(panelPaths, outputPath, opts = {}) {
  * @param {{ panelWidth?: number, background?: string }} [opts]
  */
 async function buildSetSheets(panelPaths, outputPath, opts = {}) {
-  const o = mergeOptions(opts);
+  const o = mergeOptions({ background: null, ...opts });
   const panelWidth = Math.round(o.panelWidth || 900);
   const panelHeight = Math.round(panelWidth / PANEL_RATIO);
   const gap = Math.round(panelWidth * 0.16); // szerzej niz przy ramach — arkusze musza czytac sie osobno
@@ -325,14 +366,15 @@ async function buildSetSheets(panelPaths, outputPath, opts = {}) {
     nakladki.push({ input: arkusz, left, top: margin });
   }
 
+  const tlo = o.background === null ? { r: 0, g: 0, b: 0, alpha: 0 } : o.background;
   const buf = await sharp({
-    create: { width: W, height: H, channels: 4, background: o.background },
+    create: { width: W, height: H, channels: 4, background: tlo },
   })
     .composite(nakladki)
     .png()
     .toBuffer();
 
-  await sharp(buf).jpeg({ quality: 92 }).toFile(outputPath);
+  await zapisz(buf, outputPath, '#f4f2ee');
   return outputPath;
 }
 

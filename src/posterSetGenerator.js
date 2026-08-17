@@ -247,11 +247,11 @@ async function generateSet({
   if (onProgress) onProgress({ phase: 'visuals' });
   const panelPaths = split.panels.map((p) => p.path);
   const thumbAbs = path.join(outDir, `${base}_zestaw_thumb.jpg`);
-  const packAbs = path.join(outDir, `${base}_mockup_frame.jpg`);
+  const packAbs = path.join(outDir, `${base}_mockup_frame.png`);
   const interiorAbs = path.join(outDir, `${base}_mockup_interior.jpg`);
   const interior2Abs = path.join(outDir, `${base}_mockup_interior2.jpg`);
-  const sheetsAbs = path.join(outDir, `${base}_arkusze.jpg`);
-  const stackAbs = path.join(outDir, `${base}_kaskada.jpg`);
+  const sheetsAbs = path.join(outDir, `${base}_arkusze.png`);
+  const stackAbs = path.join(outDir, `${base}_kaskada.png`);
 
   await buildSetThumbnail(panelPaths, thumbAbs);
   await buildSetPackshot(panelPaths, packAbs);
