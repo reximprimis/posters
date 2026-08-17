@@ -245,7 +245,7 @@ function routePromptBuildResult({ category, style, title, aesthetic }) {
   if (aestheticId) {
     console.log(`    → Aesthetic: ${aestheticId}`);
   }
-  const imagePrompt = applyAestheticToPrompt(basePrompt, aestheticId);
+  const imagePrompt = applyAestheticToPrompt(basePrompt, aestheticId, String(title || '').trim());
 
   return {
     imagePrompt,

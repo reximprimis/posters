@@ -187,10 +187,27 @@ function buildAestheticBlock(aestheticId) {
  * @param {string} [aestheticId]
  * @returns {string}
  */
-function applyAestheticToPrompt(prompt, aestheticId) {
+/**
+ * @param {string} prompt
+ * @param {string} aestheticId
+ * @param {string} [title] tytul plakatu — sluzy do przypomnienia tematu NA KONCU
+ */
+function applyAestheticToPrompt(prompt, aestheticId, title) {
   const block = buildAestheticBlock(aestheticId);
   if (!block) return prompt;
-  return `${prompt}\n\n${block}`;
+
+  // Blok estetyki potrafil porwac temat: Bauhaus zamienial plakat typograficzny
+  // w kompozycje kol i trojkatow, a estetyka wystawowa zamieniala Skorpiona
+  // w mglista gore. Przyczyna: opisy estetyk mowia o ksztaltach ("circles,
+  // squares and triangles"), czyli o TEMACIE, a zdanie chroniace temat stalo
+  // w srodku bloku, gdzie model wazy je najslabiej. Dlatego przypomnienie
+  // idzie na sam koniec — tam ma najwiekszy wplyw — i wymienia tytul z nazwy.
+  const t = String(title || '').trim();
+  const przypomnienie = t
+    ? `SUBJECT STAYS: this aesthetic changes palette, texture and mood ONLY. The artwork must still depict the subject named by the title "${t}". If the aesthetic description mentions shapes or motifs, treat them as styling of that subject — never as a replacement for it.`
+    : 'SUBJECT STAYS: this aesthetic changes palette, texture and mood ONLY. It must never replace the subject defined earlier in this prompt.';
+
+  return `${prompt}\n\n${block}\n${przypomnienie}`;
 }
 
 /** Fragment do promptu tytulow, zeby nazwy pasowaly do nastroju. */

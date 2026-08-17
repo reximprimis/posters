@@ -93,7 +93,57 @@ class PosterBatchGenerator {
     return { posters: [], createdAt: new Date().toISOString() };
   }
 
+  /**
+   * Pola, ktorych generator NIE jest wlascicielem — ustawia je czlowiek w panelu
+   * albo pipeline po zatwierdzeniu. Przy zapisie bierzemy je z DYSKU, nie z pamieci.
+   */
+  static get POLA_SPOZA_GENERATORA() {
+    return ['approvedForPrint', 'shopifyState', 'shopifyStateUpdatedAt', 'shopifyIssues'];
+  }
+
+  /**
+   * Zapisuje kartoteke, scalajac ja najpierw ze stanem z dysku.
+   *
+   * DLACZEGO NIE ZWYKLY ZAPIS: generator trzyma cala kartoteke w pamieci od
+   * momentu utworzenia obiektu, a jeden plakat powstaje minutami (obraz +
+   * upscale). Zwykly writeFileSync odtwarzal wtedy STAN SPRZED kilku minut
+   * i kasowal wszystko, co w miedzyczasie zrobil uzytkownik w panelu —
+   * najczesciej wlasnie zatwierdzenie do druku, ktore "przestawalo dzialac"
+   * bez zadnego bledu.
+   *
+   * Rekordy nowe biora wartosci z pamieci; rekordy juz istniejace na dysku
+   * zachowuja swoje pola spoza generatora.
+   */
   saveDatabase() {
+    let zDysku = null;
+    try {
+      if (fs.existsSync(this.dbFile)) {
+        zDysku = JSON.parse(fs.readFileSync(this.dbFile, 'utf-8'));
+      }
+    } catch (_) {
+      zDysku = null; // uszkodzony plik — nie blokujemy zapisu
+    }
+
+    if (zDysku && Array.isArray(zDysku.posters)) {
+      const naDysku = new Map();
+      for (const p of zDysku.posters) {
+        if (p && p.id) naDysku.set(p.id, p);
+      }
+      for (const p of this.db.posters) {
+        const dyskowy = p && p.id ? naDysku.get(p.id) : null;
+        if (!dyskowy) continue;
+        for (const pole of PosterBatchGenerator.POLA_SPOZA_GENERATORA) {
+          if (Object.prototype.hasOwnProperty.call(dyskowy, pole)) p[pole] = dyskowy[pole];
+        }
+      }
+      // Rekordy dopisane na dysku przez kogos innego w trakcie naszej pracy
+      // musza przetrwac — inaczej znikaja bez sladu.
+      const wPamieci = new Set(this.db.posters.map((p) => p && p.id).filter(Boolean));
+      for (const p of zDysku.posters) {
+        if (p && p.id && !wPamieci.has(p.id)) this.db.posters.push(p);
+      }
+    }
+
     fs.writeFileSync(this.dbFile, JSON.stringify(this.db, null, 2), 'utf-8');
   }
 
