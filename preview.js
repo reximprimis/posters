@@ -177,6 +177,46 @@ async function autoFillMissingShopListingsByImageKeys(imageKeys) {
  * Skips silently if OPENAI_API_KEY is not set.
  * INFO-DOC: When mockup logic changes, update #itab-mockups in public/index.html.
  */
+/**
+ * Czy mockupy tego plakatu leza juz na dysku.
+ *
+ * Sprawdzamy PLIKI, nie rekord: rekord bywa niekompletny, a wygenerowany
+ * plik kosztowal pieniadze i nie ma powodu robic go drugi raz.
+ */
+function mockupyIstniejaNaDysku(poster) {
+  const rel = String((poster && poster.imagePath) || '').replace(/\\/g, '/');
+  if (!rel) return false;
+  const abs = path.isAbsolute(rel) ? rel : path.join(__dirname, rel);
+  const katalog = path.dirname(abs);
+  if (!fs.existsSync(katalog)) return false;
+  const pliki = fs.readdirSync(katalog);
+  return (
+    pliki.some((f) => f.includes('_mockup_frame')) &&
+    pliki.some((f) => f.includes('_mockup_interior'))
+  );
+}
+
+/**
+ * Dopisuje mockupy JEDNEGO plakatu, scalajac ze stanem z dysku.
+ *
+ * Czyta plik tuz przed zapisem, zeby nie nadpisac zmian, ktore zaszly
+ * w miedzyczasie — najczesciej zatwierdzenia do druku klikanego w panelu
+ * podczas dlugiego generowania.
+ */
+function zapiszMockupyDoKartoteki(posterId, mockups) {
+  if (!posterId || !fs.existsSync(INVENTORY_PATH)) return;
+  try {
+    const swieze = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    const lista = Array.isArray(swieze) ? swieze : swieze.posters || [];
+    const rek = lista.find((p) => p && p.id === posterId);
+    if (!rek) return;
+    rek.mockups = mockups;
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(swieze, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('  [mockup-auto] Nie udalo sie zapisac mockupow: ' + e.message);
+  }
+}
+
 async function generateMockupsForPosterIds(posterIds) {
   if (!process.env.OPENAI_API_KEY) {
     console.log('  [mockup-auto] Skipping — OPENAI_API_KEY not set');
@@ -189,15 +229,15 @@ async function generateMockupsForPosterIds(posterIds) {
   for (const id of posterIds) {
     const poster = posters.find((p) => p && p.id === id);
     if (!poster) continue;
-    // Skip if both mockup files already exist on disk
-    if (poster.mockups && poster.mockups.frame && poster.mockups.interior) {
-      const frameAbs = path.isAbsolute(poster.mockups.frame)
-        ? poster.mockups.frame
-        : path.join(__dirname, poster.mockups.frame);
-      if (fs.existsSync(frameAbs)) {
-        console.log(`  [mockup-auto] Already exists, skipping: ${poster.title}`);
-        continue;
-      }
+    // O pominieciu decyduje DYSK, nie rekord.
+    //
+    // Wczesniej warunek wymagal, zeby rekord mial pole `mockups`. Skutek byl
+    // kosztowny: gdy rekord to pole zgubil (a przy zapisach calego pliku
+    // zdarzalo sie to regularnie), gotowe pliki lezaly na dysku, a zadanie
+    // i tak generowalo je od nowa — placac drugi raz za to samo.
+    if (mockupyIstniejaNaDysku(poster)) {
+      console.log(`  [mockup-auto] Already exists, skipping: ${poster.title}`);
+      continue;
     }
     const relPath = poster.imagePath || '';
     if (!relPath) continue;
@@ -219,6 +259,14 @@ async function generateMockupsForPosterIds(posterIds) {
         generatedAt: new Date().toISOString(),
       };
       changed = true;
+      // Zapis PO KAZDYM plakacie, nie raz na koncu calej kolejki.
+      //
+      // Kolejka 100 plakatow to godziny generowania. Przy zapisie na koncu
+      // kazdy restart serwera kasowal cala prace, a stan trzymany w pamieci
+      // przez ten czas nadpisywal wszystko, co w miedzyczasie zmienil
+      // uzytkownik w panelu. Zapis przyrostowy scala z dyskiem, wiec ani
+      // nie gubi wlasnej roboty, ani nie depcze cudzej.
+      zapiszMockupyDoKartoteki(poster.id, poster.mockups);
       console.log(`  [mockup-auto] Done: ${poster.title}`);
     } catch (err) {
       console.warn(`  [mockup-auto] Failed for ${poster.title || id}: ${err.message}`);
