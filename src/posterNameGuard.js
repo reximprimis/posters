@@ -9,9 +9,38 @@ const { getPosterOutputDir } = require('./posterPaths');
 const { titleFromFileName, toPosterHandle } = require('./posterTitle');
 const { normalizeTitleKey } = require('./categoryTitlePools');
 
+/**
+ * Polskie znaki na odpowiedniki ASCII.
+ *
+ * NFD + odsiew znakow laczacych zalatwia wiekszosc diakrytyki (é, ü, ñ),
+ * ale NIE polskiego "ł" — to osobny znak, nie "l" z ogonkiem, wiec normalizacja
+ * go nie rozklada. Stad jawna mapa.
+ */
+const POLSKIE_NA_ASCII = {
+  ą: 'a', ć: 'c', ę: 'e', ł: 'l', ń: 'n', ó: 'o', ś: 's', ź: 'z', ż: 'z',
+  Ą: 'A', Ć: 'C', Ę: 'E', Ł: 'L', Ń: 'N', Ó: 'O', Ś: 'S', Ź: 'Z', Ż: 'Z',
+};
+
+/**
+ * Nazwa pliku i katalogu plakatu — zawsze czyste ASCII.
+ *
+ * DLACZEGO ASCII: te nazwy trafiaja do sciezek serwowanych przez CDN, a znaki
+ * spoza ASCII wymagaja tam kodowania URL i sa zrodlem mojibake. Dokladnie taki
+ * blad rozbil pule pomieszczen na duplikaty ("Do lazienki" obok "Do Ĺ‚azienki")
+ * — ta sama pula liczona dwa razy, filtr pokazujacy polowe katalogu.
+ * Tytul plakatu moze miec polskie znaki do woli; nazwa pliku nie.
+ */
 function makeSafeFileBase(title) {
   const raw = String(title || '').trim();
-  const slug = raw
+  const zlatynizowany = raw
+    .split('')
+    .map((c) => (POLSKIE_NA_ASCII[c] !== undefined ? POLSKIE_NA_ASCII[c] : c))
+    .join('')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^\x20-\x7E]/g, '_');
+
+  const slug = zlatynizowany
     .replace(/\s+/g, '_')
     .replace(/[<>:"/\\|?*\x00-\x1F]+/g, '_')
     .replace(/_+/g, '_')
