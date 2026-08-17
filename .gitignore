@@ -53,3 +53,8 @@ posters_inventory.PRZED_*.json
 posters_inventory.backup_*.json
 migracja_katalogow_mapa*.json
 zestawy_robocze/
+
+# WYJATEK: shopify_thumbs to zrodlo dla CDN, ktory serwuje zdjecia do sklepu.
+# Blanket *.png powyzej blokowal tam przezroczyste packshoty, arkusze i kaskady —
+# w repo ladowaly tylko JPEG-i, a adresy PNG w CSV zwracaly 404.
+!shopify_thumbs/**/*.png
