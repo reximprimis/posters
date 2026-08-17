@@ -55,6 +55,9 @@ const CATEGORIES = [
   { key: 'kids-nursery', slug: 'kids-nursery', name: 'Kids & Nursery', legacyPl: ['Plakaty dla dzieci'] },
   { key: 'kitchen-food', slug: 'kitchen-food', name: 'Kitchen & Food', legacyPl: ['Kuchnia i jedzenie'] },
   { key: 'line-art-figures', slug: 'line-art-figures', name: 'Line Art & Figures', legacyPl: [] },
+  // Milosc jest kategoria, nie okazja. Walentynki trwaja tydzien i siedza
+  // na osi czasu; plakat o milosci wisi w sypialni caly rok.
+  { key: 'love-romance', slug: 'love-romance', name: 'Love & Romance', legacyPl: [] },
   { key: 'mountains-hiking', slug: 'mountains-hiking', name: 'Mountains & Hiking', legacyPl: [] },
   { key: 'music-sound', slug: 'music-sound', name: 'Music & Sound', legacyPl: ['Muzyka i dźwięk'] },
   { key: 'nature-landscapes', slug: 'nature-landscapes', name: 'Nature & Landscapes', legacyPl: ['Natura i krajobrazy'] },
