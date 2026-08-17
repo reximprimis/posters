@@ -185,7 +185,9 @@ function buildRoomSvg(W, H) {
 async function buildSetStack(panelPaths, outputPath, opts = {}) {
   const panelWidth = Math.round(opts.panelWidth || 620);
   const panelHeight = Math.round(panelWidth * 1.5); // arkusz 2:3
-  const tlo = opts.background || '#f2efe9';
+  // Tlo domyslnie PRZEZROCZYSTE: kaskada ma wtopic sie w dowolny kolor strony.
+  // Podanie background daje plaskie tlo, gdy gdzies potrzebny jest JPEG.
+  const tlo = opts.background || null;
 
   // Ile arkusz chowa sie za poprzednim. 0.36 daje ciaglosc sceny;
   // przy mniejszym nachodzeniu kompozycja rozpada sie na trzy obrazki.
@@ -254,12 +256,20 @@ async function buildSetStack(panelPaths, outputPath, opts = {}) {
     nakladki.push({ input: w.arkusz, left, top });
   }
 
-  const buf = await sharp({ create: { width: W, height: H, channels: 3, background: tlo } })
-    .composite(nakladki)
-    .png()
-    .toBuffer();
+  const plotno = tlo
+    ? { width: W, height: H, channels: 4, background: tlo }
+    : { width: W, height: H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } };
 
-  await sharp(buf).jpeg({ quality: 92 }).toFile(outputPath);
+  const buf = await sharp({ create: plotno }).composite(nakladki).png().toBuffer();
+
+  // Przezroczystosc przezywa tylko w PNG. Paleta ograniczona do 256 kolorow
+  // z dithering tnie wage o rzad wielkosci, a przy plaskich cieniach i papierze
+  // roznica jest niewidoczna — pliki ida przez CDN, wiec waga ma znaczenie.
+  if (/\.png$/i.test(outputPath)) {
+    await sharp(buf).png({ palette: true, quality: 90, effort: 7 }).toFile(outputPath);
+  } else {
+    await sharp(buf).flatten({ background: tlo || '#f2efe9' }).jpeg({ quality: 92 }).toFile(outputPath);
+  }
   return outputPath;
 }
 
