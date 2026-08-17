@@ -70,6 +70,25 @@ const CATEGORIES = [
   { key: 'vehicles', slug: 'vehicles', name: 'Vehicles', legacyPl: ['Pojazdy'] },
   { key: 'wellness-yoga', slug: 'wellness-yoga', name: 'Wellness & Yoga', legacyPl: ['Wellness i joga'] },
   { key: 'zodiac-astrology', slug: 'zodiac-astrology', name: 'Zodiac & Astrology', legacyPl: [] },
+
+  /**
+   * Kategoria lokalna, zamknieta na jeden rynek.
+   *
+   * `markets` to biala lista rynkow: pusta/brak = wszedzie, ['pl'] = tylko
+   * Polska. Klub sportowy z Myslakowic nic nie znaczy dla kupujacego
+   * w Niemczech i tylko rozmydla katalog, ale w promieniu kilkudziesieciu
+   * kilometrow ma realna publicznosc.
+   *
+   * Nazwa zostaje po polsku swiadomie — to jedyna kategoria, ktorej klient
+   * jest polskojezyczny, wiec angielski napis bylby tu bledem, a nie spojnoscia.
+   */
+  {
+    key: 'club-orzel',
+    slug: 'club-orzel',
+    name: 'Klub Orzeł Mysłakowice',
+    legacyPl: [],
+    markets: ['pl'],
+  },
 ];
 
 /**
@@ -367,6 +386,51 @@ function normalizeColors(wartosc) {
   return wynik;
 }
 
+/**
+ * Kolekcje autorskie — siodma os, czysto redakcyjna.
+ *
+ * To jedyna os, ktorej nie da sie wyliczyc: kategoria wynika z tematu, kolor
+ * z pikseli, okazja z kalendarza — a kolekcja z decyzji czlowieka. Galerix ma
+ * "Cape Town Collection", wall-being "Punkty stale"; to daje katalogowi
+ * narracje, ktorej algorytm nie wyprodukuje.
+ *
+ * Plakat NALEZY do kolekcji niezaleznie od kategorii: widok Sniezki jest
+ * w `mountains-hiking`, panorama Jeleniej Gory w `cities-travel`, a obie
+ * moga byc w kolekcji "Karkonosze". Dlatego to pole, a nie kategoria.
+ */
+const COLLECTIONS = [
+  {
+    key: 'karkonosze',
+    name: 'Karkonosze',
+    description:
+      'Śnieżka, Karpacz, kotlina i pałace — region widziany tak, jak wygląda z okna, a nie z folderu turystycznego.',
+    // Bez ograniczenia rynkowego: w Karpaczu niemieckich turystow nie brakuje,
+    // a gory sprzedaja sie takze poza regionem.
+    markets: null,
+  },
+];
+
+const COLL_BY_KEY = new Map(COLLECTIONS.map((c) => [c.key, c]));
+
+function getCollection(key) {
+  return COLL_BY_KEY.get(String(key || '').trim().toLowerCase()) || null;
+}
+
+function isKnownCollection(key) {
+  return COLL_BY_KEY.has(String(key || '').trim().toLowerCase());
+}
+
+/** Plakat moze nalezec do kilku kolekcji naraz albo do zadnej. */
+function normalizeCollections(wartosc) {
+  const lista = Array.isArray(wartosc) ? wartosc : wartosc == null ? [] : [wartosc];
+  const wynik = [];
+  for (const x of lista) {
+    const k = String(x || '').trim().toLowerCase();
+    if (isKnownCollection(k) && !wynik.includes(k)) wynik.push(k);
+  }
+  return wynik;
+}
+
 const CAT_BY_KEY = new Map(CATEGORIES.map((c) => [c.key, c]));
 const CAT_BY_LEGACY = new Map();
 for (const c of CATEGORIES) {
@@ -404,6 +468,28 @@ function legacyCategoryToKey(nazwa, tytul) {
 function categoryName(key) {
   const c = getCategory(key);
   return c ? c.name : String(key || '');
+}
+
+/**
+ * Rynki, na ktorych kategoria ma sie pokazywac.
+ * @returns {string[]|null} null = bez ograniczen
+ */
+function categoryMarkets(key) {
+  const c = getCategory(key);
+  return c && Array.isArray(c.markets) && c.markets.length ? c.markets : null;
+}
+
+/**
+ * Czy kategoria nalezy do danego rynku. Kategoria bez ograniczen nalezy
+ * do kazdego — dzieki temu dodanie pola `markets` jest w pelni addytywne
+ * i nie rusza dotychczasowego katalogu.
+ * @param {string} key
+ * @param {string} rynek np. 'pl', 'de'
+ */
+function categoryInMarket(key, rynek) {
+  const m = categoryMarkets(key);
+  if (!m) return true;
+  return m.includes(String(rynek || '').trim().toLowerCase());
 }
 
 /** Katalog na dysku i fragment URL w CDN. */
@@ -467,6 +553,10 @@ module.exports = {
   CATEGORIES,
   OCCASIONS,
   ROOMS,
+  COLLECTIONS,
+  getCollection,
+  isKnownCollection,
+  normalizeCollections,
   COLORS,
   colorName,
   isKnownColor,
@@ -483,6 +573,8 @@ module.exports = {
   legacyCategoryToKey,
   categoryName,
   categorySlug,
+  categoryMarkets,
+  categoryInMarket,
   getOccasion,
   isKnownOccasion,
   normalizeOccasions,

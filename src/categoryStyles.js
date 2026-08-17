@@ -45,6 +45,8 @@ const CATEGORIES = [
   'fitness-gym',
   'fashion-beauty',
   'love-romance',
+  // Kategoria lokalna, zamknieta na rynek polski — patrz markets w taxonomy.js.
+  'club-orzel',
   // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
   // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
 ];
@@ -107,6 +109,8 @@ const CATEGORY_DESCRIPTIONS = {
     'dumbbells, barbells, kettlebells, running form, boxing gloves, gym interiors, athletic silhouettes in motion, disciplined training mood — equipment and movement, never brand logos or real athletes',
   'fashion-beauty':
     'perfume bottles, lipstick, heels, handbags, fashion illustration figures, fabric folds, dressing-table still life — elegant editorial styling with no readable brand names',
+  'club-orzel':
+    'Orzel Myslakowice football club: the club crest as the hero element, stadium under floodlights, football on grass, goal net, corner flag, club scarf, terrace atmosphere — green and gold club colours throughout, community pride of a small-town club',
   'love-romance':
     'couples in embrace, intertwined hands, hearts used sparingly, shared everyday intimacy, anniversary and togetherness motifs — warm and tender rather than sentimental',
 };
@@ -141,6 +145,7 @@ const CATEGORY_STYLES = {
   'fitness-gym': ['Photography', 'Minimalism', 'Line art', 'Illustration'],
   'fashion-beauty': ['Illustration', 'Photography', 'Line art', 'Minimalism'],
   'love-romance': ['Line art', 'Minimalism', 'Illustration', 'Abstract'],
+  'club-orzel': ['Illustration', 'Photography', 'Minimalism'],
 };
 
 /** Sales / room collections — tags only, never generator categories or output folders. */
@@ -187,13 +192,14 @@ const CATEGORY_ROOM_COLLECTIONS = {
   'fitness-gym': ['Do biura', 'Do pokoju młodzieżowego', 'Do salonu'],
   'fashion-beauty': ['Do sypialni', 'Do łazienki', 'Do salonu', 'Do gabinetu'],
   'love-romance': ['Do sypialni', 'Do salonu'],
+  'club-orzel': ['Do pokoju młodzieżowego', 'Do salonu', 'Do biura', 'Do kawiarni'],
 };
 
 // 71 par bazowych + 3 dolozone przy scaleniu (cities-travel dostalo Illustration
 // i Line art, botanical — Illustration). Poprzednie 83 zawieralo 12 par z trzech
 // kategorii dodanych 2026-08-03, ktore zostaly scalone: Japonia i "Podroze
 // i plakaty vintage" w cities-travel, "Grzyby i las" w botanical.
-const EXPECTED_ALLOWED_COMBINATIONS = 104;
+const EXPECTED_ALLOWED_COMBINATIONS = 107;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).

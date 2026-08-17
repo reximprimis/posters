@@ -25,7 +25,14 @@ const DOL = 'ORZEŁ MYSŁAKOWICE';
 const ZLOTO = '#e3c07a';
 const ZLOTO_MOCNE = '#f0d79b';
 
-/** Rozstrzelenie liter — heraldyka lubi powietrze miedzy znakami. */
+/**
+ * Rozstrzelenie liter — heraldyka lubi powietrze miedzy znakami.
+ *
+ * Kroj: Cambria, NIE Georgia. Georgia ma domyslnie cyfry tekstowe (starodawne),
+ * wiec "80 LAT" czytalo sie jak "8o LAT" — zero bylo male i osadzone nisko.
+ * Cambria, Times i Palatino maja cyfry wersalikowe; Constantia ma ten sam
+ * problem co Georgia.
+ */
 function svgNapisow(W, H) {
   const margines = Math.round(W * 0.1);
   const szerLinii = W - 2 * margines;
@@ -41,7 +48,7 @@ function svgNapisow(W, H) {
   return Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
       <text x="${W / 2}" y="${yGora}" text-anchor="middle"
-            font-family="Georgia, 'Times New Roman', serif" font-size="${rozmiarGora}"
+            font-family="Cambria, 'Times New Roman', serif" font-size="${rozmiarGora}"
             font-weight="bold" letter-spacing="${Math.round(rozmiarGora * 0.12)}"
             fill="${ZLOTO_MOCNE}">${GORA}</text>
 
@@ -55,7 +62,7 @@ function svgNapisow(W, H) {
             stroke="${ZLOTO}" stroke-width="${Math.max(1, Math.round(W * 0.0008))}" opacity="0.4"/>
 
       <text x="${W / 2}" y="${yDol}" text-anchor="middle"
-            font-family="Georgia, 'Times New Roman', serif" font-size="${rozmiarDol}"
+            font-family="Cambria, 'Times New Roman', serif" font-size="${rozmiarDol}"
             letter-spacing="${Math.round(rozmiarDol * 0.22)}"
             fill="${ZLOTO}">${DOL}</text>
     </svg>`,

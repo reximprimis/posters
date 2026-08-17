@@ -629,6 +629,27 @@ const CATEGORY_TITLE_POOLS = {
     'Balcony Embrace Evening',
     'Rose And Hand',
   ],
+  'club-orzel': [
+    // Tytuly po POLSKU — jedyna kategoria z polskojezycznym klientem.
+    'Herb Klubu na Zielonym',
+    'Stadion pod Światłami',
+    'Piłka na Murawie o Świcie',
+    'Szalik na Trybunie',
+    'Rożna Chorągiewka',
+    'Siatka Bramki z Bliska',
+    'Korki na Trawie',
+    'Boisko o Poranku',
+    'Trybuna Pełna Ludzi',
+    'Piłka w Siatce',
+    'Murawa po Deszczu',
+    'Wejście na Boisko',
+    'Zielono-Złote Barwy',
+    'Osiemdziesiąt Lat Klubu',
+    'Karkonosze nad Boiskiem',
+    'Klubowa Szatnia',
+    'Puchar w Gablocie',
+    'Mecz w Mysłakowicach',
+  ],
 };
 
 /** Slogan patterns that produce vague non-visual titles per category. */
