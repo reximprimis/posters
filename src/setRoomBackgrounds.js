@@ -118,10 +118,10 @@ function getPrimaryRoom() {
 
 /**
  * Tlo dla SALON 2 — dobierane do kategorii, zeby Cyberpunk nie dostawal
- * tego samego jasnego japandi co Japonia.
+ * tego samego jasnego japandi co botanika.
  */
 const CATEGORY_ROOM = {
-  Japonia: 'jadalnia_komoda',
+
   'botanical': 'jadalnia_komoda',
   'abstract': 'sypialnia',
   Minimalizm: 'sypialnia',

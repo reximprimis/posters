@@ -173,24 +173,30 @@ check('liczba par wbudowanych zgadza sie z deklaracja', () => {
   expectEqual(cs.getBuiltInCategoryStylePairs().length, cs.EXPECTED_ALLOWED_COMBINATIONS, 'pary wbudowane');
 });
 
-check('nowe kategorie tematyczne maja dedykowany tryb promptu', () => {
-  const pr2 = require(path.join(__dirname, '..', 'src', 'promptRouter'));
-  for (const c of ['Japonia', 'Podróże i plakaty vintage', 'Grzyby i las']) {
-    const styles = cs.getAllowedStylesForCategory(c);
-    expectTrue(styles.length >= 3, `${c}: liczba stylow`);
-    for (const s of styles) {
-      const kind = pr2.getPromptRouteKind(c, s);
-      if (kind === 'core_fallback' || kind === 'style_generic') {
-        throw new Error(`${c} + ${s}: trasa ${kind}, oczekiwano dedykowanego trybu`);
-      }
-    }
+check('kategorie po scaleniu przejely style i tytuly', () => {
+  const pools = require(path.join(__dirname, '..', 'src', 'categoryTitlePools'));
+  const pule = pools.CATEGORY_TITLE_POOLS || pools;
+  // Scalenie mialo POSZERZYC kategorie docelowe, nie tylko skasowac zrodlowe.
+  // Bez tego sprawdzenia "scalenie" moglo po cichu oznaczac utrate tytulow.
+  for (const [c, min] of [['cities-travel', 40], ['botanical', 60], ['animals', 50]]) {
+    expectTrue(cs.isKnownCategory(c), `${c} jako kategoria`);
+    expectTrue(pule[c] && pule[c].length >= min, `${c}: pula >= ${min} (jest ${pule[c] ? pule[c].length : 0})`);
   }
+  for (const s of ['Illustration', 'Line art']) {
+    expectTrue(cs.getAllowedStylesForCategory('cities-travel').includes(s), `cities-travel przejelo styl ${s}`);
+  }
+  expectTrue(cs.getAllowedStylesForCategory('botanical').includes('Illustration'), 'botanical przejelo Illustration');
 });
 
-check('Japonia to TEMAT, a japandi to ESTETYKA — nie mylimy osi', () => {
-  expectTrue(cs.isKnownCategory('Japonia'), 'Japonia jako kategoria');
+check('Japonia to ESTETYKA, nie kategoria — kraj nie jest tematem', () => {
+  // Zmiana wobec wczesniejszej decyzji, ktora trzymala "Japonie" jako temat.
+  // Powod: kraj jako kategoria nie skaluje sie (czemu nie Niemcy, Korea, USA?),
+  // a to, co ja naprawde wyrozniało, bylo technika — drzeworyt. Miejsca
+  // przeszly do cities-travel, idiom na os estetyk.
+  expectEqual(cs.isKnownCategory('Japonia'), false, 'Japonia nie moze byc kategoria');
   expectEqual(cs.isKnownCategory('Japandi'), false, 'Japandi nie moze byc kategoria');
   expectTrue(ae.isKnownAesthetic('japandi'), 'japandi jako estetyka');
+  expectTrue(ae.isKnownAesthetic('ukiyo-e'), 'ukiyo-e jako estetyka');
 });
 
 check('wbudowana kategoria nie jest kategoria uzytkownika', () => {

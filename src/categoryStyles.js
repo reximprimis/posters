@@ -35,16 +35,14 @@ const CATEGORIES = [
   'music-sound',
   'wellness-yoga',
   'symbols-sacred-geometry',
-  // Dodane 2026-08-03 na podstawie researchu rynku wall-art.
   // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
   // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
-  'Japonia',
-  'Podróże i plakaty vintage',
-  'Grzyby i las',
 ];
 
 /** What is on the poster — generator categories only. */
 const CATEGORY_DESCRIPTIONS = {
+  // Poszerzone o dawna kategorie "Grzyby i las": grzyby i runo to botanika,
+  // a nie osobny temat.
   'botanical':
     'botanical plants, flowers, branches, leaves, organic forms, delicate botanical compositions',
   'abstract':
@@ -52,7 +50,8 @@ const CATEGORY_DESCRIPTIONS = {
   'nature-landscapes':
     'mountains, forests, lakes, rivers, fields, hills, mist, natural landscapes',
   'animals': 'pets, wildlife, birds, dogs, cats, horses, wild animals',
-  'cities-travel': 'cities, skylines, urbanism, maps, topography, streets, urban architecture',
+  'cities-travel':
+    'cities, skylines, urbanism, maps, topography, streets, urban architecture; also travel landmarks and destinations — national park vistas, canyons, alpine peaks, desert arches, coastal cliffs, torii gates, pagodas, zen gardens — in retro travel-poster graphic language, never with lettering',
   'kids-nursery':
     'Boho-Scandi nursery art: soft watercolor animals, boho rainbows, moon and stars, muted earthy pastels on cream — calm modern nursery, not cartoon clipart',
   'space-astronomy': 'planets, moon, stars, galaxies, nebulae, astronomy, cosmic landscapes',
@@ -84,20 +83,14 @@ const CATEGORY_DESCRIPTIONS = {
     'yoga, meditation, calm lifestyle, breath, balance, spa, slow living, soft morning, organic forms, quiet wellness',
   'symbols-sacred-geometry':
     'sacred geometry drawn with compass precision: mandalas, Sri Yantra, Flower of Life, Metatron cube, Tree of Life, chakra diagrams, Enso circle, lotus, moon phases, Celtic knot, yin-yang, Om — symmetrical ritual diagrams rendered as fine-art prints, exact and architectural rather than misty',
-  Japonia:
-    'torii gate, Mount Fuji, cherry blossom branch, koi carp, crane in flight, bamboo grove, zen garden raked gravel, stone lantern, misty Japanese mountains, stylised wave — Japanese motifs treated as calm fine art',
-  'Podróże i plakaty vintage':
-    'travel landmarks, national park vistas, canyons, alpine peaks, desert arches, coastal cliffs, retro travel-poster graphic language with bold simplified shapes and flat layered color — no lettering',
-  'Grzyby i las':
-    'mushrooms, toadstools, fern fronds, moss, forest floor detail, woodland undergrowth, tree bark, cottagecore forest mood, quiet damp woodland light',
 };
 
 const CATEGORY_STYLES = {
-  'botanical': ['Photography', 'Minimalism', 'Line art'],
+  'botanical': ['Photography', 'Minimalism', 'Line art', 'Illustration'],
   'abstract': ['Abstract', 'Minimalism'],
   'nature-landscapes': ['Photography', 'Minimalism'],
   'animals': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
-  'cities-travel': ['Photography', 'Minimalism', 'Abstract'],
+  'cities-travel': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Line art'],
   'kids-nursery': ['Illustration', 'Minimalism'],
   'space-astronomy': ['Abstract', 'Illustration', 'Photography'],
   'retro-vintage': ['Photography', 'Abstract'],
@@ -114,9 +107,6 @@ const CATEGORY_STYLES = {
   'music-sound': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
   'wellness-yoga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'symbols-sacred-geometry': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
-  Japonia: ['Minimalism', 'Line art', 'Illustration', 'Photography'],
-  'Podróże i plakaty vintage': ['Illustration', 'Minimalism', 'Abstract', 'Photography'],
-  'Grzyby i las': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
 };
 
 /** Sales / room collections — tags only, never generator categories or output folders. */
@@ -134,11 +124,11 @@ const ROOM_COLLECTIONS = [
 ];
 
 const CATEGORY_ROOM_COLLECTIONS = {
-  'botanical': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do jadalni'],
+  'botanical': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do jadalni', 'Do kuchni', 'Do pokoju dziecka'],
   'abstract': ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
   'nature-landscapes': ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
   'animals': ['Do salonu', 'Do pokoju dziecka', 'Do pokoju młodzieżowego'],
-  'cities-travel': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'cities-travel': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do sypialni', 'Do łazienki'],
   'kids-nursery': ['Do pokoju dziecka'],
   'space-astronomy': ['Do pokoju dziecka', 'Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu'],
   'retro-vintage': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do kawiarni', 'Do pokoju młodzieżowego'],
@@ -155,13 +145,13 @@ const CATEGORY_ROOM_COLLECTIONS = {
   'music-sound': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do kawiarni'],
   'wellness-yoga': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do gabinetu'],
   'symbols-sacred-geometry': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu', 'Do pokoju młodzieżowego'],
-  Japonia: ['Do salonu', 'Do sypialni', 'Do gabinetu', 'Do biura', 'Do łazienki'],
-  'Podróże i plakaty vintage': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
-  'Grzyby i las': ['Do salonu', 'Do sypialni', 'Do kuchni', 'Do pokoju dziecka', 'Do jadalni'],
 };
 
-// 71 par bazowych + 12 z trzech kategorii dodanych 2026-08-03 (po 4 style kazda).
-const EXPECTED_ALLOWED_COMBINATIONS = 83;
+// 71 par bazowych + 3 dolozone przy scaleniu (cities-travel dostalo Illustration
+// i Line art, botanical — Illustration). Poprzednie 83 zawieralo 12 par z trzech
+// kategorii dodanych 2026-08-03, ktore zostaly scalone: Japonia i "Podroze
+// i plakaty vintage" w cities-travel, "Grzyby i las" w botanical.
+const EXPECTED_ALLOWED_COMBINATIONS = 74;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).
