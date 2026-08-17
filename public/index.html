@@ -6384,6 +6384,14 @@
               <select id="studioAesthetic"></select>
               <p class="field-hint">Nadpisuje paletę i nastrój. Działa razem ze stylem, nie zamiast niego.</p>
             </div>
+            <div class="studio-pro-field">
+              <label for="studioOrientation">Orientacja</label>
+              <select id="studioOrientation">
+                <option value="portrait" selected>Pionowy (portrait)</option>
+                <option value="landscape">Poziomy (landscape)</option>
+              </select>
+              <p class="field-hint">Decyduje o proporcji obrazu, ramce w mockupach i wymiarach w sklepie.</p>
+            </div>
           </div>
           <div class="studio-pro-composer">
             <label class="visually-hidden" for="studioPrompt">Prompt do generatora obrazów</label>
@@ -7470,6 +7478,7 @@
               needsManualMetadata: p.needsManualMetadata === true,
               shopDescription: typeof p.shopDescription === 'string' ? p.shopDescription : '',
               approvedForPrint: p.approvedForPrint === true,
+              orientation: p.orientation === 'landscape' ? 'landscape' : 'portrait',
               mockups: p.mockups || null,
               imagePathLifestyle: p.imagePathLifestyle || '',
               shopifyState: p.shopifyState || '',
@@ -8233,8 +8242,14 @@
               <img src="${escapeAttr(cardSrc)}" alt="${escapeAttr(item.title)}" loading="lazy" />
               <span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
               <span class="poster-orientation-badge ${
-                isSet ? 'poster-orientation-badge--set' : 'poster-orientation-badge--portrait'
-              }" data-orientation-badge>${escapeHtml(isSet ? setBadgeText : 'Pion')}</span>
+                isSet
+                  ? 'poster-orientation-badge--set'
+                  : item.orientation === 'landscape'
+                    ? 'poster-orientation-badge--landscape'
+                    : 'poster-orientation-badge--portrait'
+              }" data-orientation-badge>${escapeHtml(
+                isSet ? setBadgeText : item.orientation === 'landscape' ? 'Poziom' : 'Pion'
+              )}</span>
               <div class="poster-card-select poster-card-ctrl" role="group" aria-label="Zaznaczenia na karcie">
                 <label class="poster-card-cb poster-card-ctrl">
                   <input type="checkbox" class="lib-cb-remove" ${inRemove ? 'checked' : ''} />
@@ -9773,6 +9788,12 @@
         }
       });
 
+      /** Wybor pion/poziom ze studia; brak pola = pion, jak cala dotychczasowa biblioteka. */
+      function studioOrientation() {
+        const sel = document.getElementById('studioOrientation');
+        return sel && sel.value === 'landscape' ? 'landscape' : 'portrait';
+      }
+
       function setStudioStatus(text, kind) {
         els.studioStatus.textContent = text || '';
         els.studioStatus.classList.remove('is-error', 'is-ok');
@@ -10245,7 +10266,7 @@
           const res = await fetch('/api/studio/preview', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, category, style, imagePrompt }),
+            body: JSON.stringify({ title, category, style, imagePrompt, orientation: studioOrientation() }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);

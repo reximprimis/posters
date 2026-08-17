@@ -6,6 +6,7 @@
 'use strict';
 
 const { getRoomCollectionsForCategory } = require('./categoryStyles');
+const { frameOrientationPhrase } = require('./posterOrientation');
 
 /** Primary mockup room per category — overrides first entry in CATEGORY_ROOM_COLLECTIONS when needed. */
 const CATEGORY_MOCKUP_ROOM = {
@@ -180,7 +181,7 @@ const INTERIOR_PROMPT_TEMPLATE = `Use the uploaded image as the exact poster art
 Create a premium lifestyle mockup: this poster artwork in a black gallery frame hanging on a wall in a {{ROOM_LABEL}}.
 - Black gallery frame: same thin matte black profile as a standard gallery frame. The artwork fills the inner area edge-to-edge, no mat border.
 - The framed poster hangs on a clean, smooth neutral wall (warm light gray or warm white). It is centered and straight.
-- The frame is in portrait orientation (taller than wide) and realistically sized — medium to large scale, clearly visible.
+- The frame is in {{FRAME_ORIENTATION}} and realistically sized — medium to large scale, clearly visible.
 - Room: {{SCENE_DESCRIPTION}}
 - The framed poster is the clear focal point of the scene.
 - No text, no logo, no watermark, no other artwork or photos on the walls.
@@ -191,12 +192,11 @@ Create a premium lifestyle mockup: this poster artwork in a black gallery frame 
  * @param {string} [title]
  * @returns {string}
  */
-function buildInteriorMockupPrompt(category, title) {
+function buildInteriorMockupPrompt(category, title, orientation) {
   const { roomLabel, sceneDescription } = resolveMockupInteriorScene(category, title);
-  return INTERIOR_PROMPT_TEMPLATE.replace('{{ROOM_LABEL}}', roomLabel).replace(
-    '{{SCENE_DESCRIPTION}}',
-    sceneDescription
-  );
+  return INTERIOR_PROMPT_TEMPLATE.replace('{{ROOM_LABEL}}', roomLabel)
+    .replace('{{SCENE_DESCRIPTION}}', sceneDescription)
+    .replace('{{FRAME_ORIENTATION}}', frameOrientationPhrase(orientation));
 }
 
 module.exports = {

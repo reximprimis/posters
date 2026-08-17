@@ -20,6 +20,7 @@ const {
   getRoomCollectionsForCategory,
 } = require('./categoryStyles');
 const { getPosterOutputDir } = require('./posterPaths');
+const { normalizeOrientation, DEFAULT_ORIENTATION, PORTRAIT, LANDSCAPE } = require('./posterOrientation');
 const { buildPosterMetadataRecord, writePosterMetadataFile } = require('./posterMetadata');
 const { getRoutingPathLabel, getPromptRouteKind } = require('./promptRouter');
 const {
@@ -147,6 +148,8 @@ class PosterBatchGenerator {
       category,
       title,
       artStyle,
+      /** 'portrait' | 'landscape' — plakaty sprzed wprowadzenia pola sa pionowe. */
+      orientation: normalizeOrientation(layoutOpts.orientation || DEFAULT_ORIENTATION),
       roomCollections,
       imagePath,
       pdfPaths,
@@ -191,10 +194,12 @@ class PosterBatchGenerator {
     }
     const previewId = uuidv4();
     const stagingAbs = path.join(dir, `${previewId}.png`);
+    const orientation = normalizeOrientation(opts.orientation);
     await this.imageGen.generateImage(title, category, style, stagingAbs, {
       customPrompt: imagePrompt,
+      orientation,
     });
-    return { previewId, stagingAbs };
+    return { previewId, stagingAbs, orientation };
   }
 
   /**
@@ -523,8 +528,14 @@ class PosterBatchGenerator {
 
     const shopDesc =
       typeof commitOpts.shopDescription === 'string' ? commitOpts.shopDescription.trim() : '';
+    // Orientacje bierzemy z gotowego pliku, nie z tego, co przyslal klient.
+    // Podglad i zatwierdzenie to dwa osobne zadania HTTP — gdyby uzytkownik
+    // przestawil przelacznik miedzy nimi, rekord rozjechalby sie z obrazem.
+    const commitDims = await this.readImageDimensions(finalAbs);
+    const orientation = commitDims.width > commitDims.height ? LANDSCAPE : PORTRAIT;
     const rowId = this.addPosterToDb(category, title, style, imagePathForDb, pdfPaths, imagePrompt, promptLlmMeta, {
       printLayout: 'full',
+      orientation,
       ...(shopDesc ? { shopDescription: shopDesc } : {}),
     });
     if (generateVariants) {
@@ -581,6 +592,7 @@ class PosterBatchGenerator {
     const startedAt = new Date();
     const routingMeta = this.resolveRoutingMeta(category, style, options);
     const matStyle = resolveMatStyleFromOptions(options);
+    const orientation = normalizeOrientation(options.orientation);
     const { gen, printFinalize } = await this.generateImageWithFramingGuard(
       title,
       category,
@@ -591,6 +603,7 @@ class PosterBatchGenerator {
         customPrompt: imagePrompt,
         category,
         style,
+        orientation,
         ...(matStyle ? { matStyle } : {}),
       }
     );
@@ -649,6 +662,7 @@ class PosterBatchGenerator {
 
     const id = this.addPosterToDb(category, title, style, imagePathForDb, pdfPaths, imagePrompt, llmMeta, {
       printLayout: pl,
+      orientation,
       ...(shopDescription ? { shopDescription } : {}),
     });
     if (generateVariants) {
@@ -764,6 +778,7 @@ class PosterBatchGenerator {
       const imagePath = path.join(outputDir, `${safeFileBase}.png`);
       const tempPath = tempGenerationPathFromFinal(imagePath);
       const matStyle = resolveMatStyleFromOptions(options);
+      const orientation = normalizeOrientation(options.orientation);
       const { gen, printFinalize } = await this.generateImageWithFramingGuard(
         title,
         categoryKey,
@@ -774,6 +789,7 @@ class PosterBatchGenerator {
           customPrompt: imagePrompt,
           category: categoryKey,
           style,
+          orientation,
           ...(matStyle ? { matStyle } : {}),
         }
       );
@@ -835,6 +851,7 @@ class PosterBatchGenerator {
 
       this.addPosterToDb(categoryKey, title, style, imagePathForDb, pdfPaths, imagePrompt, promptLlm, {
         printLayout: pl,
+        orientation,
         ...(shopDescription ? { shopDescription } : {}),
       });
       console.log(`  ✓ Complete\n`);

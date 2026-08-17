@@ -113,6 +113,8 @@ async function main() {
       const { frame, interior } = await mg.generate(masterAbs, outputDir, titleSlug, {
         category: poster.category,
         title: poster.title,
+        // Rama w mockupie musi lezec tak samo jak plakat.
+        orientation: poster.orientation,
       });
       const toRel = (abs) => path.relative(root, abs).replace(/\\/g, '/');
       poster.mockups = {

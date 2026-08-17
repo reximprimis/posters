@@ -6,6 +6,12 @@ const sharp = require('sharp');
 const { buildFullDallePrompt, DALLE3_PROMPT_MAX, MAX_DALLE_OVERHEAD_CHARS } = require('./posterPromptLayers');
 const { resolveSafePrintFramingForCategory, getSafeFramingMeta, FRAMING_RETRY_PROMPT_SUFFIX } = require('./safePrintFraming');
 const { resizePngFileToPrintCanvas } = require('./printCanvasResize');
+const {
+  normalizeOrientation,
+  isLandscape,
+  resolvePrintCanvas,
+  orientationPromptLine,
+} = require('./posterOrientation');
 const { resolveConcreteSubject, logStyleSubjectResolution } = require('./titleSubjectConsistency');
 const { applyMatFrameToPngFile } = require('./posterMatFrame');
 
@@ -93,9 +99,8 @@ class DalleImageGenerator {
     });
   }
 
-  async normalizeOutputSize(outputPath) {
-    const targetW = parseInt(process.env.IMAGE_TARGET_WIDTH || process.env.DALLE_TARGET_WIDTH || '2000', 10);
-    const targetH = parseInt(process.env.IMAGE_TARGET_HEIGHT || process.env.DALLE_TARGET_HEIGHT || '3000', 10);
+  async normalizeOutputSize(outputPath, orientation) {
+    const { width: targetW, height: targetH } = resolvePrintCanvas(orientation);
     if (!Number.isFinite(targetW) || !Number.isFinite(targetH) || targetW < 256 || targetH < 256) {
       return;
     }
@@ -119,7 +124,26 @@ class DalleImageGenerator {
     return 'vivid';
   }
 
-  resolveImageSize(model) {
+  /**
+   * @param {string} model
+   * @param {unknown} [orientation] orientacja POJEDYNCZEGO plakatu; gdy podana,
+   *   wygrywa nad IMAGE_GENERATION_SIZE z .env (env zostaje dla zestawow,
+   *   ktore ustawiaja konkretny rozmiar panoramy).
+   */
+  resolveImageSize(model, orientation) {
+    const rozmiar = this.resolveImageSizeFromEnv(model);
+    if (orientation == null) return rozmiar;
+
+    const m = String(rozmiar).match(/^(\d+)x(\d+)$/);
+    if (!m) return rozmiar; // 'auto' — model dobiera sam, nie ma czego obracac
+    const a = parseInt(m[1], 10);
+    const b = parseInt(m[2], 10);
+    const krotszy = Math.min(a, b);
+    const dluzszy = Math.max(a, b);
+    return isLandscape(orientation) ? `${dluzszy}x${krotszy}` : `${krotszy}x${dluzszy}`;
+  }
+
+  resolveImageSizeFromEnv(model) {
     const sizeRaw = String(process.env.IMAGE_GENERATION_SIZE || process.env.DALLE_IMAGE_SIZE || '1024x1536').trim().toLowerCase();
     const gptAliases = {
       vertical: '1024x1536',
@@ -166,12 +190,12 @@ class DalleImageGenerator {
     throw new Error(`No image data returned from ${model}`);
   }
 
-  buildGenerationRequest(model, prompt, style) {
+  buildGenerationRequest(model, prompt, style, orientation) {
     const request = {
       model,
       prompt,
       n: 1,
-      size: this.resolveImageSize(model),
+      size: this.resolveImageSize(model, orientation),
     };
 
     if (isGptImageModel(model)) {
@@ -200,6 +224,12 @@ class DalleImageGenerator {
 
     try {
       const model = getImageModel();
+      // Orientacja POJEDYNCZEGO plakatu. Zestawy jej nie podaja — wtedy zostaje
+      // undefined i rozmiar bierze sie z IMAGE_GENERATION_SIZE, ktore
+      // posterSetGenerator ustawia pod panorame.
+      const orientation = options.orientation != null
+        ? normalizeOrientation(options.orientation)
+        : undefined;
       const categoryKey = options.category != null ? String(options.category).trim() : String(category || '').trim();
       const styleKey = options.style != null ? String(options.style).trim() : String(style || '').trim();
       console.log(`    -> Generating image with ${model}...`);
@@ -220,6 +250,9 @@ class DalleImageGenerator {
       if (safeBlock && !/SAFE PRINT FRAMING/i.test(prompt)) {
         prompt = `${prompt.trim()} ${safeBlock}`.replace(/\s{2,}/g, ' ').trim();
       }
+      if (orientation) {
+        prompt = `${prompt.trim()} ${orientationPromptLine(orientation)}`.replace(/\s{2,}/g, ' ').trim();
+      }
       const retryAttempt = Number(options.framingRetryAttempt) || 0;
       if (retryAttempt > 0) {
         prompt = `${prompt.trim()} ${FRAMING_RETRY_PROMPT_SUFFIX}`.replace(/\s{2,}/g, ' ').trim();
@@ -227,7 +260,7 @@ class DalleImageGenerator {
       }
       console.log(`    -> Prompt: ${prompt.substring(0, 80)}...`);
 
-      const request = this.buildGenerationRequest(model, prompt, style);
+      const request = this.buildGenerationRequest(model, prompt, style, orientation);
       const { maxAttempts, baseDelayMs } = getImageRetryConfig();
       let response;
       let lastError;
@@ -256,7 +289,7 @@ class DalleImageGenerator {
       }
 
       await this.saveGeneratedImage(response.data[0], outputPath, model);
-      await this.normalizeOutputSize(outputPath);
+      await this.normalizeOutputSize(outputPath, orientation);
       const matStyle = options.matStyle;
       if (matStyle === 'uniform' || matStyle === 'gallery') {
         console.log(`    -> Passe-partout (${matStyle})...`);
@@ -266,6 +299,7 @@ class DalleImageGenerator {
         outputPath,
         finalPromptSentToModel: prompt,
         model,
+        orientation: orientation || null,
       };
     } catch (error) {
       console.error(`    x Failed: ${error.message}`);

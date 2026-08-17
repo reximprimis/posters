@@ -20,6 +20,7 @@ const {
   assertHandleGloballyUnique,
   PosterNameCollisionError,
 } = require('./src/posterNameGuard');
+const { normalizeOrientation } = require('./src/posterOrientation');
 const {
   PATHS: GENERATOR_PATHS,
   isKnownModel,
@@ -807,6 +808,8 @@ app.get('/api/posters', (req, res) => {
       needsManualMetadata: primary.needsManualMetadata === true,
       shopDescription: shopDescriptionMerged,
       approvedForPrint: primary.approvedForPrint === true,
+      // Bez tego karta nie ma czym odroznic plakatu poziomego od pionowego.
+      orientation: primary.orientation === 'landscape' ? 'landscape' : 'portrait',
       shopifyState: typeof primary.shopifyState === 'string' ? primary.shopifyState : 'pending_assets',
       shopifyIssues: Array.isArray(primary.shopifyIssues) ? primary.shopifyIssues : [],
       ...(framedHref ? { imagePathFramed: framedHref } : {}),
@@ -2404,6 +2407,9 @@ function validateStudioPayload(body) {
     trimmedPrompt,
     matFrame: parseMatFrameFromBody(body),
     printLayout: parsePrintLayoutFromBody(body),
+    // Pion / poziom wybiera sie przy generowaniu; commit i tak sprawdzi
+    // orientacje w gotowym pliku, wiec to tylko zyczenie do modelu.
+    orientation: normalizeOrientation(body.orientation),
   };
 }
 
@@ -2441,7 +2447,9 @@ app.post('/api/studio/preview', async (req, res) => {
       return res.status(studioPayloadErrorStatus(v)).json({ error: v.error, code: v.code || undefined });
     }
     const gen = getBatchGenerator();
-    const { previewId } = await gen.generateStagingPreview(v.category, v.title, v.style, v.trimmedPrompt);
+    const { previewId } = await gen.generateStagingPreview(v.category, v.title, v.style, v.trimmedPrompt, {
+      orientation: v.orientation,
+    });
     res.json({
       ok: true,
       previewId,

@@ -14,10 +14,23 @@ const https = require('https');
 const OpenAI = require('openai');
 const sharp = require('sharp');
 const { buildInteriorMockupPrompt, resolveMockupInteriorScene } = require('./mockupInteriorScenes');
+const { frameOrientationPhrase, isLandscape, orientDimensions } = require('./posterOrientation');
 
-const MOCKUP_W = 800;
-const MOCKUP_H = 1200;
-const MOCKUP_API_SIZE = '1024x1536'; // closest 2:3 supported by gpt-image-2
+// Wymiary podane "jak dla pionu" (krotszy bok pierwszy); przy poziomie
+// orientDimensions zamienia je miejscami.
+const MOCKUP_KROTSZY = 800;
+const MOCKUP_DLUZSZY = 1200;
+const API_KROTSZY = 1024;
+const API_DLUZSZY = 1536; // najblizsze 2:3 wspierane przez gpt-image-2
+
+function mockupOutputSize(orientation) {
+  return orientDimensions(MOCKUP_KROTSZY, MOCKUP_DLUZSZY, orientation);
+}
+
+function mockupApiSize(orientation) {
+  const { width, height } = orientDimensions(API_KROTSZY, API_DLUZSZY, orientation);
+  return width + 'x' + height;
+}
 
 const PROMPTS = {
   frame: `Use the uploaded image as the exact poster artwork. Do not alter, redraw, recolor, rotate, stretch, crop, or distort it in any way. Reproduce the artwork pixel-accurately inside the frame.
@@ -25,7 +38,7 @@ const PROMPTS = {
 Create a premium front-facing product packshot of this artwork:
 - Black gallery frame: thin, matte black, modern, straight edges, fully visible, sharp corners. The frame surrounds the artwork on all four sides evenly.
 - The artwork fills the entire inner area of the frame edge-to-edge — NO mat, NO passe-partout, NO white border between artwork and frame.
-- The artwork must be in portrait orientation (taller than wide) inside the frame.
+- The artwork must be in {{FRAME_ORIENTATION}} inside the frame.
 - Background: pure white or very light neutral gray. No gradient, no pattern.
 - Shadow: a single soft, subtle drop shadow underneath and slightly to the right of the frame — like a real hanging frame.
 - The frame must be fully centered in the composition with equal space on all sides.
@@ -37,7 +50,7 @@ Create a premium front-facing product packshot of this artwork:
 Create a premium lifestyle mockup: this poster artwork in a black gallery frame hanging on a wall in a modern living room.
 - Black gallery frame: same thin matte black profile as a standard gallery frame. The artwork fills the inner area edge-to-edge, no mat border.
 - The framed poster hangs on a clean, smooth neutral wall (warm light gray or warm white). It is centered and straight.
-- The frame is in portrait orientation (taller than wide) and realistically sized — medium to large scale, clearly visible.
+- The frame is in {{FRAME_ORIENTATION}} and realistically sized — medium to large scale, clearly visible.
 - Room: Scandinavian or modern minimalist interior — light oak sideboard or console, soft linen sofa, simple ceramic decor, natural daylight from a side window. Calm, warm, premium atmosphere.
 - The framed poster is the clear focal point of the scene.
 - No text, no logo, no watermark, no other artwork or photos on the walls.
@@ -91,17 +104,26 @@ class MockupGenerator {
     }
 
     const prefix = titleSlug ? `${titleSlug}_` : '';
+    const orientation = options.orientation;
+    const podstawOrientacje = (tekst) =>
+      String(tekst).split('{{FRAME_ORIENTATION}}').join(frameOrientationPhrase(orientation));
+    console.log(`  [mockup] Orientacja: ${isLandscape(orientation) ? 'poziom' : 'pion'}`);
 
     console.log(`  [mockup] Generating frame packshot…`);
-    const framePath = await this._generateOne(masterPngPath, PROMPTS.frame, path.join(outputDir, `${prefix}mockup_frame.jpg`));
+    const framePath = await this._generateOne(
+      masterPngPath,
+      podstawOrientacje(PROMPTS.frame),
+      path.join(outputDir, `${prefix}mockup_frame.jpg`),
+      orientation
+    );
     console.log(`  [mockup] OK → ${framePath}`);
 
     console.log(`  [mockup] Generating interior lifestyle…`);
     const category = options.category != null ? String(options.category).trim() : '';
     const title = options.title != null ? String(options.title).trim() : '';
     const interiorPrompt = category
-      ? buildInteriorMockupPrompt(category, title)
-      : DEFAULT_INTERIOR_PROMPT;
+      ? buildInteriorMockupPrompt(category, title, orientation)
+      : podstawOrientacje(DEFAULT_INTERIOR_PROMPT);
     if (category) {
       const scene = resolveMockupInteriorScene(category, title);
       console.log(`  [mockup] Interior scene: ${scene.roomLabel} (${scene.roomKey})`);
@@ -109,18 +131,21 @@ class MockupGenerator {
     const interiorPath = await this._generateOne(
       masterPngPath,
       interiorPrompt,
-      path.join(outputDir, `${prefix}mockup_interior.jpg`)
+      path.join(outputDir, `${prefix}mockup_interior.jpg`),
+      orientation
     );
     console.log(`  [mockup] OK → ${interiorPath}`);
 
     return { frame: framePath, interior: interiorPath };
   }
 
-  async _generateOne(masterPngPath, prompt, outputPath) {
-    // Resize master to max 1024×1536 before sending — API limit is 50 MB
-    // High-res masters can exceed that limit as raw pixel data
+  async _generateOne(masterPngPath, prompt, outputPath, orientation) {
+    // Resize master before sending — API limit is 50 MB and high-res masters
+    // exceed it as raw pixel data. `fit: inside` nie kadruje, wiec dla poziomu
+    // wystarczy podac odwrocona pare bokow.
+    const wysylka = orientDimensions(API_KROTSZY, API_DLUZSZY, orientation);
     const imgBuffer = await sharp(masterPngPath)
-      .resize(1024, 1536, { fit: 'inside', withoutEnlargement: true })
+      .resize(wysylka.width, wysylka.height, { fit: 'inside', withoutEnlargement: true })
       .png({ compressionLevel: 7 })
       .toBuffer();
 
@@ -143,7 +168,7 @@ class MockupGenerator {
       model: 'gpt-image-2',
       image: imageInput,
       prompt,
-      size: MOCKUP_API_SIZE,
+      size: mockupApiSize(orientation),
       n: 1,
     });
 
@@ -162,9 +187,10 @@ class MockupGenerator {
       throw new Error('API returned neither b64_json nor url');
     }
 
-    // Resize to exactly 800×1200, save as JPEG q92
+    // Docelowy kadr mockupu — 800×1200 w pionie, 1200×800 w poziomie.
+    const wyjscie = mockupOutputSize(orientation);
     await sharp(rawBuffer)
-      .resize(MOCKUP_W, MOCKUP_H, { fit: 'cover', position: 'centre' })
+      .resize(wyjscie.width, wyjscie.height, { fit: 'cover', position: 'centre' })
       .jpeg({ quality: 92, mozjpeg: false })
       .toFile(outputPath);
 

@@ -120,6 +120,23 @@ const DEFAULT_SET_MULTIPLIERS = { duo: 1.85, tryptyk: 2.7 };
 /** Zestawy sa WYLACZNIE full bleed — nie maja wariantu z passe-partout. */
 const SET_PRINT_STYLES = [{ label: 'Full Bleed', code: 'full' }];
 
+const { orientSizeKey, isLandscape } = require('../src/posterOrientation');
+
+/**
+ * Rozmiary opisane pod orientacje plakatu. Klient kupujacy plakat poziomy
+ * ma zobaczyc 40 × 30 cm, a nie 30 × 40 — inaczej wymiar kloci sie z tym,
+ * co widzi na zdjeciu. Dla pionu funkcja nic nie zmienia, wiec cala
+ * dotychczasowa biblioteka eksportuje sie bajt w bajt tak samo.
+ */
+function sizeDefsForOrientation(defs, orientation) {
+  if (!isLandscape(orientation)) return defs;
+  return defs.map((s) => {
+    const key = orientSizeKey(s.key, orientation);
+    const [w, h] = key.split('x');
+    return { ...s, key, label: s.label.replace(/^\s*\d+\s*×\s*\d+/, `${w} × ${h}`) };
+  });
+}
+
 const SIZE_KEYS = SIZE_DEFS.map((s) => s.key);
 const DEFAULT_PRICES = Object.fromEntries(SIZE_DEFS.map((s) => [s.key, s.price]));
 
@@ -425,7 +442,8 @@ async function main() {
     const body = htmlDescription(p.shopDescription || p.prompt || '');
     const categoryTag = slugifyTag(p.category || '');
     const styleTag = slugifyTag(p.artStyle || '');
-    const tags = ['poster', categoryTag, styleTag, ...sizeDefs.map((s) => `size_${s.key}`)].filter(Boolean).join(', ');
+    const sizeDefsPlakatu = sizeDefsForOrientation(sizeDefs, p.orientation);
+    const tags = ['poster', categoryTag, styleTag, ...sizeDefsPlakatu.map((s) => `size_${s.key}`)].filter(Boolean).join(', ');
     const seoTitle = title ? `${title} | REXIMPRIMIS` : '';
     const seoDescription = String(p.shopDescription || '').slice(0, 160);
     const masterThumbRel =
@@ -463,7 +481,7 @@ async function main() {
 
     let rowIndex = 0;
     for (const printStyle of PRINT_STYLES) {
-      for (const size of sizeDefs) {
+      for (const size of sizeDefsPlakatu) {
         const firstRowForProduct = rowIndex === 0;
         const imageSrcCell = rowIndex < IMAGE_SLOTS.length ? IMAGE_SLOTS[rowIndex] : '';
         const variantImageCell = imageSrcCell || (printStyle.code === 'ramka' ? imageFramed : imageMaster) || '';
