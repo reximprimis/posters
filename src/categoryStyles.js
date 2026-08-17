@@ -83,7 +83,7 @@ const CATEGORY_DESCRIPTIONS = {
   'Wellness i joga':
     'yoga, meditation, calm lifestyle, breath, balance, spa, slow living, soft morning, organic forms, quiet wellness',
   'Symbole i harmonia':
-    'yin-yang, mandalas, balance, energy, zen, organic geometry, spiritual symbols in neutral aesthetic framing',
+    'sacred geometry drawn with compass precision: mandalas, Sri Yantra, Flower of Life, Metatron cube, Tree of Life, chakra diagrams, Enso circle, lotus, moon phases, Celtic knot, yin-yang, Om — symmetrical ritual diagrams rendered as fine-art prints, exact and architectural rather than misty',
   Japonia:
     'torii gate, Mount Fuji, cherry blossom branch, koi carp, crane in flight, bamboo grove, zen garden raked gravel, stone lantern, misty Japanese mountains, stylised wave — Japanese motifs treated as calm fine art',
   'Podróże i plakaty vintage':
