@@ -28,6 +28,14 @@ const MATERIALY = path.join(ROOT, 'assets', 'klub_orzel_materialy');
 const HERB = path.join(MATERIALY, 'orzel_logo.png');
 const KAT = path.join(ROOT, 'zestawy_robocze', 'klub_orzel');
 
+/**
+ * Klub zalozony 10 pazdziernika 1946 (Walne zebranie zalozycielskie w sali
+ * swietlicy), wiec osiemdziesieciolecie przypada 10 pazdziernika 2026.
+ */
+const ROK_ZALOZENIA = 1946;
+const ROK_ROCZNICY = 2026;
+const LATA = `${ROK_ZALOZENIA} — ${ROK_ROCZNICY}`;
+
 /** Barwy klubowe. */
 const ZIELEN = '#0f3320';
 const ZIELEN_JASNA = '#1a5233';
@@ -138,6 +146,10 @@ function napisy(W, H, { gora, dol, stopienGora, stopienDol, kolor = ZLOTO }) {
       font-weight="bold" letter-spacing="${stopienGora.odstep}" fill="${kolor}">${gora}</text>`);
     cz.push(`<line x1="${W * 0.38}" y1="${Math.round(H * 0.148)}" x2="${W * 0.62}" y2="${Math.round(H * 0.148)}"
       stroke="${kolor}" stroke-width="3" opacity="0.7"/>`);
+    // Lata pod kreska: na plakacie rocznicowym data robi wiecej niz sama liczba.
+    cz.push(`<text x="${W / 2}" y="${Math.round(H * 0.183)}" text-anchor="middle"
+      font-family="Cambria, 'Times New Roman', serif" font-size="${Math.round(Math.min(W, H) * 0.036)}"
+      letter-spacing="${Math.round(Math.min(W, H) * 0.009)}" fill="${kolor}" opacity="0.9">${LATA}</text>`);
   }
   if (dol) {
     cz.push(`<line x1="${W * 0.14}" y1="${Math.round(H * 0.878)}" x2="${W * 0.86}" y2="${Math.round(H * 0.878)}"
@@ -218,6 +230,11 @@ function napisy(W, H, { gora, dol, stopienGora, stopienDol, kolor = ZLOTO }) {
               font-weight="bold" letter-spacing="${sg.odstep}" fill="${ZLOTO}"
               stroke="#04140b" stroke-width="${Math.round(sg.rozmiar * 0.045)}"
               paint-order="stroke">80 LAT</text>
+            <text x="${W / 2}" y="${Math.round(H * 0.185)}" text-anchor="middle"
+              font-family="Cambria, 'Times New Roman', serif" font-size="${Math.round(Math.min(W, H) * 0.032)}"
+              letter-spacing="${Math.round(Math.min(W, H) * 0.008)}" fill="${ZLOTO}"
+              stroke="#04140b" stroke-width="${Math.round(Math.min(W, H) * 0.0035)}"
+              paint-order="stroke">${LATA}</text>
           </svg>`,
           'utf8'
         ),
