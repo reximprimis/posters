@@ -16,6 +16,55 @@
  */
 
 const AESTHETICS = [
+  // Cztery ponizsze dopisane po przegladzie nawigacji konkurencji: kolumna
+  // "Trendy i inspiracje" to u nich Bauhaus, Japandi, czarno-biale, vintage
+  // i plakaty wystawowe. Japandi juz mielismy — reszty brakowalo, mimo ze to
+  // wejscia, ktorymi klient realnie wchodzi do katalogu.
+  {
+    id: 'bauhaus',
+    label: 'Bauhaus',
+    description: 'Podstawowe figury i trzy kolory podstawowe. Geometria bez ozdób, funkcja przed dekoracją.',
+    badge: 'KLASYK',
+    palette:
+      'primary red, primary blue, primary yellow, black and off-white — flat and unmodulated, no tints or shades',
+    mood:
+      'strict geometric construction, circles squares and triangles, bold asymmetric balance, functional clarity, poster-like directness',
+    texture: 'perfectly flat opaque color, hard clean edges, faint printed paper grain only',
+    avoid: 'gradients, shading, three-dimensional rendering, ornament, texture imitation, pastel palette',
+  },
+  {
+    id: 'black-white',
+    label: 'Czarno-biały',
+    description: 'Bez koloru. Cała robota na kontraście, formie i świetle.',
+    badge: 'TOP 2026',
+    palette: 'pure monochrome only — black, white and the full range of neutral grays, absolutely no hue',
+    mood:
+      'graphic clarity, strong tonal contrast, form and light carry the image, timeless and gallery-like',
+    texture: 'clean tonal transitions, fine grain acceptable, deep blacks and clean whites',
+    avoid: 'any color cast, sepia, duotone, warm or cool tinting, muddy mid-grays',
+  },
+  {
+    id: 'exhibition',
+    label: 'Plakat wystawowy',
+    description: 'Estetyka plakatu muzealnego: duża forma, dużo powietrza, typograficzny spokój.',
+    badge: 'TOP 2026',
+    palette: 'restrained gallery palette: off-white ground with one or two confident accent colors',
+    mood:
+      'museum poster composition, one large dominant form, generous margins, calm authority, editorial confidence',
+    texture: 'flat matte print, subtle paper tooth, no photographic depth',
+    avoid: 'busy detail, multiple competing subjects, photographic realism, decorative flourish',
+  },
+  {
+    id: 'ukiyo-e',
+    label: 'Ukiyo-e',
+    description: 'Japoński drzeworyt: płaskie plany, wyraźny kontur, fale i mgła.',
+    badge: 'KLASYK',
+    palette: 'indigo blue, soft vermilion, ink black, mineral green, warm paper cream — flat woodblock inks',
+    mood:
+      'flat layered planes, confident outline, stylized waves mist and clouds, decorative stillness, asymmetric traditional composition',
+    texture: 'woodblock print grain, visible ink edges, hand-printed paper',
+    avoid: 'photographic depth, realistic shading, perspective rendering, glossy finish',
+  },
   {
     id: 'japandi',
     label: 'Japandi',
