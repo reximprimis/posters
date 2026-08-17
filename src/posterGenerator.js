@@ -65,8 +65,10 @@ function resolveMatStyleFromOptions(options) {
   return null;
 }
 
-function posterOutputDir(category, style) {
-  return getPosterOutputDir(category, style);
+function posterOutputDir(category, style, fileBase) {
+  // fileBase MUSI isc dalej. Bez niego kazdy nowy plakat ladowal luzem
+  // w katalogu stylu mimo migracji — to opakowanie gubilo trzeci argument.
+  return getPosterOutputDir(category, style, fileBase);
 }
 
 class PosterBatchGenerator {

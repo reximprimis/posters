@@ -46,6 +46,10 @@ function zbierzBazy(inv) {
     if (p.kind === 'set') continue;
     const dir = path.dirname(ip);
     const base = path.basename(ip, path.extname(ip));
+    // JUZ ZMIGROWANY? Katalog nosi nazwe plakatu, wiec ponowne przeniesienie
+    // wsadziloby go do katalogu o tej samej nazwie i zrobilo zagniezdzenie
+    // Tytul/Tytul/plik. Skrypt musi byc bezpieczny przy wielokrotnym uruchomieniu.
+    if (path.basename(dir) === base) continue;
     if (!wg.has(dir)) wg.set(dir, []);
     wg.get(dir).push({ base, rekord: p });
   }
