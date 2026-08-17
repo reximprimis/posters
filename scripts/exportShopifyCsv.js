@@ -561,11 +561,19 @@ async function main() {
     // pokazuje komplet ram, drugi salon daje inny kontekst, arkusze mowia
     // wprost, ile sztuk przyjdzie w paczce.
     const ZDJECIA = [
-      // Kaskada PIERWSZA: w miniaturze wynikow wyszukiwania od razu widac,
-      // ze to komplet, a motyw plynie miedzy arkuszami.
+      // Kolejnosc galerii w sklepie. Zmiana tutaj przestawia zdjecia na karcie
+      // produktu — reszta systemu nie ma na nia wplywu.
+      //
+      //   1. kaskada  — arkusze jeden na drugim; w miniaturze wynikow od razu
+      //                 widac, ze to komplet, a motyw plynie miedzy nimi,
+      //   2. packshot — komplet ram na czystym tle, bez rozpraszania wnetrzem,
+      //   3. salon    — efekt na scianie nad sofa,
+      //   4. salon 2  — drugie wnetrze, dobrane do kategorii,
+      //   5. arkusze  — "co dostajesz": same wydruki bez ram,
+      //   6. miniatura zestawu.
       url(mk.stack),
-      url(mk.interior),
       url(mk.frame),
+      url(mk.interior),
       url(mk.interior2),
       url(mk.sheets),
       toPublicUrl(thumbRel),
