@@ -1,5 +1,5 @@
 /**
- * Dedicated prompts for Plakaty dla dzieci — Boho-Scandi / minimalist nursery (Etsy/Pinterest bestsellers).
+ * Dedicated prompts for kids-nursery — Boho-Scandi / minimalist nursery (Etsy/Pinterest bestsellers).
  */
 
 const { getCategoryDescription } = require('./categoryStyles');
@@ -55,7 +55,7 @@ Background is plain cream, off-white, or very soft watercolor wash — not a det
 
 function buildChildrenIllustrationPrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
-  const categoryKey = String(category || 'Plakaty dla dzieci').trim();
+  const categoryKey = String(category || 'kids-nursery').trim();
   const styleKey = String(style || 'Illustration').trim();
   const safeBlock = resolveSafePrintFramingForCategory(categoryKey, styleKey) || SAFE_PRINT_FRAMING;
   return joinPromptBlocks([
@@ -74,7 +74,7 @@ function buildChildrenIllustrationPrompt({ title, category, style }) {
 
 function buildChildrenMinimalismPrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
-  const categoryKey = String(category || 'Plakaty dla dzieci').trim();
+  const categoryKey = String(category || 'kids-nursery').trim();
   const styleKey = String(style || 'Minimalism').trim();
   const safeBlock = resolveSafePrintFramingForCategory(categoryKey, styleKey) || SAFE_PRINT_FRAMING;
   return joinPromptBlocks([

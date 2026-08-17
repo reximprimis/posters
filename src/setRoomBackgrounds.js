@@ -122,12 +122,12 @@ function getPrimaryRoom() {
  */
 const CATEGORY_ROOM = {
   Japonia: 'jadalnia_komoda',
-  Botanika: 'jadalnia_komoda',
-  Abstrakcja: 'sypialnia',
+  'botanical': 'jadalnia_komoda',
+  'abstract': 'sypialnia',
   Minimalizm: 'sypialnia',
-  'Cyberpunk i neon': 'gabinet_ciemny',
-  'AI i technologia': 'gabinet_ciemny',
-  Architektura: 'gabinet_ciemny',
+  'cyberpunk-neon': 'gabinet_ciemny',
+  'ai-technology': 'gabinet_ciemny',
+  'architecture': 'gabinet_ciemny',
 };
 
 function getSecondaryRoom(category) {

@@ -8,7 +8,7 @@ const { isTennisBiasedTitle } = require('./sportHobbyTitlePool');
 const { isGenericChildrenTitle } = require('./childrenTitlePool');
 
 const CATEGORY_TITLE_POOLS = {
-  Botanika: [
+  'botanical': [
     'Cherry Blossom Branch',
     'Magnolia Bloom Stem',
     'Wild Flower Bouquet',
@@ -55,7 +55,7 @@ const CATEGORY_TITLE_POOLS = {
     'Bird of Paradise Bloom',
     'Marigold Ruffled Head',
   ],
-  Abstrakcja: [
+  'abstract': [
     'Color Field Harmony',
     'Geometric Balance Study',
     'Organic Flow Forms',
@@ -71,7 +71,7 @@ const CATEGORY_TITLE_POOLS = {
     'Earth Tone Layers',
     'Minimal Shape Dance',
   ],
-  'Natura i krajobrazy': [
+  'nature-landscapes': [
     'Misty Mountain Peak',
     'Forest Morning Mist',
     'Lake Reflection Calm',
@@ -87,7 +87,7 @@ const CATEGORY_TITLE_POOLS = {
     'Highland Moor Silence',
     'Glacier Lake Still',
   ],
-  Zwierzęta: [
+  'animals': [
     'Golden Retriever Portrait',
     'Wild Horse Meadow',
     'Arctic Fox Snow',
@@ -132,7 +132,7 @@ const CATEGORY_TITLE_POOLS = {
     'European Bison Field',
     'Moose in Shallow Water',
     'River Otter Play',
-    // NIE 'Hedgehog in Leaves' — ten tytul zajmuje juz pula "Plakaty dla dzieci",
+    // NIE 'Hedgehog in Leaves' — ten tytul zajmuje juz pula "kids-nursery",
     // a handle musi byc unikalny globalnie.
     'Hedgehog Curled Autumn',
     'Grey Heron Standing',
@@ -146,7 +146,7 @@ const CATEGORY_TITLE_POOLS = {
     'Humpback Whale Dive',
     'Harbour Seal Rock',
   ],
-  'Mapy i miasta': [
+  'cities-travel': [
     'Paris Skyline Silhouette',
     'Tokyo Night Grid',
     'London Bridge Mist',
@@ -162,8 +162,8 @@ const CATEGORY_TITLE_POOLS = {
     'Sydney Opera Silhouette',
     'Prague Rooftop Dawn',
   ],
-  'Plakaty dla dzieci': require('./childrenTitlePool').CHILDREN_TITLE_POOL,
-  'Kosmos i astronomia': [
+  'kids-nursery': require('./childrenTitlePool').CHILDREN_TITLE_POOL,
+  'space-astronomy': [
     'Saturn Rings Glow',
     'Milky Way Horizon',
     'Crescent Moon Phase',
@@ -179,7 +179,7 @@ const CATEGORY_TITLE_POOLS = {
     'Deep Space Silence',
     'Orion Constellation',
   ],
-  Retro: [
+  'retro-vintage': [
     'Polaroid Camera Still',
     'Vinyl Record Stack',
     'Cassette Tape Warm',
@@ -195,7 +195,7 @@ const CATEGORY_TITLE_POOLS = {
     'Vintage Sunglasses Case',
     'Retro Lamp Glow',
   ],
-  Pojazdy: [
+  'vehicles': [
     'Classic Porsche Profile',
     'Motorcycle Chrome Line',
     'Vintage Aircraft Wing',
@@ -211,7 +211,7 @@ const CATEGORY_TITLE_POOLS = {
     'Classic Vespa Scooter',
     'Racing Bicycle Lean',
   ],
-  'Kawa i herbata': [
+  'coffee-tea': [
     'Morning Espresso Cup',
     'Pour Over Coffee Drip',
     'Matcha Bowl Steam',
@@ -227,7 +227,7 @@ const CATEGORY_TITLE_POOLS = {
     'Moka Pot Brew',
     'Tea Cup Saucer',
   ],
-  'Kuchnia i jedzenie': [
+  'kitchen-food': [
     'Lemon on Linen',
     'Tomato Vine Rustic',
     'Olive Oil Drizzle',
@@ -247,7 +247,7 @@ const CATEGORY_TITLE_POOLS = {
     'Honey Jar Wooden Spoon',
     'Egg Basket Farm',
   ],
-  Architektura: [
+  'architecture': [
     'Concrete Brutalist Facade',
     'Spiral Staircase Light',
     'Arched Colonnade',
@@ -262,7 +262,7 @@ const CATEGORY_TITLE_POOLS = {
     'Brutalist Balcony Grid',
     'Stone Arch Corridor',
   ],
-  'Morze i plaża': [
+  'sea-coast': [
     'Calm Wave Shoreline',
     'Dune Grass Wind',
     'Seashell Sand Still',
@@ -277,8 +277,8 @@ const CATEGORY_TITLE_POOLS = {
     'Harbor Buoy Morning',
     'Misty Coastal Path',
   ],
-  'Sport i hobby': require('./sportHobbyTitlePool').SPORT_HOBBY_TITLE_POOL,
-  'Gaming i e-sport': [
+  'sports-hobbies': require('./sportHobbyTitlePool').SPORT_HOBBY_TITLE_POOL,
+  'gaming-esports': [
     'Neon Controller Glow',
     'Retro Arcade Cabinet',
     'Gaming Headset Setup',
@@ -292,7 +292,7 @@ const CATEGORY_TITLE_POOLS = {
     'Neon Gaming Desk',
     'Retro Game Cartridge',
   ],
-  'AI i technologia': [
+  'ai-technology': [
     'Neural Network Mesh',
     'Data Stream Lines',
     'Robot Hand Grace',
@@ -306,7 +306,7 @@ const CATEGORY_TITLE_POOLS = {
     'Fiber Optic Pulse',
     'Binary Flow Field',
   ],
-  'Humor i memy': [
+  'humor-memes': [
     'Cat in Cardboard Box',
     'Dog with Glasses',
     'Llama Drama Face',
@@ -346,7 +346,7 @@ const CATEGORY_TITLE_POOLS = {
     'Dog Head Out Window',
     'Highland Cow Bad Fringe',
   ],
-  'Cyberpunk i neon': [
+  'cyberpunk-neon': [
     'Neon Alley Rain',
     'Cyber City Night',
     'Holographic Billboard',
@@ -360,7 +360,7 @@ const CATEGORY_TITLE_POOLS = {
     'Cyber Rain Umbrella',
     'Electric Skyline Blue',
   ],
-  'Muzyka i dźwięk': [
+  'music-sound': [
     'Acoustic Guitar Wood',
     'Vinyl Record Spin',
     'Piano Keys Close',
@@ -374,7 +374,7 @@ const CATEGORY_TITLE_POOLS = {
     'Electric Bass Curve',
     'Turntable Needle Drop',
   ],
-  'Wellness i joga': [
+  'wellness-yoga': [
     'Yoga Mat Morning',
     'Meditation Cushion Calm',
     'Spa Stones Stack',
@@ -388,7 +388,7 @@ const CATEGORY_TITLE_POOLS = {
     'Morning Stretch Calm',
     'Salt Lamp Glow',
   ],
-  'Symbole i harmonia': [
+  'symbols-sacred-geometry': [
     'Yin Yang Balance',
     'Mandala Geometry',
     'Lotus Flower Zen',
@@ -408,7 +408,7 @@ const CATEGORY_TITLE_POOLS = {
   ],
   // Pule dla kategorii dodanych 2026-08-03.
   // Zasada: JEDEN tytul na motyw. Dzieki temu tasowanie samo rozklada tematy
-  // i nie trzeba blokady stronniczosci, jak przy tenisie w Sport i hobby.
+  // i nie trzeba blokady stronniczosci, jak przy tenisie w sports-hobbies.
   Japonia: [
     'Torii Gate at Dawn',
     'Mount Fuji Snow Cap',
@@ -436,7 +436,7 @@ const CATEGORY_TITLE_POOLS = {
     'Coastal Cliff Wind',
     'Lighthouse on Point',
     'Pine Forest Valley',
-    // NIE 'Glacier Lake Still' — zajete przez pule "Natura i krajobrazy".
+    // NIE 'Glacier Lake Still' — zajete przez pule "nature-landscapes".
     'Glacier Lagoon Ice',
     'Volcano Slope Dusk',
     'Prairie Road Horizon',
@@ -477,10 +477,10 @@ const GLOBAL_GENERIC_PATTERNS =
   /\b(symphony|whispers of|serenity alone|dreams$|magic moments|vibes$|bliss$|wonder$|odyssey$)\b/i;
 
 const CATEGORY_GENERIC_PATTERNS = {
-  'Plakaty dla dzieci': /\b(happy times|fun adventure|colorful dreams|play zone|joy ride)\b/i,
-  'Sport i hobby': /\b(go team|game day|champion|victory vibes|athletic spirit)\b/i,
-  Botanika: /\b(green vibes|plant love|nature's art|botanical beauty)\b/i,
-  Abstrakcja: /\b(abstract balance|color pulse alone)\b/i,
+  'kids-nursery': /\b(happy times|fun adventure|colorful dreams|play zone|joy ride)\b/i,
+  'sports-hobbies': /\b(go team|game day|champion|victory vibes|athletic spirit)\b/i,
+  'botanical': /\b(green vibes|plant love|nature's art|botanical beauty)\b/i,
+  'abstract': /\b(abstract balance|color pulse alone)\b/i,
 };
 
 function normalizeTitleKey(title) {
@@ -494,8 +494,8 @@ function isGenericCategoryTitle(category, title) {
   if (GLOBAL_GENERIC_PATTERNS.test(t)) return true;
   const pat = CATEGORY_GENERIC_PATTERNS[cat];
   if (pat && pat.test(t)) return true;
-  if (cat === 'Plakaty dla dzieci' && isGenericChildrenTitle(t)) return true;
-  if (cat === 'Sport i hobby' && isTennisBiasedTitle(t)) return false; // filtered at pick time
+  if (cat === 'kids-nursery' && isGenericChildrenTitle(t)) return true;
+  if (cat === 'sports-hobbies' && isTennisBiasedTitle(t)) return false; // filtered at pick time
   return false;
 }
 
@@ -534,7 +534,7 @@ function pickCategoryTitles(category, count, excludeTitles = []) {
   let tennisCount = 0;
   for (const title of candidates) {
     if (picks.length >= n) break;
-    if (cat === 'Sport i hobby') {
+    if (cat === 'sports-hobbies') {
       const tennis = isTennisBiasedTitle(title);
       if (tennis && tennisCount >= 1) continue;
       if (tennis) tennisCount += 1;
@@ -555,7 +555,7 @@ function filterValidCategoryTitles(category, titles, excludeTitles = []) {
     if (!t || exclude.has(normalizeTitleKey(t))) continue;
     if (isGenericCategoryTitle(cat, t)) continue;
     if (out.some((x) => normalizeTitleKey(x) === normalizeTitleKey(t))) continue;
-    if (cat === 'Sport i hobby' && isTennisBiasedTitle(t)) {
+    if (cat === 'sports-hobbies' && isTennisBiasedTitle(t)) {
       if (tennisCount >= 1) continue;
       tennisCount += 1;
     }

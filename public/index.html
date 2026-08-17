@@ -5095,7 +5095,7 @@
             '<p class="info-section-title">Dwa generowane mockupy</p>' +
             '<div class="info-cards">' +
               card('🖼️','Packshot ramka <span class="info-badge info-badge--gray">_mockup_frame.jpg</span>','Plakat w czarnej galeriowej ramce na białym/jasno-szarym tle. Miękki cień. Format produktowy dla Shopify (Image Position 3).') +
-              card('🛋️','Wnętrze <span class="info-badge info-badge--gray">_mockup_interior.jpg</span>','Plakat w ramce na ścianie w kontekście dopasowanym do kategorii i tytułu — np. kuchnia dla „Kuchnia i jedzenie”, biuro lub siłownia domowa dla sportu, kawiarnia dla kawy. Lifestyle shot (Image Position 4).') +
+              card('🛋️','Wnętrze <span class="info-badge info-badge--gray">_mockup_interior.jpg</span>','Plakat w ramce na ścianie w kontekście dopasowanym do kategorii i tytułu — np. kuchnia dla „kitchen-food”, biuro lub siłownia domowa dla sportu, kawiarnia dla kawy. Lifestyle shot (Image Position 4).') +
             '</div>' +
 
             '<p class="info-section-title">Nazewnictwo plików mockupów</p>' +
@@ -7862,7 +7862,7 @@
           return { line: `node index.js generate-all ${n}${styleSuffix}`, npmAlt };
         }
         const q = shellQuoteCliArg(scope);
-        const npmAlt = n === 5 && scope === 'Botanika' && !styleVal ? 'npm run generate-botanika' : '';
+        const npmAlt = n === 5 && scope === 'botanical' && !styleVal ? 'npm run generate-botanika' : '';
         return { line: `node index.js generate ${q} ${n}${styleSuffix}`, npmAlt };
       }
 

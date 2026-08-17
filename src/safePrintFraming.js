@@ -146,7 +146,7 @@ function getSubjectScaleRange(category, style) {
 }
 
 function isBotanicalCategory(category) {
-  return String(category || '').trim() === 'Botanika';
+  return String(category || '').trim() === 'botanical';
 }
 
 function normalizeArtStyle(style) {
@@ -168,7 +168,7 @@ function isMinimalismArtStyle(style) {
 }
 
 function isNatureLandscapeCategory(category) {
-  return String(category || '').trim() === 'Natura i krajobrazy';
+  return String(category || '').trim() === 'nature-landscapes';
 }
 
 const COMPOSITION_MINIMAL = normalizeBlock(`

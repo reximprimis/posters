@@ -67,39 +67,39 @@ No readable text, letters, numbers, logos, watermarks, brand names, or product p
 `.trim();
 
 const CATEGORY_PROMPT_MODES = {
-  Abstrakcja: `
+  'abstract': `
 Abstract category mode: nonfigurative color fields, geometry, texture, rhythm — emotional but controlled premium wall art.
 Forbidden: faces, objects, landscapes, text, logos, mockup frames.
 `.trim(),
-  'Natura i krajobrazy': `
+  'nature-landscapes': `
 Nature & landscape mode: mountains, forests, lakes, rivers, meadows, mist, horizons — real outdoor atmosphere.
 Forbidden: cities, people, buildings, roads, signs, vehicles, text, logos.
 `.trim(),
-  Zwierzęta: `
+  'animals': `
 Animals category mode: one clear animal hero — wildlife or domestic, natural or gently stylized, expressive but premium.
 Forbidden: cartoon logos, brand mascots, text, cages, pet product ads, scary gore.
 `.trim(),
-  Pojazdy: `
+  'vehicles': `
 Vehicles category mode: cars, motorcycles, aircraft, boats — engineered transport forms, full silhouette visible.
 Forbidden: brand logos, readable badges, license plates, dealership ads.
 `.trim(),
-  'Kawa i herbata': `
+  'coffee-tea': `
 Coffee & tea mode: cups, steam, beans, tea leaves, teapot, café calm — unbranded ceramics only.
 Forbidden: logos on cups, menus, readable packaging, brand names.
 `.trim(),
-  'Kuchnia i jedzenie': `
+  'kitchen-food': `
 Kitchen & food mode: lemons, tomatoes, olive oil, pasta, herbs, bread, fruit, spices — Mediterranean editorial still-life.
 Forbidden: packaging with text, labels, brands, plastic stock-food look, cluttered commercial ads.
 `.trim(),
-  Architektura: `
+  'architecture': `
 Architecture mode: facades, arches, stairs, columns, modernism, brutalism, light on walls.
 Forbidden: street signs, building names, logos, house numbers, people as main subject.
 `.trim(),
-  'Morze i plaża': `
+  'sea-coast': `
 Sea & beach mode: waves, shoreline, dunes, shells, lighthouses, calm coastal horizons.
 Forbidden: crowds, hotels, ads, signs, cheesy tourist stock look.
 `.trim(),
-  'Sport i hobby': SPORT_HOBBY_MODE,
+  'sports-hobbies': SPORT_HOBBY_MODE,
   Japonia: `
 Japan category mode: one clear Japanese motif — torii gate, Mount Fuji, cherry blossom branch, koi carp, crane, bamboo, zen garden, stone lantern, or stylised wave.
 Treat it as calm fine art with restraint and generous empty space, never as a tourist souvenir or festival collage.
@@ -118,19 +118,19 @@ Forbidden: text and field-guide labels, human hands, baskets and foraging props,
 };
 
 const CATEGORY_STYLE_DIRECTIONS = {
-  Abstrakcja: {
+  'abstract': {
     Abstract:
       'Large color fields and geometric rhythm edge-to-edge; disciplined palette, gallery-grade abstract print.',
     Minimalism:
       'Quiet abstract forms, restrained palette, generous negative space, premium calm composition.',
   },
-  'Natura i krajobrazy': {
+  'nature-landscapes': {
     Photography:
       'Editorial landscape photography, natural light, believable atmosphere, no HDR exaggeration.',
     Minimalism:
       'Simplified mountain, forest, or horizon forms — muted tones, large sky, Scandinavian calm.',
   },
-  Zwierzęta: {
+  'animals': {
     Photography:
       'Naturalistic animal portrait or wildlife scene, sharp subject, soft background, editorial tone.',
     Illustration:
@@ -140,7 +140,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     Minimalism:
       'Simplified animal silhouette or shape study, muted palette, strong negative space.',
   },
-  Pojazdy: {
+  'vehicles': {
     Illustration:
       'Stylized vehicle illustration, clean lines, dynamic but premium — no logos.',
     Minimalism:
@@ -148,7 +148,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     'Line art':
       'Precise vehicle contour drawing, engineering elegance, no badges or text.',
   },
-  'Kawa i herbata': {
+  'coffee-tea': {
     Minimalism:
       'Single cup or teapot hero, warm neutral palette, calm morning ritual, lots of breathing room.',
     Illustration:
@@ -156,7 +156,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     'Line art':
       'Delicate cup, spoon, or teapot line drawing on cream — no logos on ceramics.',
   },
-  'Kuchnia i jedzenie': {
+  'kitchen-food': {
     Minimalism:
       'Minimal food still-life: one ingredient hero on linen or stone, Mediterranean tones, editorial calm.',
     Illustration:
@@ -164,7 +164,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     'Line art':
       'Fine kitchen line art: citrus, herbs, olive branch, pasta nest — elegant contour on cream.',
   },
-  Architektura: {
+  'architecture': {
     Minimalism:
       'Reduced architectural form — facade lines, arch, or stair silhouette, muted concrete and sky tones.',
     Abstract:
@@ -172,7 +172,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     'Line art':
       'Precise architectural line drawing: arches, columns, facade geometry — no signage.',
   },
-  'Morze i plaża': {
+  'sea-coast': {
     Minimalism:
       'Simplified coastal forms — horizon line, dune curve, or wave silhouette, soft pastel palette.',
     Abstract:
@@ -180,7 +180,7 @@ const CATEGORY_STYLE_DIRECTIONS = {
     Illustration:
       'Gentle coastal illustration — shells, lighthouse, or soft waves, airy premium mood.',
   },
-  'Sport i hobby': {
+  'sports-hobbies': {
     Photography:
       'Editorial sports still-life or lifestyle object, natural light, believable materials — not stadium ads.',
     Illustration:

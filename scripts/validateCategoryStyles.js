@@ -15,34 +15,34 @@ const {
 } = require('../src/categoryStyles');
 
 const NEW_CATEGORIES = [
-  'Gaming i e-sport',
-  'AI i technologia',
-  'Humor i memy',
-  'Cyberpunk i neon',
-  'Muzyka i dźwięk',
-  'Wellness i joga',
-  'Symbole i harmonia',
+  'gaming-esports',
+  'ai-technology',
+  'humor-memes',
+  'cyberpunk-neon',
+  'music-sound',
+  'wellness-yoga',
+  'symbols-sacred-geometry',
 ];
 
 const FORBIDDEN_PAIRS = [
-  ['Gaming i e-sport', 'Photography'],
-  ['Humor i memy', 'Photography'],
-  ['Cyberpunk i neon', 'Photography'],
-  ['Wellness i joga', 'Abstract'],
-  ['Symbole i harmonia', 'Photography'],
-  ['Retro', 'Minimalism'],
-  ['Botanika', 'Abstract'],
-  ['Plakaty dla dzieci', 'Photography'],
+  ['gaming-esports', 'Photography'],
+  ['humor-memes', 'Photography'],
+  ['cyberpunk-neon', 'Photography'],
+  ['wellness-yoga', 'Abstract'],
+  ['symbols-sacred-geometry', 'Photography'],
+  ['retro-vintage', 'Minimalism'],
+  ['botanical', 'Abstract'],
+  ['kids-nursery', 'Photography'],
 ];
 
 const REQUIRED_NEW_STYLES = {
-  'Gaming i e-sport': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
-  'AI i technologia': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
-  'Humor i memy': ['Illustration', 'Minimalism', 'Line art'],
-  'Cyberpunk i neon': ['Abstract', 'Illustration', 'Minimalism'],
-  'Muzyka i dźwięk': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
-  'Wellness i joga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
-  'Symbole i harmonia': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
+  'gaming-esports': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
+  'ai-technology': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
+  'humor-memes': ['Illustration', 'Minimalism', 'Line art'],
+  'cyberpunk-neon': ['Abstract', 'Illustration', 'Minimalism'],
+  'music-sound': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
+  'wellness-yoga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'symbols-sacred-geometry': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
 };
 
 validateAllowedPairsCount();

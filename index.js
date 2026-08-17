@@ -49,8 +49,8 @@ async function main() {
     console.log('                   Omit: all styles — <count> = posters per style (× N styles per category).');
     console.log('  --mat-frame      Jasne passe-partout wokół motywu (ten sam rozmiar pliku co pełna strona).\n');
     console.log('Examples:');
-    console.log('  node index.js generate "Botanika" 5');
-    console.log('  node index.js generate "Botanika" 5 --style watercolor');
+    console.log('  node index.js generate "botanical" 5');
+    console.log('  node index.js generate "botanical" 5 --style watercolor');
     console.log('  node index.js generate-all 10 --style "line art"');
     console.log('  node index.js stats\n');
     return;

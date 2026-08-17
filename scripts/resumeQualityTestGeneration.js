@@ -6,13 +6,13 @@ const PosterBatchGenerator = require('../src/posterGenerator');
 const { getPosterOutputDir } = require('../src/posterPaths');
 
 const CASES = [
-  { category: 'Kawa i herbata', style: 'Photography' },
-  { category: 'Kuchnia i jedzenie', style: 'Photography' },
-  { category: 'Morze i plaża', style: 'Minimalism' },
-  { category: 'Architektura', style: 'Line art' },
-  { category: 'Retro', style: 'Abstract' },
-  { category: 'Botanika', style: 'Photography' },
-  { category: 'Pojazdy', style: 'Minimalism' },
+  { category: 'coffee-tea', style: 'Photography' },
+  { category: 'kitchen-food', style: 'Photography' },
+  { category: 'sea-coast', style: 'Minimalism' },
+  { category: 'architecture', style: 'Line art' },
+  { category: 'retro-vintage', style: 'Abstract' },
+  { category: 'botanical', style: 'Photography' },
+  { category: 'vehicles', style: 'Minimalism' },
 ];
 
 function countFinalPng(category, style) {

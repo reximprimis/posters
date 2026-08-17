@@ -169,19 +169,19 @@ function getTitleGenerationExtraRules(category, count) {
     `Do not reuse the same opening word or metaphor family twice (e.g. only one "Garden…", one "Nature's…").`,
   ].join('\n');
 
-  if (String(category).trim() === 'Kawa i herbata') {
+  if (String(category).trim() === 'coffee-tea') {
     return (
       `${base}\n` +
-      `Kawa i herbata: titles must suggest coffee, tea, cups, steam, beans, café calm, or morning ritual — no brand names or menu words in the title.`
+      `coffee-tea: titles must suggest coffee, tea, cups, steam, beans, café calm, or morning ritual — no brand names or menu words in the title.`
     );
   }
-  if (String(category).trim() === 'Kuchnia i jedzenie') {
+  if (String(category).trim() === 'kitchen-food') {
     return (
       `${base}\n` +
-      `Kuchnia i jedzenie: titles must name food or kitchen subjects (lemon, pasta, olive oil, herbs, bread) — Mediterranean editorial tone.`
+      `kitchen-food: titles must name food or kitchen subjects (lemon, pasta, olive oil, herbs, bread) — Mediterranean editorial tone.`
     );
   }
-  if (String(category).trim() === 'Botanika') {
+  if (String(category).trim() === 'botanical') {
     return (
       `${base}\n` +
       `Botanika: at least ${needBotanicalNouns} of ${n} titles MUST include a concrete botanical anchor in plain words ` +
@@ -191,41 +191,41 @@ function getTitleGenerationExtraRules(category, count) {
       `Do NOT generate titles focused on: fern, geometric botanical, symmetric leaves, decorative object motifs, clean product-like eucalyptus.`
     );
   }
-  if (String(category).trim() === 'Kuchnia i jedzenie') {
+  if (String(category).trim() === 'kitchen-food') {
     return (
       `${base}\n` +
-      `Kuchnia i jedzenie: titles must name concrete food or kitchen subjects (lemon, pasta, olive oil, herbs, bread, tomato, fig, spice) — Mediterranean editorial still-life tone. No generic "kitchen goals" slogans.`
+      `kitchen-food: titles must name concrete food or kitchen subjects (lemon, pasta, olive oil, herbs, bread, tomato, fig, spice) — Mediterranean editorial still-life tone. No generic "kitchen goals" slogans.`
     );
   }
-  if (String(category).trim() === 'Zwierzęta') {
+  if (String(category).trim() === 'animals') {
     return (
       `${base}\n` +
       `Zwierzęta: each title names ONE specific animal species or portrait (golden retriever, arctic fox, barn owl, elephant) — wildlife or domestic, not vague "animal magic" slogans.`
     );
   }
-  if (String(category).trim() === 'Natura i krajobrazy') {
+  if (String(category).trim() === 'nature-landscapes') {
     return (
       `${base}\n` +
-      `Natura i krajobrazy: each title names a concrete landscape element (misty mountain, forest path, lake reflection, alpine meadow) — not vague "nature dreams".`
+      `nature-landscapes: each title names a concrete landscape element (misty mountain, forest path, lake reflection, alpine meadow) — not vague "nature dreams".`
     );
   }
-  if (String(category).trim() === 'Plakaty dla dzieci') {
+  if (String(category).trim() === 'kids-nursery') {
     const needAnimals = Math.min(n, Math.max(2, Math.ceil(n * 0.5)));
     const needMotifs = Math.min(n, Math.max(1, Math.floor(n * 0.3)));
     return (
       `${base}\n` +
-      `Plakaty dla dzieci (Boho-Scandi nursery): titles must name ONE concrete visual subject — never generic slogans like "Happy Times", "Fun Adventure", "Colorful Dreams".\n` +
+      `kids-nursery (Boho-Scandi nursery): titles must name ONE concrete visual subject — never generic slogans like "Happy Times", "Fun Adventure", "Colorful Dreams".\n` +
       `At least ${needAnimals} of ${n} titles: cute nursery animal with visual noun (watercolor lion cub, gentle giraffe, sleeping bear, forest fox, bunny, elephant, koala, sloth, owl, deer, penguin, whale).\n` +
       `At least ${needMotifs} of ${n} titles: boho nursery motifs (boho rainbow, smiling sun and cloud, moon and stars, hot air balloon, starry sky).\n` +
       `Muted Etsy/Pinterest nursery tone — no ABC alphabet titles, no numbers charts, no superhero names.`
     );
   }
-  if (String(category).trim() === 'Sport i hobby') {
+  if (String(category).trim() === 'sports-hobbies') {
     const needSports = Math.min(n, Math.max(2, Math.ceil(n * 0.5)));
     const needHobbies = Math.min(n, Math.max(1, Math.floor(n * 0.3)));
     return (
       `${base}\n` +
-      `Sport i hobby: spread titles across DIFFERENT sports and hobbies — at most ONE tennis-themed title in this batch.\n` +
+      `sports-hobbies: spread titles across DIFFERENT sports and hobbies — at most ONE tennis-themed title in this batch.\n` +
       `At least ${needSports} of ${n} titles must name a popular sport with a concrete visual noun: football/soccer, basketball, volleyball, tennis, cycling, running, swimming, golf, skiing, surfing, skateboarding, climbing.\n` +
       `At least ${needHobbies} of ${n} titles must name a calm hobby subject: chess board, open book, film camera, hiking boots, fishing rod, knitting yarn, paint palette, acoustic guitar, camping tent, gardening tools.\n` +
       `Do NOT generate five tennis/racket/court/serve titles. Vary the sport or hobby in every title.`
@@ -351,13 +351,13 @@ class ContentGenerator {
 
     // Fallback titles for demo mode (when API key not set)
     const fallbackTitles = {
-      'Botanika': ['Summer Garden', 'Botanical Beauty', 'Green Vibes', 'Nature\'s Art', 'Plant Love'],
+      'botanical': ['Summer Garden', 'Botanical Beauty', 'Green Vibes', 'Nature\'s Art', 'Plant Love'],
       'Pory roku': ['Spring Awakening', 'Summer Sunset', 'Autumn Colors', 'Winter Wonder', 'Seasonal Bliss'],
-      'Natura i krajobrazy': ['Mountain Peak', 'Forest Dreams', 'Ocean View', 'Valley Breeze', 'Scenic Route'],
+      'nature-landscapes': ['Mountain Peak', 'Forest Dreams', 'Ocean View', 'Valley Breeze', 'Scenic Route'],
       'Obrazy do kuchni': ['Fresh & Tasty', 'Kitchen Goals', 'Culinary Art', 'Food Love', 'Recipe Magic'],
       'Plakaty z napisami': ['Dream Big', 'Be Yourself', 'Stay Strong', 'Live Laugh', 'You Got This'],
-      'Zwierzęta': ['Wild & Free', 'Animal Magic', 'Safari Life', 'Pet Love', 'Natural Beauty'],
-      'Plakaty dla dzieci': [
+      'animals': ['Wild & Free', 'Animal Magic', 'Safari Life', 'Pet Love', 'Natural Beauty'],
+      'kids-nursery': [
         'Watercolor Lion Cub',
         'Gentle Giraffe Portrait',
         'Boho Rainbow Arc',
@@ -369,17 +369,17 @@ class ContentGenerator {
         'Hot Air Balloon Journey',
         'Bunny in Meadow',
       ],
-      'Mapy i miasta': ['City Lights', 'Urban Life', 'World Travel', 'City Love', 'Map Quest'],
-      'Retro': ['Vintage Vibes', 'Retro Cool', 'Classic Style', '80s Vibes', 'Nostalgia'],
+      'cities-travel': ['City Lights', 'Urban Life', 'World Travel', 'City Love', 'Map Quest'],
+      'retro-vintage': ['Vintage Vibes', 'Retro Cool', 'Classic Style', '80s Vibes', 'Nostalgia'],
       'Kultowe zdjęcia': ['Iconic Moment', 'Unforgettable', 'Legend Status', 'Historic', 'Timeless'],
       'Złoto i srebro': ['Golden Hour', 'Luxury Life', 'Shine Bright', 'Premium', 'Precious'],
-      'Kosmos i astronomia': ['Cosmic Wonder', 'Star Light', 'Space Odyssey', 'Galaxy Quest', 'Universe'],
+      'space-astronomy': ['Cosmic Wonder', 'Star Light', 'Space Odyssey', 'Galaxy Quest', 'Universe'],
       'Sporty': ['Go Team', 'Game Day', 'Athletic Spirit', 'Victory', 'Champion Vibes'],
       'Muzyka': ['Sound Wave', 'Music Soul', 'Rhythm', 'Melody Love', 'Beat Drop'],
       'Plakaty planery': ['Get Organized', 'Plan Ahead', 'Daily Goals', 'Productivity', 'Organized Life'],
-      Abstrakcja: ['Color Field Pulse', 'Layered Form Harmony', 'Silent Geometry', 'Chromatic Flow', 'Abstract Balance'],
+      'abstract': ['Color Field Pulse', 'Layered Form Harmony', 'Silent Geometry', 'Chromatic Flow', 'Abstract Balance'],
       Minimalizm: ['Quiet Shape Study', 'Minimal Horizon', 'Calm Form', 'Soft Contrast', 'Essential Composition'],
-      Architektura: ['Concrete Rhythm', 'Urban Facade Study', 'Geometric Atrium', 'Modern Structure', 'Architectural Light'],
+      'architecture': ['Concrete Rhythm', 'Urban Facade Study', 'Geometric Atrium', 'Modern Structure', 'Architectural Light'],
       'Dla niego': ['Refined Power', 'Quiet Confidence', 'Modern Edge', 'Bold Minimal Form', 'Steel and Shadow'],
       'Dla niej': ['Soft Elegance', 'Graceful Balance', 'Luminous Bloom', 'Velvet Calm', 'Refined Harmony'],
       'Dla taty': ['Classic Heritage', 'Steady Horizon', 'Timeless Craft', 'Warm Steel Tone', 'Noble Simplicity'],
@@ -392,29 +392,29 @@ class ContentGenerator {
       'Na rocznicę': ['Anniversary Glow', 'Enduring Harmony', 'Quiet Romance', 'Timeless Pair Study', 'Golden Memory'],
       'Na parapetówkę': ['New Home Calm', 'Housewarming Light', 'Fresh Start Palette', 'Modern Welcome', 'Cozy Minimal Scene'],
       Motoryzacja: ['Engineered Motion', 'Velocity Lines', 'Mechanical Elegance', 'Road Energy', 'Automotive Pulse'],
-      Pojazdy: ['Coastal Grand Tourer', 'Midnight Motorcycle', 'Aviation Silverline', 'Harbor Speedform', 'Desert Rally Shape'],
-      'Kawa i herbata': [
+      'vehicles': ['Coastal Grand Tourer', 'Midnight Motorcycle', 'Aviation Silverline', 'Harbor Speedform', 'Desert Rally Shape'],
+      'coffee-tea': [
         'Morning Espresso Ritual',
         'Soft Coffee Steam',
         'Quiet Café Corner',
         'Minimal Coffee Cup',
         'Tea Leaves in Morning Light',
       ],
-      'Kuchnia i jedzenie': [
+      'kitchen-food': [
         'Lemon Still Life',
         'Tomatoes on Linen',
         'Olive Oil and Rosemary',
         'Fresh Pasta Moment',
         'Mediterranean Kitchen',
       ],
-      'Morze i plaża': [
+      'sea-coast': [
         'Quiet Shoreline',
         'Soft Dune Morning',
         'Calm Sea Horizon',
         'Shells in Pale Light',
         'Misty Coastal Silence',
       ],
-      'Sport i hobby': [
+      'sports-hobbies': [
         'Soccer Ball on Grass',
         'Basketball Court Lines',
         'Volleyball on Sand',
@@ -428,7 +428,7 @@ class ContentGenerator {
         'Swimming Goggles Poolside',
         'Camping Tent at Dusk',
       ],
-      'Gaming i e-sport': [
+      'gaming-esports': [
         'Neon Gaming Setup',
         'Retro Arcade Night',
         'Minimal Game Controller',
@@ -440,7 +440,7 @@ class ContentGenerator {
         'Game Room After Dark',
         'Minimal Victory Screen',
       ],
-      'AI i technologia': [
+      'ai-technology': [
         'Neural Silence',
         'Artificial Dream Field',
         'Soft Circuit Mind',
@@ -452,7 +452,7 @@ class ContentGenerator {
         'Quiet Machine Thought',
         'Soft Algorithm Field',
       ],
-      'Humor i memy': [
+      'humor-memes': [
         'Cat Judging Everything',
         'Monday Mood',
         'Tiny Chaos Energy',
@@ -464,7 +464,7 @@ class ContentGenerator {
         'Dramatic Houseplant',
         'Tired Little Cloud',
       ],
-      'Cyberpunk i neon': [
+      'cyberpunk-neon': [
         'Neon Rain District',
         'Cyber Night Geometry',
         'Electric City Silence',
@@ -476,7 +476,7 @@ class ContentGenerator {
         'Futuristic Alley Glow',
         'Electric Urban Dream',
       ],
-      'Muzyka i dźwięk': [
+      'music-sound': [
         'Soft Jazz Evening',
         'Minimal Guitar Lines',
         'Vinyl Sound Wave',
@@ -488,7 +488,7 @@ class ContentGenerator {
         'Soft Drum Rhythm',
         'Minimal Sound Field',
       ],
-      'Wellness i joga': [
+      'wellness-yoga': [
         'Soft Yoga Morning',
         'Quiet Meditation Pose',
         'Calm Breath Ritual',
@@ -500,7 +500,7 @@ class ContentGenerator {
         'Soft Linen Meditation',
         'Warm Wellness Ritual',
       ],
-      'Symbole i harmonia': [
+      'symbols-sacred-geometry': [
         'Sri Yantra Diagram',
         'Flower of Life Grid',
         'Metatron Cube Lines',

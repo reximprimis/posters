@@ -70,40 +70,40 @@ Physically plausible scene, believable materials, and natural depth.
 {RESTRICTIONS}`;
 
 const CATEGORY_CORE_OVERRIDE = {
-  'Kosmos i astronomia': `Show a calm cosmic scene or celestial landscape with one dominant focal subject, such as a planet, moon, nebula, or horizon. Keep the space composition clean, spacious, and premium rather than chaotic sci-fi clutter.`,
-  'Mapy i miasta': `Show one physically plausible urban hero subject: skyline, street canyon, architectural facade, or city detail. Keep perspective realistic, composition structured, and lighting editorial. Avoid surreal mirror reflections, floating structures, impossible architecture, or infographic-style map graphics unless the title explicitly asks for them.`,
-  Pojazdy: `Show one complete, physically plausible hero vehicle: car, motorcycle, aircraft, boat, or engineered transport form. The full vehicle silhouette must be visible with all wheels, bumpers, wings, mirrors, hull edges, or other key parts inside the safe area with at least 5% clearance from every image border; avoid extreme close-up crops and avoid brand logos, readable badges, license plates, or markings.`,
+  'space-astronomy': `Show a calm cosmic scene or celestial landscape with one dominant focal subject, such as a planet, moon, nebula, or horizon. Keep the space composition clean, spacious, and premium rather than chaotic sci-fi clutter.`,
+  'cities-travel': `Show one physically plausible urban hero subject: skyline, street canyon, architectural facade, or city detail. Keep perspective realistic, composition structured, and lighting editorial. Avoid surreal mirror reflections, floating structures, impossible architecture, or infographic-style map graphics unless the title explicitly asks for them.`,
+  'vehicles': `Show one complete, physically plausible hero vehicle: car, motorcycle, aircraft, boat, or engineered transport form. The full vehicle silhouette must be visible with all wheels, bumpers, wings, mirrors, hull edges, or other key parts inside the safe area with at least 5% clearance from every image border; avoid extreme close-up crops and avoid brand logos, readable badges, license plates, or markings.`,
 };
 
 const BOTANICAL_SALES_MODE =
   'Botanical sales mode: A blossom-led natural branch or stem subject, such as cherry blossom, magnolia, wild flower stem, single bloom, or delicate spring branch. Natural growth flow, not a decorative product arrangement. Avoid fern-heavy motifs, product-shot eucalyptus styling, rigid symmetry, and geometric botanical layouts.';
 
 const CATEGORY_LOGIC_MAP = {
-  Botanika: BOTANICAL_SALES_MODE,
-  'Kosmos i astronomia':
+  'botanical': BOTANICAL_SALES_MODE,
+  'space-astronomy':
     'Cosmic subject: stars, planets, nebulae. Deep space atmosphere, controlled light, not sci-fi clutter.',
-  'Kawa i herbata':
+  'coffee-tea':
     'Coffee and tea: cups, steam, beans, tea leaves, café calm — unbranded surfaces only, no readable packaging.',
-  'Kuchnia i jedzenie':
+  'kitchen-food':
     'Kitchen food: natural ingredients, Mediterranean calm, editorial still-life — no labels or brand packaging.',
-  Architektura:
+  'architecture':
     'Architecture: facades, arches, stairs, columns, light on walls — no signage, logos, or street text.',
-  'Morze i plaża':
+  'sea-coast':
     'Sea and beach: calm waves, dunes, shells, coastal horizon — peaceful premium coast, no tourist clutter.',
-  'Sport i hobby': SPORT_HOBBY_MODE,
-  'Gaming i e-sport':
+  'sports-hobbies': SPORT_HOBBY_MODE,
+  'gaming-esports':
     'Gaming mood: neon setup, abstract controller, arcade energy — no franchises, logos, or known characters.',
-  'AI i technologia':
+  'ai-technology':
     'AI & tech: neural networks, data fields, abstract circuits — no brand UI or famous robots.',
-  'Humor i memy':
+  'humor-memes':
     'Visual humor without text: ironic animals, absurd moments — no meme templates or captions.',
-  'Cyberpunk i neon':
+  'cyberpunk-neon':
     'Cyberpunk neon: futuristic night geometry, rain, electric urban mood — no readable signs.',
-  'Muzyka i dźwięk':
+  'music-sound':
     'Music: unbranded instruments, blank vinyl, sound waves — no album art or musician faces.',
-  'Wellness i joga':
+  'wellness-yoga':
     'Wellness: calm yoga, meditation, spa still-life — neutral lifestyle, no religious or brand imagery.',
-  'Symbole i harmonia':
+  'symbols-sacred-geometry':
     'Symbols: yin-yang, mandala geometry, balance — neutral spiritual-lifestyle, no sacred text or deities.',
   'Dla pary': 'Symbolic connection: intertwined elements, soft romance, subtle emotion, not kitsch.',
 };
@@ -242,7 +242,7 @@ function buildMinimalismStylePrompt({ title, category, style }) {
 function buildAbstractStylePrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
-  if (categoryKey === 'Retro') {
+  if (categoryKey === 'retro-vintage') {
     return buildRetroAbstractPrompt(titleText, {
       COMPOSITION_ABSTRACT,
       SAFE_PRINT_FRAMING_ABSTRACT,

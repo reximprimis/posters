@@ -74,7 +74,7 @@ function resolveStyleDirection(categoryKey, styleKey, directions) {
   return `Premium ${styleKey} execution for ${categoryKey}, category-consistent, no mixed-style drift.`;
 }
 
-// --- Gaming i e-sport ---
+// --- gaming-esports ---
 
 const GAMING_MODE = `
 Gaming & e-sport category mode: gaming room mood, abstract controller without logos, retro arcade vibe, neon light, e-sport energy without brands, pixel energy, keyboard-like forms without readable keys, headset without logo, futuristic gaming backdrop.
@@ -92,18 +92,18 @@ const GAMING_STYLE = {
     'Clean controller, headset, keyboard-like or arcade contour, no logos, no readable keys.',
 };
 
-function buildGamingEsportPrompt({ title, category = 'Gaming i e-sport', style }) {
+function buildGamingEsportPrompt({ title, category = 'gaming-esports', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: GAMING_MODE,
-    styleDirection: resolveStyleDirection('Gaming i e-sport', style, GAMING_STYLE),
+    styleDirection: resolveStyleDirection('gaming-esports', style, GAMING_STYLE),
     useAbstractFraming: style === 'Abstract',
   });
 }
 
-// --- AI i technologia ---
+// --- ai-technology ---
 
 const AI_MODE = `
 AI & technology category mode: neural networks, data fields, abstract circuits, soft futuristic forms, digital consciousness, machine thought, algorithmic flow, synthetic calm, robotics only as abstract or anonymous forms.
@@ -121,18 +121,18 @@ const AI_STYLE = {
     'Delicate circuit paths, neural nodes, data-line drawing, no logos.',
 };
 
-function buildAiTechnologyPrompt({ title, category = 'AI i technologia', style }) {
+function buildAiTechnologyPrompt({ title, category = 'ai-technology', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: AI_MODE,
-    styleDirection: resolveStyleDirection('AI i technologia', style, AI_STYLE),
+    styleDirection: resolveStyleDirection('ai-technology', style, AI_STYLE),
     useAbstractFraming: style === 'Abstract',
   });
 }
 
-// --- Humor i memy ---
+// --- humor-memes ---
 
 const HUMOR_MODE = `
 Humor & memes category mode: visual humor without text, ironic animals, absurd small situations, overthinking mood, office plant, tired cloud, confused duck, light meme-like mood without templates.
@@ -148,17 +148,17 @@ const HUMOR_STYLE = {
     'Simple funny line drawing, expressive but premium, no captions or speech bubbles.',
 };
 
-function buildHumorMemesPrompt({ title, category = 'Humor i memy', style }) {
+function buildHumorMemesPrompt({ title, category = 'humor-memes', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: HUMOR_MODE,
-    styleDirection: resolveStyleDirection('Humor i memy', style, HUMOR_STYLE),
+    styleDirection: resolveStyleDirection('humor-memes', style, HUMOR_STYLE),
   });
 }
 
-// --- Cyberpunk i neon ---
+// --- cyberpunk-neon ---
 
 const CYBERPUNK_MODE = `
 Cyberpunk & neon category mode: neon light, futuristic geometry, night city mood, rain, cyber forms, neon grid, digital horizon, futuristic alley, electric urban atmosphere.
@@ -174,18 +174,18 @@ const CYBERPUNK_STYLE = {
     'Minimal neon line on dark negative space, clean futuristic balance, no signage.',
 };
 
-function buildCyberpunkNeonPrompt({ title, category = 'Cyberpunk i neon', style }) {
+function buildCyberpunkNeonPrompt({ title, category = 'cyberpunk-neon', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: CYBERPUNK_MODE,
-    styleDirection: resolveStyleDirection('Cyberpunk i neon', style, CYBERPUNK_STYLE),
+    styleDirection: resolveStyleDirection('cyberpunk-neon', style, CYBERPUNK_STYLE),
     useAbstractFraming: style === 'Abstract',
   });
 }
 
-// --- Muzyka i dźwięk ---
+// --- music-sound ---
 
 const MUSIC_MODE = `
 Music & sound category mode: instruments, guitar, piano, saxophone, blank vinyl without label text, abstract sound waves, studio calm, jazz mood, analog warmth, rhythm and sound energy.
@@ -203,18 +203,18 @@ const MUSIC_STYLE = {
     'Elegant instrument or sound-wave contour, clean printable line drawing.',
 };
 
-function buildMusicSoundPrompt({ title, category = 'Muzyka i dźwięk', style }) {
+function buildMusicSoundPrompt({ title, category = 'music-sound', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: MUSIC_MODE,
-    styleDirection: resolveStyleDirection('Muzyka i dźwięk', style, MUSIC_STYLE),
+    styleDirection: resolveStyleDirection('music-sound', style, MUSIC_STYLE),
     useAbstractFraming: style === 'Abstract',
   });
 }
 
-// --- Wellness i joga ---
+// --- wellness-yoga ---
 
 const WELLNESS_MODE = `
 Wellness & yoga category mode: yoga mat without logo, calm yoga pose without recognizable face as hero, meditation mood, calm hands gesture without religious symbolism, neutral wellness room, linen fabrics, unlabeled candles, spa stones, natural light, breath, balance, slow living.
@@ -232,17 +232,17 @@ const WELLNESS_STYLE = {
     'Elegant yoga pose, breath line, mat, candle, or organic wellness contour; delicate printable line drawing.',
 };
 
-function buildWellnessYogaPrompt({ title, category = 'Wellness i joga', style }) {
+function buildWellnessYogaPrompt({ title, category = 'wellness-yoga', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: WELLNESS_MODE,
-    styleDirection: resolveStyleDirection('Wellness i joga', style, WELLNESS_STYLE),
+    styleDirection: resolveStyleDirection('wellness-yoga', style, WELLNESS_STYLE),
   });
 }
 
-// --- Symbole i harmonia ---
+// --- symbols-sacred-geometry ---
 
 const SYMBOLS_MODE = `
 Symbols & harmony category mode: yin-yang as neutral balance symbol, original ornamental mandala geometry, harmony circle, sun and moon, organic geometry, calm energy field, symmetry and balance, zen-inspired forms, natural circles and waves, abstract spirituality without text.
@@ -260,13 +260,13 @@ const SYMBOLS_STYLE = {
     'Delicate mandala-inspired original line work, yin-yang contour, sun/moon harmony; organic geometric line drawing.',
 };
 
-function buildSymbolsHarmonyPrompt({ title, category = 'Symbole i harmonia', style }) {
+function buildSymbolsHarmonyPrompt({ title, category = 'symbols-sacred-geometry', style }) {
   return buildStyledSalesPrompt({
     title,
     category,
     style,
     categoryMode: SYMBOLS_MODE,
-    styleDirection: resolveStyleDirection('Symbole i harmonia', style, SYMBOLS_STYLE),
+    styleDirection: resolveStyleDirection('symbols-sacred-geometry', style, SYMBOLS_STYLE),
     useAbstractFraming: style === 'Abstract',
   });
 }

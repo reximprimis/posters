@@ -14,27 +14,27 @@ const GLOBAL_STYLES = [
 ];
 
 const CATEGORIES = [
-  'Botanika',
-  'Abstrakcja',
-  'Natura i krajobrazy',
-  'Zwierzęta',
-  'Mapy i miasta',
-  'Plakaty dla dzieci',
-  'Kosmos i astronomia',
-  'Retro',
-  'Pojazdy',
-  'Kawa i herbata',
-  'Kuchnia i jedzenie',
-  'Architektura',
-  'Morze i plaża',
-  'Sport i hobby',
-  'Gaming i e-sport',
-  'AI i technologia',
-  'Humor i memy',
-  'Cyberpunk i neon',
-  'Muzyka i dźwięk',
-  'Wellness i joga',
-  'Symbole i harmonia',
+  'botanical',
+  'abstract',
+  'nature-landscapes',
+  'animals',
+  'cities-travel',
+  'kids-nursery',
+  'space-astronomy',
+  'retro-vintage',
+  'vehicles',
+  'coffee-tea',
+  'kitchen-food',
+  'architecture',
+  'sea-coast',
+  'sports-hobbies',
+  'gaming-esports',
+  'ai-technology',
+  'humor-memes',
+  'cyberpunk-neon',
+  'music-sound',
+  'wellness-yoga',
+  'symbols-sacred-geometry',
   // Dodane 2026-08-03 na podstawie researchu rynku wall-art.
   // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
   // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
@@ -45,44 +45,44 @@ const CATEGORIES = [
 
 /** What is on the poster — generator categories only. */
 const CATEGORY_DESCRIPTIONS = {
-  Botanika:
+  'botanical':
     'botanical plants, flowers, branches, leaves, organic forms, delicate botanical compositions',
-  Abstrakcja:
+  'abstract':
     'nonfigurative compositions, shapes, color, texture, geometry, emotional visual arrangements',
-  'Natura i krajobrazy':
+  'nature-landscapes':
     'mountains, forests, lakes, rivers, fields, hills, mist, natural landscapes',
-  Zwierzęta: 'pets, wildlife, birds, dogs, cats, horses, wild animals',
-  'Mapy i miasta': 'cities, skylines, urbanism, maps, topography, streets, urban architecture',
-  'Plakaty dla dzieci':
+  'animals': 'pets, wildlife, birds, dogs, cats, horses, wild animals',
+  'cities-travel': 'cities, skylines, urbanism, maps, topography, streets, urban architecture',
+  'kids-nursery':
     'Boho-Scandi nursery art: soft watercolor animals, boho rainbows, moon and stars, muted earthy pastels on cream — calm modern nursery, not cartoon clipart',
-  'Kosmos i astronomia': 'planets, moon, stars, galaxies, nebulae, astronomy, cosmic landscapes',
-  Retro: 'vintage, analog, old photos, polaroid, cassettes, cameras, sepia, nostalgia',
-  Pojazdy: 'cars, motorcycles, aircraft, boats, classic vehicles, engineered transport forms',
-  'Kawa i herbata':
+  'space-astronomy': 'planets, moon, stars, galaxies, nebulae, astronomy, cosmic landscapes',
+  'retro-vintage': 'vintage, analog, old photos, polaroid, cassettes, cameras, sepia, nostalgia',
+  'vehicles': 'cars, motorcycles, aircraft, boats, classic vehicles, engineered transport forms',
+  'coffee-tea':
     'espresso, cups, tea, café mood, slow morning, coffee ritual, tea leaves, teapot',
-  'Kuchnia i jedzenie':
+  'kitchen-food':
     'fruit, vegetables, spices, bread, olive oil, pasta, lemons, Mediterranean kitchen',
-  Architektura:
+  'architecture':
     'buildings, facades, stairs, columns, modernism, brutalism, arches, architectural details',
-  'Morze i plaża': 'sea, waves, beach, dunes, shells, lighthouses, calm coastal landscapes',
+  'sea-coast': 'sea, waves, beach, dunes, shells, lighthouses, calm coastal landscapes',
   // Tenis swiadomie NIE wymieniony: model lgnal do niego, gdy tylko pojawial sie
   // w opisie. Tenisowe tytuly nadal sa w puli, wiec moga wystapic — ale wtedy
   // decyduje tytul, a nie sugestia z opisu kategorii.
-  'Sport i hobby':
+  'sports-hobbies':
     'cycling, running, swimming, football, basketball, volleyball, golf, skiing, surfing, climbing, boxing, ice hockey, archery, plus hobbies: books, chess, camera, hiking, fishing, guitar, gardening, camping, pottery, knitting, birdwatching',
-  'Gaming i e-sport':
+  'gaming-esports':
     'gaming room, retro arcade, controllers without logos, neon gaming mood, e-sport energy, player setup, futuristic light',
-  'AI i technologia':
+  'ai-technology':
     'artificial intelligence, neural networks, futuristic forms, data, robotics, technology, cyber minimalism',
-  'Humor i memy':
+  'humor-memes':
     'funny visual situations, irony, absurd humor, light meme mood without text or known characters',
-  'Cyberpunk i neon':
+  'cyberpunk-neon':
     'neon light, futuristic city, night, technology, rain, abstract cyber forms',
-  'Muzyka i dźwięk':
+  'music-sound':
     'instruments, blank vinyl without labels, sound waves, studio, jazz, guitar, piano, analog mood',
-  'Wellness i joga':
+  'wellness-yoga':
     'yoga, meditation, calm lifestyle, breath, balance, spa, slow living, soft morning, organic forms, quiet wellness',
-  'Symbole i harmonia':
+  'symbols-sacred-geometry':
     'sacred geometry drawn with compass precision: mandalas, Sri Yantra, Flower of Life, Metatron cube, Tree of Life, chakra diagrams, Enso circle, lotus, moon phases, Celtic knot, yin-yang, Om — symmetrical ritual diagrams rendered as fine-art prints, exact and architectural rather than misty',
   Japonia:
     'torii gate, Mount Fuji, cherry blossom branch, koi carp, crane in flight, bamboo grove, zen garden raked gravel, stone lantern, misty Japanese mountains, stylised wave — Japanese motifs treated as calm fine art',
@@ -93,27 +93,27 @@ const CATEGORY_DESCRIPTIONS = {
 };
 
 const CATEGORY_STYLES = {
-  Botanika: ['Photography', 'Minimalism', 'Line art'],
-  Abstrakcja: ['Abstract', 'Minimalism'],
-  'Natura i krajobrazy': ['Photography', 'Minimalism'],
-  Zwierzęta: ['Photography', 'Illustration', 'Line art', 'Minimalism'],
-  'Mapy i miasta': ['Photography', 'Minimalism', 'Abstract'],
-  'Plakaty dla dzieci': ['Illustration', 'Minimalism'],
-  'Kosmos i astronomia': ['Abstract', 'Illustration', 'Photography'],
-  Retro: ['Photography', 'Abstract'],
-  Pojazdy: ['Photography', 'Illustration', 'Minimalism', 'Line art'],
-  'Kawa i herbata': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
-  'Kuchnia i jedzenie': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
-  Architektura: ['Photography', 'Minimalism', 'Abstract', 'Line art'],
-  'Morze i plaża': ['Photography', 'Minimalism', 'Abstract', 'Illustration'],
-  'Sport i hobby': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
-  'Gaming i e-sport': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
-  'AI i technologia': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
-  'Humor i memy': ['Illustration', 'Minimalism', 'Line art'],
-  'Cyberpunk i neon': ['Abstract', 'Illustration', 'Minimalism'],
-  'Muzyka i dźwięk': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
-  'Wellness i joga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
-  'Symbole i harmonia': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
+  'botanical': ['Photography', 'Minimalism', 'Line art'],
+  'abstract': ['Abstract', 'Minimalism'],
+  'nature-landscapes': ['Photography', 'Minimalism'],
+  'animals': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
+  'cities-travel': ['Photography', 'Minimalism', 'Abstract'],
+  'kids-nursery': ['Illustration', 'Minimalism'],
+  'space-astronomy': ['Abstract', 'Illustration', 'Photography'],
+  'retro-vintage': ['Photography', 'Abstract'],
+  'vehicles': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
+  'coffee-tea': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'kitchen-food': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'architecture': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
+  'sea-coast': ['Photography', 'Minimalism', 'Abstract', 'Illustration'],
+  'sports-hobbies': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
+  'gaming-esports': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
+  'ai-technology': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
+  'humor-memes': ['Illustration', 'Minimalism', 'Line art'],
+  'cyberpunk-neon': ['Abstract', 'Illustration', 'Minimalism'],
+  'music-sound': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
+  'wellness-yoga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'symbols-sacred-geometry': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
   Japonia: ['Minimalism', 'Line art', 'Illustration', 'Photography'],
   'Podróże i plakaty vintage': ['Illustration', 'Minimalism', 'Abstract', 'Photography'],
   'Grzyby i las': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
@@ -134,27 +134,27 @@ const ROOM_COLLECTIONS = [
 ];
 
 const CATEGORY_ROOM_COLLECTIONS = {
-  Botanika: ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do jadalni'],
-  Abstrakcja: ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
-  'Natura i krajobrazy': ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
-  Zwierzęta: ['Do salonu', 'Do pokoju dziecka', 'Do pokoju młodzieżowego'],
-  'Mapy i miasta': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
-  'Plakaty dla dzieci': ['Do pokoju dziecka'],
-  'Kosmos i astronomia': ['Do pokoju dziecka', 'Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu'],
-  Retro: ['Do salonu', 'Do biura', 'Do gabinetu', 'Do kawiarni', 'Do pokoju młodzieżowego'],
-  Pojazdy: ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
-  'Kawa i herbata': ['Do kuchni', 'Do jadalni', 'Do kawiarni', 'Do biura'],
-  'Kuchnia i jedzenie': ['Do kuchni', 'Do jadalni', 'Do kawiarni'],
-  Architektura: ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
-  'Morze i plaża': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura'],
-  'Sport i hobby': ['Do salonu', 'Do biura', 'Do pokoju młodzieżowego', 'Do gabinetu'],
-  'Gaming i e-sport': ['Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu', 'Do salonu'],
-  'AI i technologia': ['Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do salonu'],
-  'Humor i memy': ['Do pokoju młodzieżowego', 'Do biura', 'Do salonu'],
-  'Cyberpunk i neon': ['Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu', 'Do salonu'],
-  'Muzyka i dźwięk': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do kawiarni'],
-  'Wellness i joga': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do gabinetu'],
-  'Symbole i harmonia': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'botanical': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do jadalni'],
+  'abstract': ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
+  'nature-landscapes': ['Do salonu', 'Do sypialni', 'Do biura', 'Do gabinetu'],
+  'animals': ['Do salonu', 'Do pokoju dziecka', 'Do pokoju młodzieżowego'],
+  'cities-travel': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'kids-nursery': ['Do pokoju dziecka'],
+  'space-astronomy': ['Do pokoju dziecka', 'Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu'],
+  'retro-vintage': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do kawiarni', 'Do pokoju młodzieżowego'],
+  'vehicles': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'coffee-tea': ['Do kuchni', 'Do jadalni', 'Do kawiarni', 'Do biura'],
+  'kitchen-food': ['Do kuchni', 'Do jadalni', 'Do kawiarni'],
+  'architecture': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'sea-coast': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura'],
+  'sports-hobbies': ['Do salonu', 'Do biura', 'Do pokoju młodzieżowego', 'Do gabinetu'],
+  'gaming-esports': ['Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu', 'Do salonu'],
+  'ai-technology': ['Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do salonu'],
+  'humor-memes': ['Do pokoju młodzieżowego', 'Do biura', 'Do salonu'],
+  'cyberpunk-neon': ['Do pokoju młodzieżowego', 'Do biura', 'Do gabinetu', 'Do salonu'],
+  'music-sound': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do kawiarni'],
+  'wellness-yoga': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do gabinetu'],
+  'symbols-sacred-geometry': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu', 'Do pokoju młodzieżowego'],
   Japonia: ['Do salonu', 'Do sypialni', 'Do gabinetu', 'Do biura', 'Do łazienki'],
   'Podróże i plakaty vintage': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
   'Grzyby i las': ['Do salonu', 'Do sypialni', 'Do kuchni', 'Do pokoju dziecka', 'Do jadalni'],

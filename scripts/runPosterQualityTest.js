@@ -18,13 +18,13 @@ const TARGET_W = 5906;
 const TARGET_H = 8268;
 
 const TEST_CASES = [
-  { category: 'Kawa i herbata', style: 'Photography' },
-  { category: 'Kuchnia i jedzenie', style: 'Photography' },
-  { category: 'Morze i plaża', style: 'Minimalism' },
-  { category: 'Architektura', style: 'Line art' },
-  { category: 'Retro', style: 'Abstract' },
-  { category: 'Botanika', style: 'Photography' },
-  { category: 'Pojazdy', style: 'Minimalism' },
+  { category: 'coffee-tea', style: 'Photography' },
+  { category: 'kitchen-food', style: 'Photography' },
+  { category: 'sea-coast', style: 'Minimalism' },
+  { category: 'architecture', style: 'Line art' },
+  { category: 'retro-vintage', style: 'Abstract' },
+  { category: 'botanical', style: 'Photography' },
+  { category: 'vehicles', style: 'Minimalism' },
 ];
 
 const REQUIRED_META_KEYS = [
@@ -189,37 +189,37 @@ function analyzePromptHeuristics(meta, category, style) {
   const photoTerms = /\b(photograph|photography|dslr|photo[- ]?realistic|stock photo|lifelike photo)\b/i;
   const lineArtTerms = /\b(line art|line-art|ink line|contour drawing|architectural line)\b/i;
 
-  if (category === 'Retro' && style === 'Abstract') {
+  if (category === 'retro-vintage' && style === 'Abstract') {
     if (photoTerms.test(p) && /\b(still[- ]?life|realistic)\b/i.test(p)) {
       issues.push('Retro/Abstract: prompt sounds like realistic photography');
     }
   }
-  if (category === 'Architektura' && style === 'Line art') {
+  if (category === 'architecture' && style === 'Line art') {
     if (photoTerms.test(p) && !lineArtTerms.test(p)) {
       issues.push('Architektura/Line art: photography terms without line-art cues');
     }
   }
-  if (category === 'Morze i plaża' && style === 'Minimalism') {
+  if (category === 'sea-coast' && style === 'Minimalism') {
     if (/\b(stock photo|photorealistic|commercial photography)\b/i.test(p)) {
       issues.push('Morze/Minimalism: stock-photo wording');
     }
   }
-  if (category === 'Pojazdy' && style === 'Minimalism') {
+  if (category === 'vehicles' && style === 'Minimalism') {
     if (/\b(abstract symbol|icon only|silhouette only)\b/i.test(p) && !/\b(complete vehicle|full car|entire vehicle|whole vehicle)\b/i.test(p)) {
       issues.push('Pojazdy/Minimalism: may reduce vehicle to symbol');
     }
   }
-  if (category === 'Botanika' && style === 'Photography') {
+  if (category === 'botanical' && style === 'Photography') {
     if (!/BOTANICAL|botanical|full bloom|entire flower/i.test(p)) {
       issues.push('Botanika: weak botanical/full-subject wording in prompt');
     }
   }
-  if (category === 'Kawa i herbata' && style === 'Photography') {
+  if (category === 'coffee-tea' && style === 'Photography') {
     if (!/\b(no text|no logo|no label|no watermark|no typography)\b/i.test(p)) {
       issues.push('Kawa: missing explicit no-text/no-logo restriction');
     }
   }
-  if (category === 'Kuchnia i jedzenie' && style === 'Photography') {
+  if (category === 'kitchen-food' && style === 'Photography') {
     if (/\b(menu|advertisement|commercial stock|restaurant ad)\b/i.test(p)) {
       issues.push('Kuchnia: ad/menu/stock-ad wording');
     }

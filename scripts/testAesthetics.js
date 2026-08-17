@@ -70,33 +70,33 @@ check('nieznana estetyka jest odrzucana', () => {
 console.log('\nNIENARUSZALNOSC PROMPTU:');
 
 check('bez estetyki prompt jest identyczny co do bajta', () => {
-  const a = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test' }));
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test', aesthetic: '' }));
+  const a = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test', aesthetic: '' }));
   expectEqual(a.imagePrompt, b.imagePrompt, 'prompt');
 });
 
 check('nieznana estetyka nie zmienia promptu', () => {
-  const a = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test' }));
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test', aesthetic: 'midjourney' }));
+  const a = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test', aesthetic: 'midjourney' }));
   expectEqual(a.imagePrompt, b.imagePrompt, 'prompt');
 });
 
 check('estetyka tylko DOKLEJA, nie przepisuje', () => {
-  const a = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test' }));
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test', aesthetic: 'japandi' }));
+  const a = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test', aesthetic: 'japandi' }));
   expectTrue(b.imagePrompt.startsWith(a.imagePrompt), 'prompt bazowy zachowany w calosci');
   expectTrue(b.imagePrompt.length > a.imagePrompt.length, 'prompt urosl');
 });
 
 check('blok estetyki niesie palete i zakazy', () => {
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test', aesthetic: 'boho' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test', aesthetic: 'boho' }));
   expectTrue(b.imagePrompt.includes('AESTHETIC OVERRIDE'), 'naglowek');
   expectTrue(b.imagePrompt.includes('terracotta'), 'paleta boho');
   expectTrue(b.imagePrompt.includes('Avoid:'), 'zakazy');
 });
 
 check('estetyka nie rusza zasad bezpiecznego kadru', () => {
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test', aesthetic: 'japandi' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test', aesthetic: 'japandi' }));
   expectTrue(b.imagePrompt.includes('SAFE PRINT FRAMING'), 'blok safe framing nadal obecny');
   expectTrue(b.imagePrompt.includes('must NOT change the subject'), 'jawne zastrzezenie w bloku');
 });
@@ -163,7 +163,7 @@ check('pusta i nieznana wartosc daja brak estetyki', () => {
 console.log('\nKATEGORIE UZYTKOWNIKA:');
 
 check('kategorie wbudowane nie dostaja bloku CATEGORY FOCUS', () => {
-  const b = quiet(() => pr.routePromptBuildResult({ category: 'Botanika', style: 'Minimalism', title: 'Test' }));
+  const b = quiet(() => pr.routePromptBuildResult({ category: 'botanical', style: 'Minimalism', title: 'Test' }));
   expectEqual(b.imagePrompt.includes('CATEGORY FOCUS'), false, 'blok nie powinien wystapic');
 });
 
@@ -194,7 +194,7 @@ check('Japonia to TEMAT, a japandi to ESTETYKA — nie mylimy osi', () => {
 });
 
 check('wbudowana kategoria nie jest kategoria uzytkownika', () => {
-  expectEqual(cs.isUserCategory('Botanika'), false, 'Botanika');
+  expectEqual(cs.isUserCategory('botanical'), false, 'botanical');
 });
 
 check('nieznana kategoria pozostaje nieznana', () => {
@@ -220,7 +220,7 @@ check('KAZDA dozwolona para ma blok praw dokladnie raz', () => {
 });
 
 check('blok praw zakazuje wizerunku, klubow i postaci', () => {
-  const p = quiet(() => pr.routePromptBuildResult({ category: 'Sport i hobby', style: 'Photography', title: 'Cycling Road at Dawn' })).imagePrompt;
+  const p = quiet(() => pr.routePromptBuildResult({ category: 'sports-hobbies', style: 'Photography', title: 'Cycling Road at Dawn' })).imagePrompt;
   for (const fraza of [
     'likeness of any public figure',
     'national team jerseys',
@@ -234,8 +234,8 @@ check('blok praw zakazuje wizerunku, klubow i postaci', () => {
 check('prompt sportowy nie podsuwa juz tenisa', () => {
   // Wczesniej tekst zawieral "not only tennis" i "tennis racket OR court".
   // Negacja i tak podsuwa temat — 9 z 11 pierwszych plakatow wyszlo tenisowych.
-  for (const style of cs.getAllowedStylesForCategory('Sport i hobby')) {
-    const p = quiet(() => pr.routePromptBuildResult({ category: 'Sport i hobby', style, title: 'Chess Board Still Life' })).imagePrompt;
+  for (const style of cs.getAllowedStylesForCategory('sports-hobbies')) {
+    const p = quiet(() => pr.routePromptBuildResult({ category: 'sports-hobbies', style, title: 'Chess Board Still Life' })).imagePrompt;
     if (/tennis/i.test(p)) throw new Error(`styl ${style}: prompt nadal zawiera slowo "tennis"`);
   }
 });
@@ -243,7 +243,7 @@ check('prompt sportowy nie podsuwa juz tenisa', () => {
 check('tenis nadal MOZLIWY, gdy zada go tytul', () => {
   // Nie wycinamy tenisa z oferty — usuwamy tylko samoczynne ciagoty do niego.
   const { CATEGORY_TITLE_POOLS } = require(path.join(__dirname, '..', 'src', 'categoryTitlePools'));
-  const pool = CATEGORY_TITLE_POOLS['Sport i hobby'] || [];
+  const pool = CATEGORY_TITLE_POOLS['sports-hobbies'] || [];
   expectTrue(pool.some((t) => /tennis/i.test(t)), 'tenisowy tytul w puli');
 });
 

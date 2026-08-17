@@ -398,7 +398,7 @@ function resolveAbstractByCategory(title, category, style) {
   const styleLower = String(style || '').trim().toLowerCase();
   const supportingMood = extractSupportingMood(title);
 
-  if (categoryKey === 'Retro' && styleLower === 'photography') {
+  if (categoryKey === 'retro-vintage' && styleLower === 'photography') {
     return resolveAbstractRetroPhotography(title);
   }
 
@@ -420,7 +420,7 @@ function resolveAbstractByCategory(title, category, style) {
 }
 
 function isBotanicalCategory(category) {
-  return String(category || '').trim() === 'Botanika';
+  return String(category || '').trim() === 'botanical';
 }
 
 const {
@@ -526,7 +526,7 @@ function resolveAbstractFineArtSubject(title, category) {
   const supportingMood = extractSupportingMood(titleText);
   const categoryKey = String(category || '').trim();
 
-  if (categoryKey === 'Retro') {
+  if (categoryKey === 'retro-vintage') {
     const retro = resolveRetroAbstractFineArt(titleText);
     return {
       coreSubject: rawCore,
@@ -710,7 +710,7 @@ function buildRetroPhotographyPrompt(title, blocks) {
 
   return [
     'Premium fine-art artwork for print.',
-    buildTitleBriefBlock(titleText, { literal: true, category: 'Retro', style: 'Photography' }),
+    buildTitleBriefBlock(titleText, { literal: true, category: 'retro-vintage', style: 'Photography' }),
     normalizeBlock(`
       Style direction:
       Realistic photography with analog realism, subtle film grain, and slight imperfections.
@@ -735,7 +735,7 @@ function buildRetroAbstractPrompt(title, blocks) {
 
   return [
     'Premium fine-art artwork for print.',
-    buildTitleBriefBlock(titleText, { literal: false, category: 'Retro', style: 'Abstract' }),
+    buildTitleBriefBlock(titleText, { literal: false, category: 'retro-vintage', style: 'Abstract' }),
     normalizeBlock(`
       Style direction:
       Abstract retro fine-art composition.
@@ -755,7 +755,7 @@ function buildRetroAbstractPrompt(title, blocks) {
 
 /** @deprecated Use resolveConcreteSubject */
 function buildLiteralPrimarySubject(title) {
-  const r = resolveConcreteSubject(title, 'Retro', 'Photography');
+  const r = resolveConcreteSubject(title, 'retro-vintage', 'Photography');
   return {
     subjectKind: r.subjectKind,
     primary: r.primarySubject,

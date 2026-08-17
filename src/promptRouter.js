@@ -11,30 +11,30 @@ const {
   RESTRICTIONS_ABSTRACT,
 } = require('./safePrintFraming');
 
-const CATEGORY_HARD_OVERRIDES = new Set(['Pojazdy', 'Kosmos i astronomia', 'Mapy i miasta']);
+const CATEGORY_HARD_OVERRIDES = new Set(['vehicles', 'space-astronomy', 'cities-travel']);
 
 const CATEGORY_DEDICATED = new Set([
-  'Gaming i e-sport',
-  'AI i technologia',
-  'Humor i memy',
-  'Cyberpunk i neon',
-  'Muzyka i dźwięk',
-  'Wellness i joga',
-  'Symbole i harmonia',
+  'gaming-esports',
+  'ai-technology',
+  'humor-memes',
+  'cyberpunk-neon',
+  'music-sound',
+  'wellness-yoga',
+  'symbols-sacred-geometry',
 ]);
 
 const DEDICATED_CATEGORY_STYLE = new Set([
-  'Botanika|Photography',
-  'Botanika|Minimalism',
-  'Botanika|Line art',
-  'Retro|Photography',
-  'Retro|Abstract',
-  'Kawa i herbata|Photography',
-  'Kuchnia i jedzenie|Photography',
-  'Architektura|Photography',
-  'Morze i plaża|Photography',
-  'Plakaty dla dzieci|Illustration',
-  'Plakaty dla dzieci|Minimalism',
+  'botanical|Photography',
+  'botanical|Minimalism',
+  'botanical|Line art',
+  'retro-vintage|Photography',
+  'retro-vintage|Abstract',
+  'coffee-tea|Photography',
+  'kitchen-food|Photography',
+  'architecture|Photography',
+  'sea-coast|Photography',
+  'kids-nursery|Illustration',
+  'kids-nursery|Minimalism',
 ]);
 
 function wouldUseCategoryStylePrompt(categoryKey, styleKey) {
@@ -102,84 +102,84 @@ function buildImagePromptForRoute({ category, style, title }) {
   const titleText = String(title || '').trim();
   const opts = { title: titleText, category: categoryKey, style: styleKey };
 
-  if (categoryKey === 'Pojazdy') {
+  if (categoryKey === 'vehicles') {
     return builders.buildVehiclePrompt(opts);
   }
-  if (categoryKey === 'Kosmos i astronomia') {
+  if (categoryKey === 'space-astronomy') {
     return builders.buildSpacePrompt(opts);
   }
-  if (categoryKey === 'Mapy i miasta') {
+  if (categoryKey === 'cities-travel') {
     return builders.buildMapCityPrompt(opts);
   }
 
-  if (categoryKey === 'Botanika' && styleKey === 'Photography') {
+  if (categoryKey === 'botanical' && styleKey === 'Photography') {
     return builders.buildBotanicalPhotographyPrompt(opts);
   }
-  if (categoryKey === 'Botanika' && styleKey === 'Minimalism') {
+  if (categoryKey === 'botanical' && styleKey === 'Minimalism') {
     return builders.buildBotanicalMinimalismPrompt(opts);
   }
-  if (categoryKey === 'Botanika' && styleKey === 'Line art') {
+  if (categoryKey === 'botanical' && styleKey === 'Line art') {
     return builders.buildBotanicalLineArtPrompt(opts);
   }
-  if (categoryKey === 'Retro' && styleKey === 'Photography') {
+  if (categoryKey === 'retro-vintage' && styleKey === 'Photography') {
     return builders.buildRetroPhotographyPrompt(titleText, {
       COMPOSITION_GENERAL,
       SAFE_PRINT_FRAMING,
       RESTRICTIONS_BLOCK,
     });
   }
-  if (categoryKey === 'Retro' && styleKey === 'Abstract') {
+  if (categoryKey === 'retro-vintage' && styleKey === 'Abstract') {
     return builders.buildRetroAbstractPrompt(titleText, {
       COMPOSITION_ABSTRACT,
       SAFE_PRINT_FRAMING_ABSTRACT,
       RESTRICTIONS_ABSTRACT,
     });
   }
-  if (categoryKey === 'Kawa i herbata' && styleKey === 'Photography') {
+  if (categoryKey === 'coffee-tea' && styleKey === 'Photography') {
     return builders.buildCoffeeTeaPhotographyPrompt(opts);
   }
-  if (categoryKey === 'Kuchnia i jedzenie' && styleKey === 'Photography') {
+  if (categoryKey === 'kitchen-food' && styleKey === 'Photography') {
     return builders.buildKitchenFoodPhotographyPrompt(opts);
   }
-  if (categoryKey === 'Architektura' && styleKey === 'Photography') {
+  if (categoryKey === 'architecture' && styleKey === 'Photography') {
     return builders.buildArchitecturePhotographyPrompt(opts);
   }
-  if (categoryKey === 'Morze i plaża' && styleKey === 'Photography') {
+  if (categoryKey === 'sea-coast' && styleKey === 'Photography') {
     return builders.buildSeaBeachPhotographyPrompt(opts);
   }
-  if (categoryKey === 'Plakaty dla dzieci' && styleKey === 'Illustration') {
+  if (categoryKey === 'kids-nursery' && styleKey === 'Illustration') {
     return builders.buildChildrenIllustrationPrompt(opts);
   }
-  if (categoryKey === 'Plakaty dla dzieci' && styleKey === 'Minimalism') {
+  if (categoryKey === 'kids-nursery' && styleKey === 'Minimalism') {
     return builders.buildChildrenMinimalismPrompt(opts);
   }
 
-  if (categoryKey === 'Gaming i e-sport') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Gaming i e-sport');
+  if (categoryKey === 'gaming-esports') {
+    console.log('    → Routing: CATEGORY_DEDICATED / gaming-esports');
     return builders.buildGamingEsportPrompt(opts);
   }
-  if (categoryKey === 'AI i technologia') {
-    console.log('    → Routing: CATEGORY_DEDICATED / AI i technologia');
+  if (categoryKey === 'ai-technology') {
+    console.log('    → Routing: CATEGORY_DEDICATED / ai-technology');
     return builders.buildAiTechnologyPrompt(opts);
   }
-  if (categoryKey === 'Humor i memy') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Humor i memy');
+  if (categoryKey === 'humor-memes') {
+    console.log('    → Routing: CATEGORY_DEDICATED / humor-memes');
     return builders.buildHumorMemesPrompt(opts);
   }
-  if (categoryKey === 'Cyberpunk i neon') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Cyberpunk i neon');
+  if (categoryKey === 'cyberpunk-neon') {
+    console.log('    → Routing: CATEGORY_DEDICATED / cyberpunk-neon');
     return builders.buildCyberpunkNeonPrompt(opts);
   }
-  if (categoryKey === 'Muzyka i dźwięk') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Muzyka i dźwięk');
+  if (categoryKey === 'music-sound') {
+    console.log('    → Routing: CATEGORY_DEDICATED / music-sound');
     return builders.buildMusicSoundPrompt(opts);
   }
-  if (categoryKey === 'Wellness i joga') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Wellness i joga');
+  if (categoryKey === 'wellness-yoga') {
+    console.log('    → Routing: CATEGORY_DEDICATED / wellness-yoga');
     return builders.buildWellnessYogaPrompt(opts);
   }
-  if (categoryKey === 'Symbole i harmonia') {
-    console.log('    → Routing: CATEGORY_DEDICATED / Symbole i harmonia');
+  if (categoryKey === 'symbols-sacred-geometry') {
+    console.log('    → Routing: CATEGORY_DEDICATED / symbols-sacred-geometry');
     return builders.buildSymbolsHarmonyPrompt(opts);
   }
 

@@ -8,7 +8,7 @@ function normalizeBlock(text) {
     .trim();
 }
 
-const NATURE_LANDSCAPE_CATEGORY = 'Natura i krajobrazy';
+const NATURE_LANDSCAPE_CATEGORY = 'nature-landscapes';
 
 const LANDSCAPE_KEYWORDS =
   /\b(mountain|mountains|reflection|reflect|lake|valley|forest|hill|hills|cloud|clouds|horizon|river|coast|shore|desert|dune|meadow|mist|misty|fog|foggy|water|sea|ocean|cliff|canyon|glacier|snow|peak|summit|wood|woods|tree line|treeline)\b/i;

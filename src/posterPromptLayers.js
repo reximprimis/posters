@@ -59,17 +59,17 @@ const CATEGORY_STYLE_LOCK_HINTS = {
     'Hard lock: category "Dla pary" plus style "Photography" must produce a realistic photographic scene expressing paired harmony/intimacy through two clearly related subjects in one frame, with natural lens-like detail and premium tonal grading; do not drift to generic abstract poster motifs.',
   'Dla pary|photography':
     'Hard lock: category "Dla pary" plus style "Photography" must produce a realistic photographic scene expressing paired harmony/intimacy through two clearly related subjects in one frame, with natural lens-like detail and premium tonal grading; do not drift to generic abstract poster motifs.',
-  'Botanika|Photography':
+  'botanical|Photography':
     'Hard lock: real botanical photography of a natural branch, blossom stem, flower, or leaf growth that matches the title literally. Grounded in a believable natural environment or soft editorial setting, not a decorative product arrangement. No circular layout, relief-like framing, or centered design-object look.',
-  'Botanika|photography':
+  'botanical|photography':
     'Hard lock: real botanical photography of a natural branch, blossom stem, flower, or leaf growth that matches the title literally. Grounded in a believable natural environment or soft editorial setting, not a decorative product arrangement. No circular layout, relief-like framing, or centered design-object look.',
-  'Mapy i miasta|Photography':
+  'cities-travel|Photography':
     'Hard lock: realistic city photography or architectural photography only. Use a physically plausible skyline, street canyon, or facade with editorial travel mood. No floating structures, impossible reflections, glossy CGI surfaces, or surreal mirrored floors unless the title explicitly asks for them.',
-  'Mapy i miasta|photography':
+  'cities-travel|photography':
     'Hard lock: realistic city photography or architectural photography only. Use a physically plausible skyline, street canyon, or facade with editorial travel mood. No floating structures, impossible reflections, glossy CGI surfaces, or surreal mirrored floors unless the title explicitly asks for them.',
-  'Retro|Photography':
+  'retro-vintage|Photography':
     'Hard lock: realistic retro-object photography or premium retro still life only. The hero object must match the title literally — polaroid prints for polaroid titles, cassette only when the title names cassette, vinyl only when the title names vinyl. Unbranded blank surfaces, no readable label text, no brand names, no packaging copy. Do not substitute unrelated nostalgic props.',
-  'Retro|photography':
+  'retro-vintage|photography':
     'Hard lock: realistic retro-object photography or premium retro still life only. The hero object must match the title literally — polaroid prints for polaroid titles, cassette only when the title names cassette, vinyl only when the title names vinyl. Unbranded blank surfaces, no readable label text, no brand names, no packaging copy. Do not substitute unrelated nostalgic props.',
 };
 
@@ -88,29 +88,29 @@ const SUBJECT_PRIORITY_RULE =
 const STYLE_PREMIUM = QUALITY_MANDATORY;
 
 const CATEGORY_ART_DIRECTION = {
-  Botanika:
+  'botanical':
     'Botanical subject: plants, leaves, stems, or flowers; soft natural or diffused light; organic shapes; palette and scale must follow the TITLE—do not default every image to the same sage-cream minimal still life; vary across outputs: macro leaf detail, single stem hero, airy negative space, or dense botanical rhythm when the title suggests it; elegant layout, full-bleed.',
   'Pory roku':
     'One single seasonal atmosphere only—match the title literally; no four-season grid, triptych, or collage of seasons; cohesive sky, light, and palette for that one moment.',
-  'Natura i krajobrazy':
+  'nature-landscapes':
     'Natural outdoor context integrated into the scene (field, grass, sky, water, weather) as supporting background only; the TITLE-defined main subject remains dominant and clearly readable; natural light; no interior or frame cues.',
   'Obrazy do kuchni':
     'Kitchen-themed still life: fresh ingredients, ceramics, herbs, or culinary objects as artistic arrangement; warm appetizing light; no readable recipe text.',
   'Plakaty z napisami':
     'Graphic language: abstract shapes, blocks, rhythm only—no legible letters, words, numbers, or quotes.',
-  Zwierzęta:
+  'animals':
     'Animal or wildlife as clear hero subject; supporting environment only; sharp focus on subject, highly detailed fur/feathers, no blur on subject, no texture artifacts; naturalistic or stylized; no signage or labels.',
-  'Plakaty dla dzieci':
+  'kids-nursery':
     'Nursery wall art: one cute animal portrait OR one boho motif (rainbow, sun, moon, stars) on cream background; muted sage, mustard, terracotta, blush pastels; watercolor or flat boho minimal — never neon clipart.',
-  'Mapy i miasta':
+  'cities-travel':
     'Map-like abstraction, skyline silhouette, or travel graphic; stylized geography; artistic not infographic.',
-  Retro:
+  'retro-vintage':
     'Retro still life or object photography; hero object must follow the title literally (polaroid, cassette, vinyl, camera, etc.); warm terracotta, amber, cream, muted teal; unbranded surfaces; no UI mockups.',
   'Kultowe zdjęcia':
     'Iconic timeless mood—stylized classic photography or illustration; no celebrity likeness or trademarks.',
   'Złoto i srebro':
     'Luxury metallics—gold, silver, champagne—with matte neutrals; elegant, not glitter overload.',
-  'Kosmos i astronomia':
+  'space-astronomy':
     'Cosmic scene: stars, nebula, planets, or deep space; rich darks, luminous accents; no sci-fi UI or text.',
   Sporty:
     'Dynamic sports energy: motion, athletic form, or equipment; strong composition; modern colors; flat print look.',
@@ -118,11 +118,11 @@ const CATEGORY_ART_DIRECTION = {
     'Music-inspired: instruments, waves, rhythm, or abstract sound visualization; no band logos or album titles.',
   'Plakaty planery':
     'Planner-inspired abstract grid and blocks only—no readable dates or words; clean graphic layout.',
-  Abstrakcja:
+  'abstract':
     'Nonfigurative abstract field as one unified composition; strong visual rhythm and intentional color architecture edge-to-edge.',
   Minimalizm:
     'Minimal, quiet composition with strong negative space control and one clear focal hierarchy, still full-bleed.',
-  Architektura:
+  'architecture':
     'Architectural subject or detail: structural lines, geometry, light on materials, modern and precise framing.',
   'Dla niego':
     'Refined gift-ready direction with confident forms and restrained premium palette; avoid stereotypes and cliches.',
@@ -148,7 +148,7 @@ const CATEGORY_ART_DIRECTION = {
     'New-home welcoming mood: modern, interior-friendly, calm and premium.',
   Motoryzacja:
     'Automotive culture aesthetic: dynamic lines, engineering details, controlled motion energy.',
-  Pojazdy:
+  'vehicles':
     'Vehicle-focused poster direction: cars, motorcycles, aircraft, boats, or engineered transport forms; emphasize silhouette, motion, materials, reflections, and mechanical character while keeping one clear hero subject and no brand logos or readable markings.',
   Samochody:
     'Car-focused composition with sculpted body lines and reflective material quality.',
@@ -228,14 +228,14 @@ const NEGATIVE_TAIL =
   'No side borders, no vertical bars, no empty edge extensions, no frame, no mockup, no interior, no object setup, no text, no watermark.';
 
 const SHORT_CATEGORY_HINTS = {
-  Botanika:
+  'botanical':
     'Single wild botanical subject growing naturally, no arranged decorative setup, irregular organic growth, minimal composition.',
-  'Natura i krajobrazy': 'TITLE-defined subject is primary; natural landscape is only supporting context with realistic atmosphere.',
-  'Kosmos i astronomia': 'Cosmic subject with controlled realism and clean composition.',
-  'Mapy i miasta': 'Urban/city subject in clean, structured visual language.',
-  'Plakaty dla dzieci': 'Nursery hero subject from title: one gentle animal or boho celestial motif, Boho-Scandi palette.',
-  Retro: 'Retro mood with restrained vintage character.',
-  Abstrakcja: 'Abstract subject with clean edge-to-edge flow.',
+  'nature-landscapes': 'TITLE-defined subject is primary; natural landscape is only supporting context with realistic atmosphere.',
+  'space-astronomy': 'Cosmic subject with controlled realism and clean composition.',
+  'cities-travel': 'Urban/city subject in clean, structured visual language.',
+  'kids-nursery': 'Nursery hero subject from title: one gentle animal or boho celestial motif, Boho-Scandi palette.',
+  'retro-vintage': 'Retro mood with restrained vintage character.',
+  'abstract': 'Abstract subject with clean edge-to-edge flow.',
 };
 
 function getCategoryArtDirection(category) {

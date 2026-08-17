@@ -47,15 +47,15 @@ function expectEqual(a, b, label) {
 const db = [
   {
     title: 'Delicate Magnolia Branch',
-    category: 'Botanika',
+    category: 'botanical',
     artStyle: 'Photography',
     imagePath: 'posters/Botanika/photography/Delicate_Magnolia_Branch.png',
   },
   {
     title: 'Woodland Tea Society',
-    category: 'Humor i memy',
+    category: 'humor-memes',
     artStyle: 'Illustration',
-    imagePath: 'posters/Humor i memy/Illustration/Unexpected_Tea_Party.png',
+    imagePath: 'posters/humor-memes/Illustration/Unexpected_Tea_Party.png',
   },
 ];
 
@@ -98,7 +98,7 @@ check('sztucznie wstawiony duplikat jest wykrywany', () => {
     ...db,
     {
       title: 'Delicate Magnolia Branch',
-      category: 'Retro',
+      category: 'retro-vintage',
       artStyle: 'Abstract',
       imagePath: 'posters/Retro/abstract/Inny_Plik.png',
     },

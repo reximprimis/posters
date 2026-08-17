@@ -51,7 +51,7 @@ const COFFEE_TEA_PHOTO =
 function buildCoffeeTeaPhotographyPrompt(opts) {
   return buildSalesCategoryPhotographyPrompt({
     ...opts,
-    category: 'Kawa i herbata',
+    category: 'coffee-tea',
     style: 'Photography',
     categoryMode: COFFEE_TEA_MODE,
     styleDirection: COFFEE_TEA_PHOTO,
@@ -69,7 +69,7 @@ const KITCHEN_FOOD_PHOTO =
 function buildKitchenFoodPhotographyPrompt(opts) {
   return buildSalesCategoryPhotographyPrompt({
     ...opts,
-    category: 'Kuchnia i jedzenie',
+    category: 'kitchen-food',
     style: 'Photography',
     categoryMode: KITCHEN_FOOD_MODE,
     styleDirection: KITCHEN_FOOD_PHOTO,
@@ -87,7 +87,7 @@ const ARCHITECTURE_PHOTO =
 function buildArchitecturePhotographyPrompt(opts) {
   return buildSalesCategoryPhotographyPrompt({
     ...opts,
-    category: 'Architektura',
+    category: 'architecture',
     style: 'Photography',
     categoryMode: ARCHITECTURE_MODE,
     styleDirection: ARCHITECTURE_PHOTO,
@@ -105,7 +105,7 @@ const SEA_BEACH_PHOTO =
 function buildSeaBeachPhotographyPrompt(opts) {
   return buildSalesCategoryPhotographyPrompt({
     ...opts,
-    category: 'Morze i plaża',
+    category: 'sea-coast',
     style: 'Photography',
     categoryMode: SEA_BEACH_MODE,
     styleDirection: SEA_BEACH_PHOTO,
