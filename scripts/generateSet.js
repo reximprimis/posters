@@ -21,7 +21,7 @@ require('dotenv').config({ quiet: true });
 const ImageGen = require('../src/dalleImageGenerator');
 const PdfGenerator = require('../src/pdfGenerator');
 const { generateSet, buildSetPdfs, saveSetToInventory } = require('../src/posterSetGenerator');
-const { buildSetTitle } = require('../src/posterTitle');
+const { toPosterHandle } = require('../src/posterTitle');
 const { buildSetDescription } = require('../src/setDescription');
 
 const ROOT = path.join(__dirname, '..');
@@ -59,9 +59,15 @@ function arg(nazwa, domyslna) {
   const invPath = path.join(ROOT, 'posters_inventory.json');
   const inv = fs.existsSync(invPath) ? JSON.parse(fs.readFileSync(invPath, 'utf8')) : { posters: [] };
 
-  // Tytul zestawu NIE jest tytulem motywu — etykieta z liczba sztuk jest konieczna,
-  // zeby handle nie kolidowal z pojedynczym plakatem o tym samym motywie.
-  const tytulZestawu = buildSetTitle(motyw, layout);
+  // Tytul zestawu to SAM MOTYW, bez etykiety "Set of 3 Prints".
+  //
+  // Liczbe sztuk niesie badge na karcie produktu i pierwszy akapit opisu, wiec
+  // tytul nie musi jej powtarzac — krotsza nazwa lepiej czyta sie w wynikach
+  // wyszukiwania i na siatce kolekcji.
+  //
+  // Cena: handle zestawu jest teraz taki sam, jaki mialby plakat o tym motywie.
+  // Guard ponizej to wylapie i zablokuje generowanie, gdyby motyw byl juz zajety.
+  const tytulZestawu = motyw;
 
   console.log(`Zestaw: ${tytulZestawu}`);
   console.log(`  kategoria ${category} · styl ${style}${aesthetic ? ' · estetyka ' + aesthetic : ''}`);
