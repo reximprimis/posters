@@ -191,7 +191,13 @@ function cofnij() {
   const { mapa, przeniesione } = wykonaj(ruchy);
   const zmian = przepiszKartoteke(inv, mapa);
   fs.writeFileSync(INVENTORY, JSON.stringify(inv, null, 2), 'utf8');
-  fs.writeFileSync(MAPA, JSON.stringify({ utworzono: new Date().toISOString(), mapa }, null, 2), 'utf8');
+  // Mapa NIE nadpisuje poprzedniej bezpowrotnie: kazde uruchomienie zostawia
+  // wlasny plik ze znacznikiem czasu, a MAPA wskazuje ostatnie przeniesienie.
+  // Bez tego drugie uruchomienie kasowalo mozliwosc cofniecia pierwszego.
+  const stempel = new Date().toISOString().replace(/[:.]/g, "-");
+  const tresc = JSON.stringify({ utworzono: new Date().toISOString(), mapa }, null, 2);
+  fs.writeFileSync(MAPA.replace(/.json$/, "_" + stempel + ".json"), tresc, "utf8");
+  fs.writeFileSync(MAPA, tresc, "utf8");
 
   console.log('');
   console.log(`Przeniesiono plikow:        ${przeniesione}`);
