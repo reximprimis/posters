@@ -6822,6 +6822,12 @@
           <img id="modalPreviewFullImg" src="" alt="Miniatura master" />
           <span class="modal-preview-thumb-label">Master</span>
         </button>
+        <!-- Kaskada tuz za Masterem: to pierwsze zdjecie produktu w sklepie,
+             wiec w podgladzie tez ma byc od razu widoczna. Tylko zestawy. -->
+        <button type="button" class="modal-preview-thumb modal-preview-thumb--mockup" id="modalPreviewStackBtn" aria-pressed="false" title="Kaskada arkuszy" hidden>
+          <img id="modalPreviewStackImg" src="" alt="Kaskada arkuszy" />
+          <span class="modal-preview-thumb-label">Kaskada</span>
+        </button>
         <button type="button" class="modal-preview-thumb" id="modalPreviewFramedBtn" aria-pressed="false" title="Podgląd MASTER z ramką">
           <img id="modalPreviewFramedImg" src="" alt="Miniatura master z ramką" />
           <span class="modal-preview-thumb-label">Ramka</span>
@@ -8213,10 +8219,12 @@
               } /><span>Druk</span></label>`
             : '';
 
-          // Zestaw pokazuje MINIATURE (panele w ramkach obok siebie), nie panorame.
-          // Panorama to plik roboczy do ciecia — jako kafelek nie mowi nic o produkcie.
           const isSet = item.kind === 'set';
-          const cardSrc = isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath;
+          // Zestaw pokazuje KASKADE — ten sam obraz, ktory jest pierwszym zdjeciem
+          // produktu w sklepie, wiec biblioteka i sklep pokazuja to samo.
+          // Dotyczy obu ukladow: dyptyku i tryptyku.
+          const stackSrc = isSet && item.mockups && item.mockups.stack ? item.mockups.stack : '';
+          const cardSrc = stackSrc || (isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath);
           const setBadgeText =
             item.layout === 'tryptyk' ? 'TRYPTYK' : item.layout === 'duo' ? 'DYPTYK' : 'ZESTAW';
 
@@ -8918,6 +8926,7 @@
         // przyciski zostana ukryte tak samo jak przy braku salonu.
         const interior2Url = mockupUrlFromRel(mkups.interior2 || '');
         const sheetsUrl = mockupUrlFromRel(mkups.sheets || '');
+        const stackUrl = mockupUrlFromRel(mkups.stack || '');
 
         const mkRow = (label, value) => {
           const v = String(value || '').trim();
@@ -8974,6 +8983,7 @@
           }
         }
         for (const [btnId, imgId, url] of [
+          ['modalPreviewStackBtn', 'modalPreviewStackImg', stackUrl],
           ['modalPreviewMockupInterior2Btn', 'modalPreviewMockupInterior2Img', interior2Url],
           ['modalPreviewMockupSheetsBtn', 'modalPreviewMockupSheetsImg', sheetsUrl],
         ]) {
@@ -9027,6 +9037,7 @@
       // Pary przycisk-obrazek zamiast wyboru po indeksie: przy trzech i wiecej
       // miniaturach warunek na idx przestaje sie skalowac.
       [
+        ['modalPreviewStackBtn', 'modalPreviewStackImg'],
         ['modalPreviewMockupFrameBtn', 'modalPreviewMockupFrameImg'],
         ['modalPreviewMockupInteriorBtn', 'modalPreviewMockupInteriorImg'],
         ['modalPreviewMockupInterior2Btn', 'modalPreviewMockupInterior2Img'],
@@ -9090,6 +9101,8 @@
         if (els.modalPreviewThumbs) els.modalPreviewThumbs.hidden = true;
         if (els.modalPreviewFullImg) els.modalPreviewFullImg.src = '';
         if (els.modalPreviewFramedImg) els.modalPreviewFramedImg.src = '';
+        const stackImg = document.getElementById('modalPreviewStackImg');
+        if (stackImg) stackImg.src = '';
       }
 
       async function load() {
