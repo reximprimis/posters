@@ -453,8 +453,13 @@ async function main() {
     const imageMockupFrame = mockupFrameRel ? toPublicUrl(mockupFrameRel) : '';
     const imageMockupInterior = mockupInteriorRel ? toPublicUrl(mockupInteriorRel) : '';
 
-    // Image slots (Shopify gallery order): 1=master thumb, 2=packshot, 3=salon, 4=ramka thumb
-    const IMAGE_SLOTS = [imageMaster, imageMockupFrame, imageMockupInterior, imageFramed].filter(Boolean);
+    // Kolejnosc galerii POJEDYNCZEGO plakatu:
+    //   1. master   — sama grafika, to ona sprzedaje,
+    //   2. ramka    — wariant z bialym marginesem, zeby klient widzial oba,
+    //   3. packshot — plakat w ramie na czystym tle,
+    //   4. salon    — efekt na scianie.
+    // Zestawy maja wlasna kolejnosc, ustawiana nizej w petli zestawow.
+    const IMAGE_SLOTS = [imageMaster, imageFramed, imageMockupFrame, imageMockupInterior].filter(Boolean);
 
     let rowIndex = 0;
     for (const printStyle of PRINT_STYLES) {
