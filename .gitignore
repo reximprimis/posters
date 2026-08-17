@@ -44,3 +44,12 @@ prompt_cache.json
 
 # Grafiki interfejsu sa czescia aplikacji - regula *.png dotyczy generowanych plakatow.
 !public/*.png
+
+# Kopie kartoteki i mapy operacji masowych — robocze, nie nalezy ich wersjonowac.
+# Kartoteka posters_inventory.json tez nie jest sledzona, wiec kopie sa jedynym
+# zabezpieczeniem: trzymamy je lokalnie w _kopie_kartoteki/.
+_kopie_kartoteki/
+posters_inventory.PRZED_*.json
+posters_inventory.backup_*.json
+migracja_katalogow_mapa*.json
+zestawy_robocze/
