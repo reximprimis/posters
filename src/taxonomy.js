@@ -146,6 +146,35 @@ const OCCASIONS = [
     name: 'Party & Fun',
     promptHint: 'party mood: confetti, playful energy, bold saturated palette, cheerful and loud',
   },
+  // Pory roku siedza na tej samej osi co okazje, bo w promcie robia dokladnie
+  // to samo: zmieniaja palete i nastroj, nie temat. Roznica jest handlowa,
+  // nie techniczna — sezon trwa kwartal i sprzedaje sie caly czas, okazja
+  // trwa tydzien. Rozdzielone znacznikiem `kind`, zeby nawigacja mogla je
+  // pokazac w osobnych kolumnach.
+  {
+    key: 'spring',
+    kind: 'season',
+    name: 'Spring',
+    promptHint: 'early spring light: fresh green shoots, blossom, clear rain-washed air, pale yellow and soft green',
+  },
+  {
+    key: 'summer',
+    kind: 'season',
+    name: 'Summer',
+    promptHint: 'high summer light: strong sun, deep shadow, sea blue, warm sand and bleached brightness',
+  },
+  {
+    key: 'autumn',
+    kind: 'season',
+    name: 'Autumn',
+    promptHint: 'autumn light: low golden sun, turning leaves, mist, rust amber and deep ochre',
+  },
+  {
+    key: 'winter',
+    kind: 'season',
+    name: 'Winter',
+    promptHint: 'winter light: pale low sun, bare forms, snow and frost, cold blue-gray with warm interior glow',
+  },
   // Dwie okazje specyficznie niemieckie — glowny rynek sklepu, a konkurencja
   // po angielsku praktycznie nie istnieje.
   {
@@ -213,6 +242,128 @@ function normalizeRooms(wartosc) {
   return wynik;
 }
 
+/**
+ * Kolory — szosta os, w calej branzy standard, u nas dotad pusta (metapole
+ * "Kolor" w CSV nie bylo wypelniane ani razu). Klient urzadzajacy wnetrze
+ * filtruje po kolorze wczesniej niz po temacie: najpierw "cos zielonego nad
+ * kanape", dopiero potem co to przedstawia.
+ *
+ * Koloru NIE deklarujemy recznie — wyliczamy go z gotowego pliku (patrz
+ * scripts/ustawKolory.js). Reczne tagowanie 152 plakatow byloby i drogie,
+ * i niespojne.
+ *
+ * `rgb` to punkt odniesienia do dopasowania najblizszego koloru, nie dokladna
+ * wartosc — chodzi o kubelek handlowy, nie o wiernosc barwy.
+ */
+const COLORS = [
+  { key: 'black', name: 'Black', rgb: [26, 26, 26] },
+  { key: 'white', name: 'White', rgb: [245, 245, 243] },
+  { key: 'grey', name: 'Grey', rgb: [140, 140, 140] },
+  { key: 'beige', name: 'Beige', rgb: [214, 196, 168] },
+  { key: 'brown', name: 'Brown', rgb: [120, 84, 56] },
+  { key: 'gold', name: 'Gold', rgb: [193, 154, 78] },
+  { key: 'red', name: 'Red', rgb: [178, 47, 45] },
+  { key: 'orange', name: 'Orange', rgb: [216, 122, 45] },
+  { key: 'yellow', name: 'Yellow', rgb: [227, 194, 74] },
+  { key: 'green', name: 'Green', rgb: [82, 122, 74] },
+  { key: 'blue', name: 'Blue', rgb: [58, 92, 142] },
+  { key: 'purple', name: 'Purple', rgb: [112, 78, 140] },
+  { key: 'pink', name: 'Pink', rgb: [212, 145, 158] },
+];
+
+const COLOR_BY_KEY = new Map(COLORS.map((c) => [c.key, c]));
+
+function colorName(key) {
+  const c = COLOR_BY_KEY.get(String(key || '').trim());
+  return c ? c.name : String(key || '');
+}
+
+function isKnownColor(key) {
+  return COLOR_BY_KEY.has(String(key || '').trim());
+}
+
+/**
+ * Dopasowuje RGB do najblizszego kubelka handlowego.
+ *
+ * Liczone w HSL, nie w RGB. Odleglosc w surowym RGB nie dziala do tego celu,
+ * bo traktuje jasnosc na rowni z barwa: ciemna zielen i granat wychodzily
+ * blizej czerni niz zieleni i niebieskiego, a grafit ladowal w brazie.
+ * Czlowiek widzi inaczej — najpierw rozpoznaje barwe, potem jej jasnosc.
+ * Dlatego najpierw odsiewamy szarosci (niskie nasycenie), a dopiero kolorowe
+ * piksele dzielimy po odcieniu.
+ *
+ * @param {number} r 0-255
+ * @param {number} g 0-255
+ * @param {number} b 0-255
+ * @returns {string} klucz koloru
+ */
+function nearestColorKey(r, g, b) {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  const d = max - min;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+
+  let h = 0;
+  if (d !== 0) {
+    if (max === rn) h = ((gn - bn) / d) % 6;
+    else if (max === gn) h = (bn - rn) / d + 2;
+    else h = (rn - gn) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  // Neutralnosc oceniamy CHROMA (d), nie nasyceniem (s). HSL dzieli chrome
+  // przez (1-|2l-1|), wiec przy skrajnej jasnosci mianownik daży do zera
+  // i nasycenie wystrzeliwuje: kremowa biel 240,235,220 wychodzila jako
+  // s=0.40 i ladowala w zlocie. Chroma tego nie robi.
+  if (d < 0.1) {
+    if (l < 0.28) return 'black';
+    if (l > 0.86) return 'white';
+    return 'grey';
+  }
+  // Bardzo ciemne mimo barwy — na scianie i tak czyta sie jako czern.
+  if (l < 0.12) return 'black';
+
+  if (h < 15 || h >= 345) {
+    // Roz to rozbielona czerwien, nie osobny odcien.
+    return l > 0.62 ? 'pink' : 'red';
+  }
+  if (h < 38) {
+    // Pasmo cieple rozpada sie na trzy kubelki handlowe i decyduje o nich
+    // CHROMA, nie nasycenie: beż 224,194,163 ma s=0.50 (bo HSL zawyza je przy
+    // duzej jasnosci), ale chrome zaledwie 0.24 — i to chroma zgadza sie
+    // z tym, co widzi oko. Braz to ten sam odcien przyciemniony, bez —
+    // rozbielony, pomarancz — nasycony.
+    if (d < 0.32) return l < 0.45 ? 'brown' : 'beige';
+    return l < 0.42 ? 'brown' : 'orange';
+  }
+  if (h < 62) {
+    // Przygaszone ciepłe swiatlo (kremy, taupe) to wciaz bez, nie zloto.
+    if (d < 0.28) return l < 0.45 ? 'brown' : 'beige';
+    // Zloto to przygaszony zolty — bez tego kazde cieple swiatlo byloby "yellow".
+    if (d < 0.45 || l < 0.55) return 'gold';
+    return 'yellow';
+  }
+  if (h < 165) return 'green';
+  if (h < 260) return 'blue';
+  if (h < 310) return 'purple';
+  return 'pink';
+}
+
+function normalizeColors(wartosc) {
+  const lista = Array.isArray(wartosc) ? wartosc : wartosc == null ? [] : [wartosc];
+  const wynik = [];
+  for (const x of lista) {
+    const k = String(x || '').trim().toLowerCase();
+    if (isKnownColor(k) && !wynik.includes(k)) wynik.push(k);
+  }
+  return wynik;
+}
+
 const CAT_BY_KEY = new Map(CATEGORIES.map((c) => [c.key, c]));
 const CAT_BY_LEGACY = new Map();
 for (const c of CATEGORIES) {
@@ -256,6 +407,16 @@ function categoryName(key) {
 function categorySlug(key) {
   const c = getCategory(key);
   return c ? c.slug : String(key || '');
+}
+
+/** Same okazje, bez por roku — do kolumny "Okazje" w nawigacji. */
+function listOccasionsOnly() {
+  return OCCASIONS.filter((o) => o.kind !== 'season');
+}
+
+/** Same pory roku — do kolumny "Sezony". */
+function listSeasons() {
+  return OCCASIONS.filter((o) => o.kind === 'season');
 }
 
 function getOccasion(key) {
@@ -303,6 +464,13 @@ module.exports = {
   CATEGORIES,
   OCCASIONS,
   ROOMS,
+  COLORS,
+  colorName,
+  isKnownColor,
+  nearestColorKey,
+  normalizeColors,
+  listOccasionsOnly,
+  listSeasons,
   roomName,
   normalizeRooms,
   JAPONIA_ROZPISKA,
