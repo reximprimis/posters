@@ -62,7 +62,7 @@ function main() {
     if (!z || z.kind !== 'set' || z.approvedForPrint !== true) continue;
     const mk = z.mockups || {};
     // Komplet galerii zestawu: cztery wizualizacje + miniatura.
-    const doKopii = [mk.interior, mk.frame, mk.interior2, mk.sheets, z.imagePathThumb];
+    const doKopii = [mk.stack, mk.interior, mk.frame, mk.interior2, mk.sheets, z.imagePathThumb];
     let skopiowane = 0;
     for (const rel of doKopii) {
       if (rel && copyIfExists(rel)) skopiowane += 1;

@@ -169,6 +169,101 @@ function buildRoomSvg(W, H) {
 }
 
 /**
+ * Kaskada arkuszy — PIERWSZE zdjecie zestawu w sklepie.
+ *
+ * Arkusze lezace jeden na drugim, lekko obrocone, z cieniem. Mocne nachodzenie
+ * jest celowe: motyw plynie miedzy arkuszami, wiec od razu widac to, czego nie
+ * da sie przekazac slowami — ze trzy plakaty tworza JEDEN krajobraz. Liczbe
+ * sztuk podaje tytul produktu, wiec obraz nie musi jej wykrzykiwac.
+ *
+ * Składane lokalnie, bez modelu.
+ *
+ * @param {string[]} panelPaths panele w kolejnosci od lewej
+ * @param {string} outputPath
+ * @param {{ panelWidth?: number, background?: string }} [opts]
+ */
+async function buildSetStack(panelPaths, outputPath, opts = {}) {
+  const panelWidth = Math.round(opts.panelWidth || 620);
+  const panelHeight = Math.round(panelWidth * 1.5); // arkusz 2:3
+  const tlo = opts.background || '#f2efe9';
+
+  // Ile arkusz chowa sie za poprzednim. 0.36 daje ciaglosc sceny;
+  // przy mniejszym nachodzeniu kompozycja rozpada sie na trzy obrazki.
+  const NACHODZENIE = 0.36;
+  const KATY = { 2: [-6, 6], 3: [-7, 0, 7] };
+  const katy = KATY[panelPaths.length] || panelPaths.map(() => 0);
+
+  const warstwy = [];
+  for (let i = 0; i < panelPaths.length; i++) {
+    const grafika = await sharp(panelPaths[i])
+      .resize(panelWidth, panelHeight, { fit: 'cover', position: 'centre' })
+      .toBuffer();
+
+    // Cien pod arkuszem — bez niego kaskada wyglada jak plaska naklejka.
+    const pad = Math.round(panelWidth * 0.06);
+    const cien = await sharp({
+      create: { width: panelWidth + pad * 2, height: panelHeight + pad * 2, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    })
+      .composite([
+        {
+          input: await sharp({
+            create: { width: panelWidth, height: panelHeight, channels: 4, background: { r: 60, g: 50, b: 40, alpha: 0.3 } },
+          }).png().toBuffer(),
+          left: pad,
+          top: pad + Math.round(pad * 0.5),
+        },
+      ])
+      .blur(Math.round(pad * 0.7))
+      .png()
+      .toBuffer();
+
+    const kat = katy[i];
+    warstwy.push({
+      arkusz: await sharp(grafika).rotate(kat, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer(),
+      cien: await sharp(cien).rotate(kat, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer(),
+    });
+  }
+
+  const mPierwszy = await sharp(warstwy[0].arkusz).metadata();
+  const krok = Math.round(panelWidth * (1 - NACHODZENIE));
+  const szerTresci = krok * (panelPaths.length - 1) + mPierwszy.width;
+  const wysokosci = [];
+  for (const w of warstwy) wysokosci.push((await sharp(w.arkusz).metadata()).height);
+  const wysTresci = Math.max(...wysokosci);
+
+  const margines = Math.round(szerTresci * 0.14);
+  const W = szerTresci + margines * 2;
+  const H = wysTresci + margines * 2;
+
+  // Srodkowy arkusz na wierzchu — tak uklada sie talia kart i tak wyglada
+  // naturalnie, gdy skrajne sa odchylone na zewnatrz.
+  const kolejnosc = panelPaths.length === 3 ? [0, 2, 1] : [0, 1];
+
+  const nakladki = [];
+  for (const i of kolejnosc) {
+    const w = warstwy[i];
+    const mA = await sharp(w.arkusz).metadata();
+    const mC = await sharp(w.cien).metadata();
+    const left = margines + i * krok;
+    const top = margines + Math.round((wysTresci - mA.height) / 2);
+    nakladki.push({
+      input: w.cien,
+      left: left - Math.round((mC.width - mA.width) / 2),
+      top: top - Math.round((mC.height - mA.height) / 2),
+    });
+    nakladki.push({ input: w.arkusz, left, top });
+  }
+
+  const buf = await sharp({ create: { width: W, height: H, channels: 3, background: tlo } })
+    .composite(nakladki)
+    .png()
+    .toBuffer();
+
+  await sharp(buf).jpeg({ quality: 92 }).toFile(outputPath);
+  return outputPath;
+}
+
+/**
  * "Co dostajesz": same arkusze, bez ram, na jasnym tle.
  *
  * Idzie jako OSTATNIE zdjecie w galerii. Zdjecia z ramami sprzedaja, ale nie
@@ -338,5 +433,6 @@ module.exports = {
   buildSetThumbnail,
   buildSetPackshot,
   buildSetSheets,
+  buildSetStack,
   buildSetInterior,
 };

@@ -561,6 +561,9 @@ async function main() {
     // pokazuje komplet ram, drugi salon daje inny kontekst, arkusze mowia
     // wprost, ile sztuk przyjdzie w paczce.
     const ZDJECIA = [
+      // Kaskada PIERWSZA: w miniaturze wynikow wyszukiwania od razu widac,
+      // ze to komplet, a motyw plynie miedzy arkuszami.
+      url(mk.stack),
       url(mk.interior),
       url(mk.frame),
       url(mk.interior2),

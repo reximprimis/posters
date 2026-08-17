@@ -13,7 +13,13 @@ const sharp = require('sharp');
 
 const { routePromptBuildResult } = require('./promptRouter');
 const { planLayout, splitIntoPanels, inspectCutLines, inspectPanelContent, isKnownLayout } = require('./posterSetSplitter');
-const { buildSetThumbnail, buildSetPackshot, buildSetInterior, buildSetSheets } = require('./posterSetVisuals');
+const {
+  buildSetThumbnail,
+  buildSetPackshot,
+  buildSetInterior,
+  buildSetSheets,
+  buildSetStack,
+} = require('./posterSetVisuals');
 const { makeSafeFileBase, assertHandleGloballyUnique } = require('./posterNameGuard');
 const { getAesthetic } = require('./aesthetics');
 
@@ -245,6 +251,7 @@ async function generateSet({
   const interiorAbs = path.join(outDir, `${base}_mockup_interior.jpg`);
   const interior2Abs = path.join(outDir, `${base}_mockup_interior2.jpg`);
   const sheetsAbs = path.join(outDir, `${base}_arkusze.jpg`);
+  const stackAbs = path.join(outDir, `${base}_kaskada.jpg`);
 
   await buildSetThumbnail(panelPaths, thumbAbs);
   await buildSetPackshot(panelPaths, packAbs);
@@ -255,6 +262,8 @@ async function generateSet({
   await buildSetInterior(panelPaths, interior2Abs, { secondary: true, category });
   // "Co dostajesz" — arkusze bez ram, ostatnie zdjecie w galerii.
   await buildSetSheets(panelPaths, sheetsAbs);
+  // Kaskada — PIERWSZE zdjecie w sklepie. Pokazuje ciaglosc motywu miedzy arkuszami.
+  await buildSetStack(panelPaths, stackAbs);
 
   const rel = (abs) => path.relative(projectRoot, abs).replace(/\\/g, '/');
   const aestheticInfo = getAesthetic(aesthetic);
@@ -284,6 +293,7 @@ async function generateSet({
       interior: rel(interiorAbs),
       interior2: rel(interior2Abs),
       sheets: rel(sheetsAbs),
+      stack: rel(stackAbs),
       generatedAt: new Date().toISOString(),
     },
     // Zestawy sa wylacznie bez marginesu.
