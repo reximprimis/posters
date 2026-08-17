@@ -227,6 +227,26 @@ const CATEGORY_ART_DIRECTION = {
 const NEGATIVE_TAIL =
   'No side borders, no vertical bars, no empty edge extensions, no frame, no mockup, no interior, no object setup, no text, no watermark.';
 
+/**
+ * Kategorie, w ktorych tekst JEST dzielem, a nie zanieczyszczeniem.
+ *
+ * NEGATIVE_TAIL doklejany jest do kazdego promptu i konczy sie zakazem "no text".
+ * Dla typografii to zakaz sprzeczny z tematem — plakat z napisem wychodzilby
+ * pusty. Litery zostaja zakazane wszedzie indziej, bo tam sa smieciem.
+ */
+const TEXT_IS_THE_ARTWORK = new Set(['typography-quotes']);
+
+const NEGATIVE_TAIL_TEXT_ALLOWED =
+  'No side borders, no vertical bars, no empty edge extensions, no frame, no mockup, no interior, no object setup, no watermark. ' +
+  'The lettering IS the subject: set it with real typographic craft — considered weight, spacing and hierarchy — and spell every word correctly. ' +
+  'No signature, no brand marks, no gibberish letterforms.';
+
+function resolveNegativeTail(category) {
+  return TEXT_IS_THE_ARTWORK.has(String(category || '').trim())
+    ? NEGATIVE_TAIL_TEXT_ALLOWED
+    : NEGATIVE_TAIL;
+}
+
 const SHORT_CATEGORY_HINTS = {
   'botanical':
     'Single wild botanical subject growing naturally, no arranged decorative setup, irregular organic growth, minimal composition.',
@@ -236,6 +256,24 @@ const SHORT_CATEGORY_HINTS = {
   'kids-nursery': 'Nursery hero subject from title: one gentle animal or boho celestial motif, Boho-Scandi palette.',
   'retro-vintage': 'Retro mood with restrained vintage character.',
   'abstract': 'Abstract subject with clean edge-to-edge flow.',
+  // Osiem kategorii dolozonych pod rynek niemiecki. Bez wlasnej wskazowki
+  // dostawalyby tylko ogolny kierunek i prompt bylby ubogi.
+  'typography-quotes':
+    'The lettering is the entire artwork: one short phrase or single word, set with deliberate weight, spacing and hierarchy on a calm ground. Editorial type poster, not a decorated quote card.',
+  'mountains-hiking':
+    'Alpine subject from the title as clear hero: ridge, summit, hut or trail, with honest high-altitude light and weather. European mountains, no tropical or desert cues.',
+  'line-art-figures':
+    'Human form reduced to contour: one confident continuous stroke, anatomy suggested not described, generous empty space around the figure. Tasteful and non-explicit.',
+  'bar-cocktails':
+    'Glassware or bar object from the title as hero, warm evening light, condensation and ice as texture. No readable brand labels on any bottle.',
+  'zodiac-astrology':
+    'Ornamental celestial diagram: the sign or chart drawn with compass-like precision as decorative symbolism, not as an astronomy photograph.',
+  'fitness-gym':
+    'Training equipment or athletic movement from the title as hero, disciplined and clean. No recognisable real athletes, no team crests, no brand logos.',
+  'fashion-beauty':
+    'Single elegant object or fashion figure from the title, editorial styling, refined surfaces and fabric. No readable brand names or logos anywhere.',
+  'love-romance':
+    'Tenderness through gesture rather than symbol: hands, embrace or shared moment. Hearts only if the title names them. Warm and restrained, never saccharine.',
 };
 
 function getCategoryArtDirection(category) {
@@ -285,7 +323,7 @@ function buildDalleMandatorySuffix(category, style, options = {}) {
   const categoryHint = SHORT_CATEGORY_HINTS[c] || getCategoryArtDirection(c);
   const framing = resolveSafePrintFramingForCategory(c, style);
   const safeBlock = options.skipSafePrintFraming || !framing ? '' : `${framing} `;
-  return `${safeBlock}${QUALITY_MANDATORY} ${SUBJECT_PRIORITY_RULE} Subject/mood: ${categoryHint} ${styleLock} ${NEGATIVE_TAIL}`;
+  return `${safeBlock}${QUALITY_MANDATORY} ${SUBJECT_PRIORITY_RULE} Subject/mood: ${categoryHint} ${styleLock} ${resolveNegativeTail(c)}`;
 }
 
 /**
@@ -334,6 +372,8 @@ module.exports = {
   STYLE_PREMIUM,
   CATEGORY_ART_DIRECTION,
   NEGATIVE_TAIL,
+  NEGATIVE_TAIL_TEXT_ALLOWED,
+  resolveNegativeTail,
   PRINT_PREFIX,
   getStyleCanvasHint,
   getCategoryArtDirection,

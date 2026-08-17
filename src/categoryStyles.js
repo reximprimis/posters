@@ -35,6 +35,16 @@ const CATEGORIES = [
   'music-sound',
   'wellness-yoga',
   'symbols-sacred-geometry',
+  // Osiem kategorii dolozonych po przegladzie konkurencji (Galerix, Desenio,
+  // Poster Store, wall-being) pod glowny rynek sklepu, czyli Niemcy.
+  'typography-quotes',
+  'mountains-hiking',
+  'line-art-figures',
+  'bar-cocktails',
+  'zodiac-astrology',
+  'fitness-gym',
+  'fashion-beauty',
+  'love-romance',
   // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
   // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
 ];
@@ -83,6 +93,22 @@ const CATEGORY_DESCRIPTIONS = {
     'yoga, meditation, calm lifestyle, breath, balance, spa, slow living, soft morning, organic forms, quiet wellness',
   'symbols-sacred-geometry':
     'sacred geometry drawn with compass precision: mandalas, Sri Yantra, Flower of Life, Metatron cube, Tree of Life, chakra diagrams, Enso circle, lotus, moon phases, Celtic knot, yin-yang, Om — symmetrical ritual diagrams rendered as fine-art prints, exact and architectural rather than misty',
+  'typography-quotes':
+    'short typographic statements, single words, hand-lettered phrases, quote layouts, letterform studies, editorial type composition — the words ARE the artwork, set with real typographic craft rather than decoration',
+  'mountains-hiking':
+    'alpine peaks, ridgelines, mountain huts, hiking trails, summit panoramas, glaciers, high-altitude weather, boots and rope as quiet props — the mountains of the Alps and northern Europe rather than generic scenery',
+  'line-art-figures':
+    'single continuous-line human forms, abstract faces, hands, torsos and couples reduced to contour, one confident unbroken stroke, generous empty space — anatomy suggested, never explicit',
+  'bar-cocktails':
+    'cocktails, coupe and highball glasses, shakers, citrus twists, ice, spirits bottles without brands, beer and brewing, bar counter still life in warm evening light',
+  'zodiac-astrology':
+    'zodiac signs and their constellations, celestial charts, sun and moon symbolism, astrological wheels, star maps drawn as ornamental diagrams rather than astronomy',
+  'fitness-gym':
+    'dumbbells, barbells, kettlebells, running form, boxing gloves, gym interiors, athletic silhouettes in motion, disciplined training mood — equipment and movement, never brand logos or real athletes',
+  'fashion-beauty':
+    'perfume bottles, lipstick, heels, handbags, fashion illustration figures, fabric folds, dressing-table still life — elegant editorial styling with no readable brand names',
+  'love-romance':
+    'couples in embrace, intertwined hands, hearts used sparingly, shared everyday intimacy, anniversary and togetherness motifs — warm and tender rather than sentimental',
 };
 
 const CATEGORY_STYLES = {
@@ -107,6 +133,14 @@ const CATEGORY_STYLES = {
   'music-sound': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
   'wellness-yoga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'symbols-sacred-geometry': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
+  'typography-quotes': ['Minimalism', 'Abstract', 'Line art'],
+  'mountains-hiking': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'line-art-figures': ['Line art', 'Minimalism', 'Abstract'],
+  'bar-cocktails': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
+  'zodiac-astrology': ['Illustration', 'Minimalism', 'Line art', 'Abstract'],
+  'fitness-gym': ['Photography', 'Minimalism', 'Line art', 'Illustration'],
+  'fashion-beauty': ['Illustration', 'Photography', 'Line art', 'Minimalism'],
+  'love-romance': ['Line art', 'Minimalism', 'Illustration', 'Abstract'],
 };
 
 /** Sales / room collections — tags only, never generator categories or output folders. */
@@ -145,13 +179,21 @@ const CATEGORY_ROOM_COLLECTIONS = {
   'music-sound': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego', 'Do kawiarni'],
   'wellness-yoga': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do biura', 'Do gabinetu'],
   'symbols-sacred-geometry': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'typography-quotes': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do kuchni', 'Do pokoju młodzieżowego'],
+  'mountains-hiking': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do sypialni', 'Do pokoju młodzieżowego'],
+  'line-art-figures': ['Do salonu', 'Do sypialni', 'Do łazienki', 'Do gabinetu'],
+  'bar-cocktails': ['Do kuchni', 'Do jadalni', 'Do salonu', 'Do kawiarni'],
+  'zodiac-astrology': ['Do sypialni', 'Do salonu', 'Do gabinetu', 'Do pokoju młodzieżowego'],
+  'fitness-gym': ['Do biura', 'Do pokoju młodzieżowego', 'Do salonu'],
+  'fashion-beauty': ['Do sypialni', 'Do łazienki', 'Do salonu', 'Do gabinetu'],
+  'love-romance': ['Do sypialni', 'Do salonu'],
 };
 
 // 71 par bazowych + 3 dolozone przy scaleniu (cities-travel dostalo Illustration
 // i Line art, botanical — Illustration). Poprzednie 83 zawieralo 12 par z trzech
 // kategorii dodanych 2026-08-03, ktore zostaly scalone: Japonia i "Podroze
 // i plakaty vintage" w cities-travel, "Grzyby i las" w botanical.
-const EXPECTED_ALLOWED_COMBINATIONS = 74;
+const EXPECTED_ALLOWED_COMBINATIONS = 104;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).
