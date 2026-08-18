@@ -99,7 +99,16 @@ class PosterBatchGenerator {
    * albo pipeline po zatwierdzeniu. Przy zapisie bierzemy je z DYSKU, nie z pamieci.
    */
   static get POLA_SPOZA_GENERATORA() {
-    return ['approvedForPrint', 'shopifyState', 'shopifyStateUpdatedAt', 'shopifyIssues'];
+    return [
+      'approvedForPrint',
+      'shopifyState',
+      'shopifyStateUpdatedAt',
+      'shopifyIssues',
+      // Ostrzezenie o marginesach ustawia generator, ale moze je tez dopisac
+      // czlowiek albo skrypt naprawczy — i wtedy zapis generatora nie moze
+      // go zetrzec. Sprawdzone: reczne oznaczenie w trakcie partii przepadlo.
+      'framingWarning',
+    ];
   }
 
   /**

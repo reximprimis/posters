@@ -862,6 +862,9 @@ app.get('/api/posters', (req, res) => {
       approvedForPrint: primary.approvedForPrint === true,
       // Bez tego karta nie ma czym odroznic plakatu poziomego od pionowego.
       orientation: primary.orientation === 'landscape' ? 'landscape' : 'portrait',
+      // Ostrzezenie o marginesach druku — karta musi je pokazac, inaczej
+      // plakat z uciętym tematem wyglada jak kazdy inny.
+      ...(primary.framingWarning ? { framingWarning: String(primary.framingWarning) } : {}),
       shopifyState: typeof primary.shopifyState === 'string' ? primary.shopifyState : 'pending_assets',
       shopifyIssues: Array.isArray(primary.shopifyIssues) ? primary.shopifyIssues : [],
       ...(framedHref ? { imagePathFramed: framedHref } : {}),

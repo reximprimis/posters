@@ -1264,6 +1264,26 @@
       pointer-events: none;
     }
 
+    /* Plakat przyjety mimo nieudanej kontroli marginesow druku — temat
+       dochodzi do krawedzi i przy druku zostanie uciety. Musi rzucac sie
+       w oczy na siatce, bo inaczej wyglada jak kazdy inny. */
+    .poster-framing-warn {
+      position: absolute;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      z-index: 3;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.24rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(150, 44, 30, 0.92);
+      border: 1px solid rgba(255, 170, 150, 0.5);
+      color: #ffe9e3;
+      cursor: help;
+    }
+
     .poster-orientation-badge--landscape {
       background: rgba(40, 84, 122, 0.62);
       border-color: rgba(113, 182, 235, 0.52);
@@ -7525,6 +7545,7 @@
               shopDescription: typeof p.shopDescription === 'string' ? p.shopDescription : '',
               approvedForPrint: p.approvedForPrint === true,
               orientation: p.orientation === 'landscape' ? 'landscape' : 'portrait',
+              framingWarning: p.framingWarning || '',
               mockups: p.mockups || null,
               imagePathLifestyle: p.imagePathLifestyle || '',
               shopifyState: p.shopifyState || '',
@@ -8296,6 +8317,11 @@
               }" data-orientation-badge>${escapeHtml(
                 isSet ? setBadgeText : item.orientation === 'landscape' ? 'Poziom' : 'Pion'
               )}</span>
+              ${
+                item.framingWarning
+                  ? `<span class="poster-framing-warn" title="${escapeAttr(item.framingWarning)}">! margines</span>`
+                  : ''
+              }
               <div class="poster-card-select poster-card-ctrl" role="group" aria-label="Zaznaczenia na karcie">
                 <label class="poster-card-cb poster-card-ctrl">
                   <input type="checkbox" class="lib-cb-remove" ${inRemove ? 'checked' : ''} />
