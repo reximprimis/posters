@@ -201,6 +201,16 @@ class PosterBatchGenerator {
       artStyle,
       /** 'portrait' | 'landscape' — plakaty sprzed wprowadzenia pola sa pionowe. */
       orientation: normalizeOrientation(layoutOpts.orientation || DEFAULT_ORIENTATION),
+      /**
+       * Plakat przyjety mimo nieudanej kontroli marginesow druku.
+       *
+       * Generator po dwoch nieudanych powtorkach przyjmuje ostatni obraz
+       * zamiast zostawiac uzytkownika z niczym. To rozsadne, ale bez tego
+       * pola slad zostawal wylacznie w logu terminala — plakat z tematem
+       * dochodzacym do krawedzi lezal w bibliotece nieodrozniony od reszty
+       * i mogl pojsc do druku uciety.
+       */
+      ...(layoutOpts.framingWarning ? { framingWarning: String(layoutOpts.framingWarning) } : {}),
       /** Okazje i pory roku — opcjonalne i wielokrotne, patrz src/taxonomy.js. */
       occasions: normalizeOccasions(layoutOpts.occasions || layoutOpts.occasion),
       roomCollections,
@@ -350,7 +360,17 @@ class PosterBatchGenerator {
       style,
       skipEdgeValidation: true,
     });
-    return { gen, printFinalize };
+    // Ostrzezenie wedruje dalej, zeby dalo sie je ZAPISAC W KARTOTECE.
+    //
+    // Wczesniej zostawal po nim wylacznie wpis w logu, ktory znika razem
+    // z terminalem. Plakat z tematem dochodzacym do krawedzi trafial do
+    // biblioteki nieodrozniony od reszty i mogl pojsc do druku uciety —
+    // zauwazalne dopiero na gotowym wydruku.
+    return {
+      gen,
+      printFinalize,
+      framingWarning: lastFramingErr ? lastFramingErr.message : 'safe framing failed',
+    };
   }
 
   /**
@@ -607,6 +627,9 @@ class PosterBatchGenerator {
       printLayout: 'full',
       orientation,
       occasions,
+      // Bez framingWarning: commitPreview zatwierdza obraz, ktory uzytkownik
+      // wlasnie ogladal w podgladzie, wiec nie przechodzi przez kontrole
+      // marginesow z powtorkami i nie ma czego ostrzegac.
       ...(shopDesc ? { shopDescription: shopDesc } : {}),
     });
     if (generateVariants) {
@@ -665,7 +688,7 @@ class PosterBatchGenerator {
     const matStyle = resolveMatStyleFromOptions(options);
     const orientation = normalizeOrientation(options.orientation);
     const occasions = normalizeOccasions(options.occasions || options.occasion);
-    const { gen, printFinalize } = await this.generateImageWithFramingGuard(
+    const { gen, printFinalize, framingWarning } = await this.generateImageWithFramingGuard(
       title,
       category,
       style,
@@ -736,6 +759,7 @@ class PosterBatchGenerator {
       printLayout: pl,
       orientation,
       occasions,
+      ...(framingWarning ? { framingWarning } : {}),
       ...(shopDescription ? { shopDescription } : {}),
     });
     if (generateVariants) {
@@ -853,7 +877,7 @@ class PosterBatchGenerator {
       const matStyle = resolveMatStyleFromOptions(options);
       const orientation = normalizeOrientation(options.orientation);
     const occasions = normalizeOccasions(options.occasions || options.occasion);
-      const { gen, printFinalize } = await this.generateImageWithFramingGuard(
+      const { gen, printFinalize, framingWarning } = await this.generateImageWithFramingGuard(
         title,
         categoryKey,
         style,
@@ -927,6 +951,7 @@ class PosterBatchGenerator {
         printLayout: pl,
         orientation,
         occasions,
+        ...(framingWarning ? { framingWarning } : {}),
         ...(shopDescription ? { shopDescription } : {}),
       });
       console.log(`  ✓ Complete\n`);
