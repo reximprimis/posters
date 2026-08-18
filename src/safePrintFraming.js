@@ -113,6 +113,24 @@ Premium fine-art artwork for print.
 ${IP_SAFETY_LINES}
 `);
 
+/**
+ * Typografia to jedyna kategoria, w ktorej napis JEST dzielem.
+ *
+ * Ogolny blok Restrictions zaczyna sie od "No readable text, letters, numbers"
+ * — dla kazdej innej kategorii sluszne, tu zabijalo cala kategorie. Z szesciu
+ * pierwszych plakatow tekst mial jeden. Zostawiamy caly zakaz komercyjny
+ * (logo, znak wodny, ramka, IP), zdejmujemy wylacznie zakaz liter.
+ */
+const RESTRICTIONS_TYPOGRAPHY = normalizeBlock(`
+Restrictions:
+The poster's phrase is the artwork and MUST be rendered as real, correctly spelled lettering.
+No logos, brand marks, signatures, watermark, frame, mockup, border, mat, passe-partout, or product presentation.
+No gibberish or malformed letterforms, no duplicated or half-drawn words, no extra caption beyond the phrase itself.
+Single flat 2D image only.
+Premium fine-art artwork for print.
+${IP_SAFETY_LINES}
+`);
+
 const RESTRICTIONS_BLOCK = normalizeBlock(`
 Restrictions:
 No readable text, letters, numbers, logos, labels, packaging copy, watermark, frame, mockup, border, mat, passe-partout, or product presentation.
@@ -165,6 +183,10 @@ function isAbstractArtStyle(style) {
 
 function isMinimalismArtStyle(style) {
   return normalizeArtStyle(style) === 'minimalism';
+}
+
+function isTypographyCategory(category) {
+  return String(category || '').trim() === 'typography-quotes';
 }
 
 function isNatureLandscapeCategory(category) {
@@ -226,6 +248,7 @@ function getCompositionBlock(category, style) {
 }
 
 function getRestrictionsBlock(style, category) {
+  if (isTypographyCategory(category)) return RESTRICTIONS_TYPOGRAPHY;
   if (isMinimalismArtStyle(style) && isNatureLandscapeCategory(category)) {
     return RESTRICTIONS_MINIMAL_LANDSCAPE;
   }

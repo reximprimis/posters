@@ -661,12 +661,36 @@ function logStyleSubjectResolution(resolved, style, category = '') {
  * @param {string} title
  * @param {{ literal?: boolean, category?: string, style?: string }} [options]
  */
+/**
+ * Kategorie, w ktorych tytul MA byc napisany na plakacie.
+ *
+ * Reguła "never render the words as typography" jest sluszna wszedzie indziej —
+ * chroni przed wypisaniem tytulu produktu na obrazie. Dla typografii jest
+ * dokladnie odwrotna do zamierzenia i po cichu zabijala cala kategorie:
+ * "Coffee First Lettering" wychodzilo jako mgliste gory, "Slow Living Words"
+ * jako szkic fotela. Z szesciu plakatow tekst mial jeden — i tylko dlatego,
+ * ze powstal na zapasowej sciezce promptu, ktora tego zdania nie zawierala.
+ */
+const KATEGORIE_Z_NAPISEM = new Set(['typography-quotes']);
+
 function buildTitleBriefBlock(title, options = {}) {
   const titleText = String(title || '').trim();
   const literal = options.literal !== false;
   const category = options.category != null ? String(options.category) : '';
   const style = options.style != null ? String(options.style) : '';
   const resolved = resolveConcreteSubject(titleText, category, style);
+
+  // Typografia dostaje wlasny brief, z pominieciem calej reszty rozstrzygania
+  // tematu: tutaj tematem SA litery, a nie przedmiot, ktory tytul opisuje.
+  if (KATEGORIE_Z_NAPISEM.has(category.trim())) {
+    return [
+      `TITLE BRIEF — "${titleText}" is the ARTWORK ITSELF: render the words as the poster.`,
+      'The lettering IS the subject. Set the phrase in real type or hand-lettering as the dominant element of the composition.',
+      'Drop any word that only labels the piece — "Type", "Lettering", "Words", "Script" and similar are naming the style, not part of the phrase to be written.',
+      'Spell every word correctly. No gibberish letterforms, no signature, no brand marks, no extra caption.',
+      'Composition: considered weight, spacing and hierarchy on a calm ground; at most one small supporting ornament.',
+    ].join('\n\n');
+  }
 
   if (isMinimalismArtStyle(style)) {
     const lines = [

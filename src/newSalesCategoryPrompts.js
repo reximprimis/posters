@@ -271,6 +271,56 @@ function buildSymbolsHarmonyPrompt({ title, category = 'symbols-sacred-geometry'
   });
 }
 
+// --- typography-quotes ---
+
+/**
+ * Typografia lamie schemat wszystkich pozostalych kategorii i dlatego ma
+ * wlasny builder zamiast buildStyledSalesPrompt.
+ *
+ * Powod: wspolna sciezka wklada do promptu trzy niezalezne zakazy liter —
+ * brief tytulu ("never render the words as typography"), blok Restrictions
+ * ("No readable text, letters, numbers") i NEW_SALES_COMMERCIAL_SAFETY
+ * ("no text, no logos, no labels"). Kazdy z nich jest sluszny wszedzie
+ * indziej. Razem sprawialy, ze model konsekwentnie malowal PRZEDMIOT
+ * opisany tytulem zamiast go napisac: "Coffee First Lettering" wyszlo
+ * jako mgliste gory, "Slow Living Words" jako szkic fotela.
+ *
+ * Tu wiec nie odejmujemy zakazow po kawalku, tylko budujemy prompt od zera:
+ * zakaz komercyjny zostaje (logo, IP, znak wodny), zakaz liter znika.
+ */
+const TYPOGRAPHY_STYLE = {
+  Minimalism:
+    'Clean geometric sans-serif, few weights, wide breathing space, one accent line at most. Swiss poster discipline.',
+  Abstract:
+    'Letterforms treated as shapes: bold cropping, overlap, colour blocking. The phrase stays fully readable.',
+  'Line art':
+    'Confident hand-lettered script or brush calligraphy, even stroke rhythm, no shaky or broken letters.',
+};
+
+const TYPOGRAPHY_SAFETY = `
+Commercial safety (typography):
+No brand logos, no trademarked wordmarks, no famous slogans or advertising copy, no copyrighted song lyrics or book quotations, no signature, no watermark.
+The phrase must be a generic, everyday expression — never an identifiable brand or licensed line.
+`.trim();
+
+function buildTypographyQuotesPrompt({ title, category = 'typography-quotes', style }) {
+  const titleText = String(title || '').trim();
+  const categoryKey = String(category || '').trim();
+  const styleKey = String(style || '').trim();
+
+  return joinPromptBlocks([
+    'Premium typographic fine-art poster for print.',
+    buildTitleBriefBlock(titleText, { literal: true, category: categoryKey, style: styleKey }),
+    `Category focus (${categoryKey}): ${getCategoryDescription(categoryKey)}`,
+    'Typography mode: the phrase from the title is the whole subject. Set it in real type or lettering, spelled correctly, as the dominant element. Background stays calm and supports the type — flat colour, paper texture or one restrained shape. No illustrated scene competing with the words.',
+    `Style direction: ${resolveStyleDirection(categoryKey, styleKey, TYPOGRAPHY_STYLE)}`,
+    'Composition: the phrase sits within the inner 90% of the canvas with generous even margins; nothing touches or bleeds off the edge, and no letter is cropped.',
+    TYPOGRAPHY_SAFETY,
+    getRestrictionsBlock(styleKey, categoryKey),
+    'Ultra-detailed, print-ready.',
+  ]);
+}
+
 module.exports = {
   NEW_SALES_COMMERCIAL_SAFETY,
   buildGamingEsportPrompt,
@@ -280,4 +330,5 @@ module.exports = {
   buildMusicSoundPrompt,
   buildWellnessYogaPrompt,
   buildSymbolsHarmonyPrompt,
+  buildTypographyQuotesPrompt,
 };

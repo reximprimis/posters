@@ -45,6 +45,7 @@ const {
   buildMusicSoundPrompt,
   buildWellnessYogaPrompt,
   buildSymbolsHarmonyPrompt,
+  buildTypographyQuotesPrompt,
 } = require('./newSalesCategoryPrompts');
 const {
   buildChildrenIllustrationPrompt,
@@ -346,6 +347,7 @@ module.exports = {
   buildMusicSoundPrompt,
   buildWellnessYogaPrompt,
   buildSymbolsHarmonyPrompt,
+  buildTypographyQuotesPrompt,
   buildChildrenIllustrationPrompt,
   buildChildrenMinimalismPrompt,
   buildCategoryStylePrompt,

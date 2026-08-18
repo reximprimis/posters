@@ -22,6 +22,7 @@ const CATEGORY_DEDICATED = new Set([
   'music-sound',
   'wellness-yoga',
   'symbols-sacred-geometry',
+  'typography-quotes',
 ]);
 
 const DEDICATED_CATEGORY_STYLE = new Set([
@@ -182,6 +183,11 @@ function buildImagePromptForRoute({ category, style, title }) {
   if (categoryKey === 'symbols-sacred-geometry') {
     console.log('    → Routing: CATEGORY_DEDICATED / symbols-sacred-geometry');
     return builders.buildSymbolsHarmonyPrompt(opts);
+  }
+
+  if (categoryKey === 'typography-quotes') {
+    console.log('    → Routing: CATEGORY_DEDICATED / typography-quotes');
+    return builders.buildTypographyQuotesPrompt(opts);
   }
 
   const categoryStyled = builders.buildCategoryStylePrompt(opts);
