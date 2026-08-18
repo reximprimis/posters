@@ -32,10 +32,26 @@ const zapis = process.argv.includes('--wykonaj');
 
 /** Do ilu pikseli zmniejszamy plakat przed liczeniem — 64x64 w zupelnosci starcza. */
 const PROBKA = 64;
-/** Kubelek musi zajac tyle obrazu, zeby trafic do wyniku. */
-const PROG_UDZIALU = 0.12;
-/** Neutralne musza dominowac wyrazniej, bo tlo ma prawie kazdy plakat. */
+
+/**
+ * Progi udzialu. Kolor CHROMATYCZNY ma prog niski, neutralny wysoki.
+ *
+ * Powod: to akcent definiuje plakat, nie tlo. Plakat w stylu Bauhaus ma
+ * 71% bieli, 9% czerwieni i 8% blekitu — przy wspolnym progu 12% nie
+ * przechodzilo NIC i zostawala sama biel. Klient szukajacy "czerwonego
+ * plakatu" nigdy by go nie znalazl, a filtr koloru pokazywalby polowe
+ * katalogu jako bezowa.
+ */
+const PROG_CHROMATYCZNY = 0.06;
 const PROG_NEUTRALNY = 0.4;
+
+/**
+ * Najmocniejszy kolor chromatyczny wchodzi nawet ponizej progu, byle nie byl
+ * przypadkowym szumem. Bez tego plakat z jednym drobnym, ale mocnym akcentem
+ * zostaje opisany wylacznie tlem.
+ */
+const PODLOGA_AKCENTU = 0.03;
+
 /** Ile kolorow maksymalnie przypisujemy jednemu plakatowi. */
 const MAX_KOLOROW = 3;
 
@@ -73,14 +89,22 @@ async function policzKolory(abs) {
 
   const wynik = [];
   for (const { k, udzial } of posort) {
-    const prog = NEUTRALNE.has(k) ? PROG_NEUTRALNY : PROG_UDZIALU;
+    const prog = NEUTRALNE.has(k) ? PROG_NEUTRALNY : PROG_CHROMATYCZNY;
     if (udzial >= prog) wynik.push(k);
     if (wynik.length >= MAX_KOLOROW) break;
   }
+
+  // Gdy przeszly same neutralne, dokladamy najmocniejszy akcent — inaczej
+  // plakat z wyrazna czerwienia na bialym tle trafia do filtra jako "bialy".
+  if (!wynik.some((k) => !NEUTRALNE.has(k))) {
+    const akcent = posort.find((x) => !NEUTRALNE.has(x.k) && x.udzial >= PODLOGA_AKCENTU);
+    if (akcent) wynik.unshift(akcent.k);
+  }
+
   // Plakat bez zadnego wyraznego koloru (np. same delikatne pastele) i tak
   // musi dostac cos do filtra — bierzemy najmocniejszy kubelek.
   if (!wynik.length && posort.length) wynik.push(posort[0].k);
-  return wynik;
+  return wynik.slice(0, MAX_KOLOROW);
 }
 
 (async () => {
