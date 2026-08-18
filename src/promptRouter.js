@@ -1,5 +1,6 @@
 const { assertCategoryStyleAllowed, isUserCategory, getCategoryDescription } = require('./categoryStyles');
 const { applyAestheticToPrompt, isKnownAesthetic } = require('./aesthetics');
+const { isKnownOccasion, buildOccasionBlock } = require('./taxonomy');
 const { CATEGORY_PROMPT_MODES } = require('./categoryPromptModes');
 const builders = require('./promptBuilders');
 const {
@@ -211,7 +212,7 @@ function buildImagePromptForRoute({ category, style, title }) {
  * @param {{ category: string, style: string, title: string, aesthetic?: string }} params
  * @returns {{ imagePrompt: string, routingPath: string, usedFallbackPromptBuilder: boolean, routeKind: string, aesthetic: string }}
  */
-function routePromptBuildResult({ category, style, title, aesthetic }) {
+function routePromptBuildResult({ category, style, title, aesthetic, occasion }) {
   assertCategoryStyleAllowed(category, style);
   const categoryKey = String(category || '').trim();
   const styleKey = String(style || '').trim();
@@ -245,7 +246,22 @@ function routePromptBuildResult({ category, style, title, aesthetic }) {
   if (aestheticId) {
     console.log(`    → Aesthetic: ${aestheticId}`);
   }
-  const imagePrompt = applyAestheticToPrompt(basePrompt, aestheticId, String(title || '').trim());
+  let imagePrompt = applyAestheticToPrompt(basePrompt, aestheticId, String(title || '').trim());
+
+  // Okazja (albo pora roku) idzie PO estetyce i jest ostatnim blokiem promptu.
+  // Kolejnosc jest celowa: gdy plakat ma i estetyke, i okazje, o palecie ma
+  // decydowac okazja — swiateczny Bauhaus ma byc swiateczny, a nie czerwono-
+  // niebiesko-zolty. Bez okazji prompt zostaje identyczny co do bajta.
+  const occasionId = isKnownOccasion(occasion) ? String(occasion).trim().toLowerCase() : '';
+  if (occasionId) {
+    console.log(`    → Occasion: ${occasionId}`);
+    const blok = buildOccasionBlock(occasionId);
+    const t = String(title || '').trim();
+    const przypomnienie = t
+      ? `SUBJECT STAYS: the occasion changes palette, props and atmosphere only. The artwork must still depict the subject named by the title "${t}".`
+      : 'SUBJECT STAYS: the occasion changes palette, props and atmosphere only.';
+    imagePrompt = `${imagePrompt}\n\n${blok}\n${przypomnienie}`;
+  }
 
   return {
     imagePrompt,
@@ -253,6 +269,7 @@ function routePromptBuildResult({ category, style, title, aesthetic }) {
     usedFallbackPromptBuilder,
     routeKind,
     aesthetic: aestheticId,
+    occasion: occasionId,
   };
 }
 

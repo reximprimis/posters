@@ -5214,6 +5214,29 @@
     }
     loadGeneratorAesthetics();
 
+    // Okazje i pory roku — lista stala, ladowana raz przy starcie, tak samo
+    // jak estetyki. Selektor zaczyna od "bez okazji", wiec brak odpowiedzi
+    // z serwera niczego nie psuje.
+    (function loadGeneratorOccasions() {
+      var sel = document.getElementById('studioOccasion');
+      if (!sel) return;
+      fetch('/api/occasions', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d || !d.ok) return;
+          function grupa(etykieta, lista) {
+            if (!lista || !lista.length) return '';
+            return '<optgroup label="' + etykieta + '">' +
+              lista.map(function (o) {
+                return '<option value="' + o.key + '">' + o.name + '</option>';
+              }).join('') + '</optgroup>';
+          }
+          sel.innerHTML = '<option value="">— bez okazji —</option>' +
+            grupa('Okazje', d.occasions) + grupa('Pory roku', d.seasons);
+        })
+        .catch(function () {});
+    })();
+
     // ── ZESTAWY: kategoria i styl ─────────────────────────────────────────
     // Opcje kopiowane z selektorow trybu automatycznego zamiast pobierane osobno —
     // jedno zrodlo prawdy, wiec dodanie kategorii nie wymaga ruszania dwoch miejsc.
@@ -6383,6 +6406,13 @@
               <label for="studioAesthetic">Estetyka (trend)</label>
               <select id="studioAesthetic"></select>
               <p class="field-hint">Nadpisuje paletę i nastrój. Działa razem ze stylem, nie zamiast niego.</p>
+            </div>
+            <div class="studio-pro-field">
+              <label for="studioOccasion">Okazja / sezon</label>
+              <select id="studioOccasion">
+                <option value="" selected>— bez okazji —</option>
+              </select>
+              <p class="field-hint">Zmienia paletę i rekwizyty, nie temat. Plakat świąteczny zostaje tym, czym był.</p>
             </div>
             <div class="studio-pro-field">
               <label for="studioOrientation">Orientacja</label>
@@ -9794,6 +9824,35 @@
         return sel && sel.value === 'landscape' ? 'landscape' : 'portrait';
       }
 
+      /** Wybrana okazja albo pusto. Puste = plakat bez okazji, jak dotychczas. */
+      function studioOccasion() {
+        const sel = document.getElementById('studioOccasion');
+        return sel && sel.value ? sel.value : '';
+      }
+
+      /** Wypelnia selektor okazji, trzymajac okazje i sezony w osobnych grupach. */
+      async function wypelnijOkazje() {
+        const sel = document.getElementById('studioOccasion');
+        if (!sel) return;
+        try {
+          const r = await fetch('/api/occasions');
+          const d = await r.json();
+          if (!d || !d.ok) return;
+          const grupa = (etykieta, lista) => {
+            if (!lista || !lista.length) return '';
+            return (
+              '<optgroup label="' + escapeAttr(etykieta) + '">' +
+              lista.map((o) => '<option value="' + escapeAttr(o.key) + '">' + escapeHtml(o.name) + '</option>').join('') +
+              '</optgroup>'
+            );
+          };
+          sel.innerHTML =
+            '<option value="">— bez okazji —</option>' +
+            grupa('Okazje', d.occasions) +
+            grupa('Pory roku', d.seasons);
+        } catch (_) {}
+      }
+
       function setStudioStatus(text, kind) {
         els.studioStatus.textContent = text || '';
         els.studioStatus.classList.remove('is-error', 'is-ok');
@@ -10266,7 +10325,7 @@
           const res = await fetch('/api/studio/preview', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, category, style, imagePrompt, orientation: studioOrientation() }),
+            body: JSON.stringify({ title, category, style, imagePrompt, orientation: studioOrientation(), occasion: studioOccasion() }),
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.error || res.statusText);

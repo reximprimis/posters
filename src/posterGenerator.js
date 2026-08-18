@@ -21,6 +21,7 @@ const {
 } = require('./categoryStyles');
 const { getPosterOutputDir } = require('./posterPaths');
 const { normalizeOrientation, DEFAULT_ORIENTATION, PORTRAIT, LANDSCAPE } = require('./posterOrientation');
+const { normalizeOccasions, buildOccasionBlock } = require('./taxonomy');
 const { buildPosterMetadataRecord, writePosterMetadataFile } = require('./posterMetadata');
 const { getRoutingPathLabel, getPromptRouteKind } = require('./promptRouter');
 const {
@@ -200,6 +201,8 @@ class PosterBatchGenerator {
       artStyle,
       /** 'portrait' | 'landscape' — plakaty sprzed wprowadzenia pola sa pionowe. */
       orientation: normalizeOrientation(layoutOpts.orientation || DEFAULT_ORIENTATION),
+      /** Okazje i pory roku — opcjonalne i wielokrotne, patrz src/taxonomy.js. */
+      occasions: normalizeOccasions(layoutOpts.occasions || layoutOpts.occasion),
       roomCollections,
       imagePath,
       pdfPaths,
@@ -245,11 +248,25 @@ class PosterBatchGenerator {
     const previewId = uuidv4();
     const stagingAbs = path.join(dir, `${previewId}.png`);
     const orientation = normalizeOrientation(opts.orientation);
+
+    // Podglad dostaje gotowy prompt z formularza, wiec blok okazji trzeba
+    // dokleic tutaj — inaczej wybor "swiateczny" w panelu nie mialby zadnego
+    // wplywu na obraz, a uzytkownik dowiedzialby sie o tym dopiero po fakcie.
+    const occasions = normalizeOccasions(opts.occasions || opts.occasion);
+    let prompt = imagePrompt;
+    for (const o of occasions) {
+      const blok = buildOccasionBlock(o);
+      if (blok) prompt = `${prompt}\n\n${blok}`;
+    }
+    if (occasions.length) {
+      prompt += `\nSUBJECT STAYS: the occasion changes palette, props and atmosphere only. The artwork must still depict the subject named by the title "${String(title || '').trim()}".`;
+    }
+
     await this.imageGen.generateImage(title, category, style, stagingAbs, {
-      customPrompt: imagePrompt,
+      customPrompt: prompt,
       orientation,
     });
-    return { previewId, stagingAbs, orientation };
+    return { previewId, stagingAbs, orientation, occasions };
   }
 
   /**
@@ -583,9 +600,13 @@ class PosterBatchGenerator {
     // przestawil przelacznik miedzy nimi, rekord rozjechalby sie z obrazem.
     const commitDims = await this.readImageDimensions(finalAbs);
     const orientation = commitDims.width > commitDims.height ? LANDSCAPE : PORTRAIT;
+    // Okazja to zyczenie z formularza, wiec — inaczej niz orientacja — nie da
+    // sie jej odczytac z gotowego pliku; przepisujemy ja z zadania.
+    const occasions = normalizeOccasions(commitOpts.occasions || commitOpts.occasion);
     const rowId = this.addPosterToDb(category, title, style, imagePathForDb, pdfPaths, imagePrompt, promptLlmMeta, {
       printLayout: 'full',
       orientation,
+      occasions,
       ...(shopDesc ? { shopDescription: shopDesc } : {}),
     });
     if (generateVariants) {
@@ -643,6 +664,7 @@ class PosterBatchGenerator {
     const routingMeta = this.resolveRoutingMeta(category, style, options);
     const matStyle = resolveMatStyleFromOptions(options);
     const orientation = normalizeOrientation(options.orientation);
+    const occasions = normalizeOccasions(options.occasions || options.occasion);
     const { gen, printFinalize } = await this.generateImageWithFramingGuard(
       title,
       category,
@@ -713,6 +735,7 @@ class PosterBatchGenerator {
     const id = this.addPosterToDb(category, title, style, imagePathForDb, pdfPaths, imagePrompt, llmMeta, {
       printLayout: pl,
       orientation,
+      occasions,
       ...(shopDescription ? { shopDescription } : {}),
     });
     if (generateVariants) {
@@ -829,6 +852,7 @@ class PosterBatchGenerator {
       const tempPath = tempGenerationPathFromFinal(imagePath);
       const matStyle = resolveMatStyleFromOptions(options);
       const orientation = normalizeOrientation(options.orientation);
+    const occasions = normalizeOccasions(options.occasions || options.occasion);
       const { gen, printFinalize } = await this.generateImageWithFramingGuard(
         title,
         categoryKey,
@@ -902,6 +926,7 @@ class PosterBatchGenerator {
       this.addPosterToDb(categoryKey, title, style, imagePathForDb, pdfPaths, imagePrompt, promptLlm, {
         printLayout: pl,
         orientation,
+        occasions,
         ...(shopDescription ? { shopDescription } : {}),
       });
       console.log(`  ✓ Complete\n`);

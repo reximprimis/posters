@@ -21,6 +21,7 @@ const {
   PosterNameCollisionError,
 } = require('./src/posterNameGuard');
 const { normalizeOrientation } = require('./src/posterOrientation');
+const { normalizeOccasions, listOccasionsOnly, listSeasons } = require('./src/taxonomy');
 const {
   PATHS: GENERATOR_PATHS,
   isKnownModel,
@@ -1977,6 +1978,21 @@ app.get('/api/prompts/routes', (req, res) => {
 });
 
 /** Katalog estetyk — trzecia oś taksonomii (paleta i nastrój). */
+/**
+ * Okazje i pory roku do selektora w panelu.
+ *
+ * Rozdzielone na dwie grupy, bo handlowo to co innego: okazja trwa tydzien
+ * i sprzedaje sie w oknie, sezon trwa kwartal. W promcie dzialaja tak samo,
+ * dlatego w kodzie siedza na jednej osi.
+ */
+app.get('/api/occasions', (req, res) => {
+  res.json({
+    ok: true,
+    occasions: listOccasionsOnly().map((o) => ({ key: o.key, name: o.name })),
+    seasons: listSeasons().map((o) => ({ key: o.key, name: o.name })),
+  });
+});
+
 app.get('/api/aesthetics', (req, res) => {
   const { listAestheticsForUi } = require('./src/aesthetics');
   res.json({ ok: true, aesthetics: listAestheticsForUi() });
@@ -2463,6 +2479,8 @@ function validateStudioPayload(body) {
     // Pion / poziom wybiera sie przy generowaniu; commit i tak sprawdzi
     // orientacje w gotowym pliku, wiec to tylko zyczenie do modelu.
     orientation: normalizeOrientation(body.orientation),
+    // Okazja i pora roku — opcjonalne i wielokrotne, patrz src/taxonomy.js.
+    occasions: normalizeOccasions(body.occasions || body.occasion),
   };
 }
 
@@ -2502,6 +2520,7 @@ app.post('/api/studio/preview', async (req, res) => {
     const gen = getBatchGenerator();
     const { previewId } = await gen.generateStagingPreview(v.category, v.title, v.style, v.trimmedPrompt, {
       orientation: v.orientation,
+      occasions: v.occasions,
     });
     res.json({
       ok: true,
@@ -2728,6 +2747,7 @@ app.post('/api/studio/commit', async (req, res) => {
         generatePdf: false,
         generateVariants: parseAutoVariantsFromBody(req.body || {}),
         generatePrintPdfs: parseAutoPdfsFromBody(req.body || {}),
+        occasions: v.occasions,
       }
     );
     const relImage = result.imagePath.replace(/\\/g, '/');
