@@ -569,7 +569,7 @@ async function main() {
           Title: firstRowForProduct ? title : '',
           'Body (HTML)': firstRowForProduct ? body : '',
           Vendor: firstRowForProduct ? 'REXIMPRIMIS' : '',
-          'Product Category': KATEGORIA_SHOPIFY,
+          'Product Category': firstRowForProduct ? KATEGORIA_SHOPIFY : '',
           Type: firstRowForProduct ? 'poster' : '',
           Tags: firstRowForProduct ? tags : '',
           Published: firstRowForProduct ? (p.approvedForPrint ? 'true' : 'false') : '',
@@ -604,20 +604,21 @@ async function main() {
           'SEO Title': firstRowForProduct ? seoTitle : '',
           'SEO Description': firstRowForProduct ? seoDescription : '',
           'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
-          'Kolor (product.metafields.shopify.color-pattern)': firstRowForProduct
-            ? normalizeColors(p.colors).map(colorName).join(', ')
-            : '',
+          // PUSTE CELOWO. To sa metapola typu metaobject_reference w taksonomii
+          // Shopify, a nie pola tekstowe. Wpisanie w nie zwyklego napisu
+          // odrzucalo KAZDY wiersz importu bledem o wymaganym metaobiekcie.
+          // Te same informacje niosa tagi color:, orientation: i category:,
+          // ktore i tak napedzaja filtry oraz kolekcje automatyczne.
+          'Kolor (product.metafields.shopify.color-pattern)': '',
           'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
           'Obsługiwany format (product.metafields.shopify.format-supported)': '',
           'Styl oprawki (product.metafields.shopify.frame-style)': '',
           'Materiał (product.metafields.shopify.material)': '',
           'Typ mocowania (product.metafields.shopify.mounting-type)': '',
           // Standardowe metapole Shopify — napedza natywne filtry w sklepie.
-          'Orientacja (product.metafields.shopify.orientation)': firstRowForProduct
-            ? (p.orientation === 'landscape' ? 'Poziomy' : 'Pionowy')
-            : '',
+          'Orientacja (product.metafields.shopify.orientation)': '',
           'Kształt (product.metafields.shopify.shape)': '',
-          'Motyw (product.metafields.shopify.theme)': firstRowForProduct ? categoryName(p.category) : '',
+          'Motyw (product.metafields.shopify.theme)': '',
           'Variant Image': variantImageCell,
           'Variant Weight Unit': 'kg',
           'Variant Tax Code': '',
@@ -718,7 +719,7 @@ async function main() {
           Title: pierwszy ? title : '',
           'Body (HTML)': pierwszy ? body : '',
           Vendor: pierwszy ? 'REXIMPRIMIS' : '',
-          'Product Category': KATEGORIA_SHOPIFY,
+          'Product Category': pierwszy ? KATEGORIA_SHOPIFY : '',
           Type: pierwszy ? 'poster set' : '',
           Tags: pierwszy ? tags : '',
           Published: pierwszy ? (z.approvedForPrint ? 'true' : 'false') : '',
@@ -754,20 +755,16 @@ async function main() {
           'SEO Title': pierwszy && title ? `${title} | REXIMPRIMIS` : '',
           'SEO Description': pierwszy ? String(z.shopDescription || '').slice(0, 160) : '',
           'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
-          'Kolor (product.metafields.shopify.color-pattern)': pierwszy
-            ? normalizeColors(z.colors).map(colorName).join(', ')
-            : '',
+          'Kolor (product.metafields.shopify.color-pattern)': '',
           'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
           'Obsługiwany format (product.metafields.shopify.format-supported)': '',
           'Styl oprawki (product.metafields.shopify.frame-style)': '',
           'Materiał (product.metafields.shopify.material)': '',
           'Typ mocowania (product.metafields.shopify.mounting-type)': '',
           // Standardowe metapole Shopify — napedza natywne filtry w sklepie.
-          'Orientacja (product.metafields.shopify.orientation)': pierwszy
-            ? (z.orientation === 'landscape' ? 'Poziomy' : 'Pionowy')
-            : '',
+          'Orientacja (product.metafields.shopify.orientation)': '',
           'Kształt (product.metafields.shopify.shape)': '',
-          'Motyw (product.metafields.shopify.theme)': pierwszy ? categoryName(z.category) : '',
+          'Motyw (product.metafields.shopify.theme)': '',
           'Variant Image': imageSrcCell || toPublicUrl(thumbRel),
           'Variant Weight Unit': 'kg',
           'Variant Tax Code': '',
