@@ -121,6 +121,15 @@ const DEFAULT_SET_MULTIPLIERS = { duo: 1.85, tryptyk: 2.7 };
 const SET_PRINT_STYLES = [{ label: 'Full Bleed', code: 'full' }];
 
 const { orientSizeKey, isLandscape } = require('../src/posterOrientation');
+const {
+  normalizeRooms,
+  normalizeColors,
+  normalizeOccasions,
+  normalizeCollections,
+  colorName,
+  categoryName,
+} = require('../src/taxonomy');
+const { getRoomCollectionsForCategory } = require('../src/categoryStyles');
 
 /**
  * Rozmiary opisane pod orientacje plakatu. Klient kupujacy plakat poziomy
@@ -136,6 +145,76 @@ function sizeDefsForOrientation(defs, orientation) {
     return { ...s, key, label: s.label.replace(/^\s*\d+\s*×\s*\d+/, `${w} × ${h}`) };
   });
 }
+
+/**
+ * Ile dni plakat liczy sie jako nowosc.
+ *
+ * "Nowosci" ma kazdy sklep w branzy, ale u wszystkich jest to reczna kolekcja.
+ * U nas wynika z daty powstania, wiec utrzymuje sie sama przy kazdym eksporcie.
+ */
+const DNI_NOWOSCI = 30;
+
+/**
+ * Tagi z przestrzeniami nazw.
+ *
+ * Shopify nie ma osobnego pola na "os katalogu" — kolekcje automatyczne
+ * i filtry w Search & Discovery czytaja WLASNIE tagi. Prefiks pozwala
+ * zbudowac z nich osobne wymiary zamiast jednej plaskiej listy, w ktorej
+ * "photography" i "living-room" leza obok siebie bez zadnej struktury.
+ *
+ * `poster` zostaje bez prefiksu — to typ, nie wymiar.
+ */
+function zbudujTagi(p, categoryTag, styleTag, rozmiary) {
+  const t = ['poster'];
+  if (categoryTag) t.push('category:' + categoryTag);
+  if (styleTag) t.push('style:' + styleTag);
+  t.push('orientation:' + (p.orientation === 'landscape' ? 'landscape' : 'portrait'));
+
+  // Gdy rekord nie ma wlasnych pomieszczen — a 69 ze 158 zatwierdzonych nie
+  // mialo — bierzemy domyslne dla kategorii. Pomieszczenie jest cecha tematu:
+  // botanika pasuje do sypialni i lazienki niezaleznie od tego, czy ktos
+  // wypelnil pole w rekordzie.
+  const pokoje = normalizeRooms(p.rooms || p.roomCollections);
+  const pokojeFinalne = pokoje.length
+    ? pokoje
+    : normalizeRooms(getRoomCollectionsForCategory(p.category));
+  for (const r of pokojeFinalne) t.push('room:' + r);
+  for (const c of normalizeColors(p.colors)) t.push('color:' + c);
+  for (const o of normalizeOccasions(p.occasions)) t.push('occasion:' + o);
+  for (const k of normalizeCollections(p.collections)) t.push('collection:' + k);
+  for (const s of rozmiary) t.push('size:' + s.key);
+
+  // Nowosci licza sie z daty powstania — bez tego kolekcje trzeba by
+  // odswiezac recznie, a przy kazdym eksporcie i tak przeliczamy wszystko.
+  const powstal = Date.parse(p.createdAt || '');
+  if (Number.isFinite(powstal) && Date.now() - powstal <= DNI_NOWOSCI * 86400000) {
+    t.push('collection:new-arrivals');
+  }
+  return t.filter(Boolean).join(', ');
+}
+
+/**
+ * Opis SEO przycinany PO GRANICY SLOWA.
+ *
+ * Wczesniej ucinalismy na sztywno po 160 znakach, wiec opis konczyl sie
+ * w polowie wyrazu — w wynikach wyszukiwania wyglada to na blad, a nie
+ * na skrot.
+ */
+function przytnijSeo(tekst, limit = 160) {
+  const s = String(tekst || '').replace(/\s+/g, ' ').trim();
+  if (s.length <= limit) return s;
+  const uciety = s.slice(0, limit);
+  const spacja = uciety.lastIndexOf(' ');
+  const bazowy = spacja > limit * 0.6 ? uciety.slice(0, spacja) : uciety;
+  return bazowy.replace(/[\s,;:.\-–—]+$/, '') + '…';
+}
+
+/**
+ * Kategoria w taksonomii Shopify. Bez niej produkt nie mapuje sie na Google
+ * Shopping ani na natywne filtry sklepu. Jesli Shopify nie rozpozna napisu,
+ * po prostu zostawi pole puste — nic sie nie psuje.
+ */
+const KATEGORIA_SHOPIFY = 'Home & Garden > Decor > Artwork > Posters, Prints, & Visual Artwork';
 
 const SIZE_KEYS = SIZE_DEFS.map((s) => s.key);
 const DEFAULT_PRICES = Object.fromEntries(SIZE_DEFS.map((s) => [s.key, s.price]));
@@ -443,9 +522,9 @@ async function main() {
     const categoryTag = slugifyTag(p.category || '');
     const styleTag = slugifyTag(p.artStyle || '');
     const sizeDefsPlakatu = sizeDefsForOrientation(sizeDefs, p.orientation);
-    const tags = ['poster', categoryTag, styleTag, ...sizeDefsPlakatu.map((s) => `size_${s.key}`)].filter(Boolean).join(', ');
+    const tags = zbudujTagi(p, categoryTag, styleTag, sizeDefsPlakatu);
     const seoTitle = title ? `${title} | REXIMPRIMIS` : '';
-    const seoDescription = String(p.shopDescription || '').slice(0, 160);
+    const seoDescription = przytnijSeo(p.shopDescription);
     const masterThumbRel =
       (p.imagePathThumb && fileExists(p.imagePathThumb) && normalizeRelPath(p.imagePathThumb)) ||
       (withThumbSuffix(p.imagePath) && fileExists(withThumbSuffix(p.imagePath)) && withThumbSuffix(p.imagePath)) ||
@@ -490,7 +569,7 @@ async function main() {
           Title: firstRowForProduct ? title : '',
           'Body (HTML)': firstRowForProduct ? body : '',
           Vendor: firstRowForProduct ? 'REXIMPRIMIS' : '',
-          'Product Category': '',
+          'Product Category': KATEGORIA_SHOPIFY,
           Type: firstRowForProduct ? 'poster' : '',
           Tags: firstRowForProduct ? tags : '',
           Published: firstRowForProduct ? (p.approvedForPrint ? 'true' : 'false') : '',
@@ -525,15 +604,20 @@ async function main() {
           'SEO Title': firstRowForProduct ? seoTitle : '',
           'SEO Description': firstRowForProduct ? seoDescription : '',
           'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
-          'Kolor (product.metafields.shopify.color-pattern)': '',
+          'Kolor (product.metafields.shopify.color-pattern)': firstRowForProduct
+            ? normalizeColors(p.colors).map(colorName).join(', ')
+            : '',
           'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
           'Obsługiwany format (product.metafields.shopify.format-supported)': '',
           'Styl oprawki (product.metafields.shopify.frame-style)': '',
           'Materiał (product.metafields.shopify.material)': '',
           'Typ mocowania (product.metafields.shopify.mounting-type)': '',
-          'Orientacja (product.metafields.shopify.orientation)': '',
+          // Standardowe metapole Shopify — napedza natywne filtry w sklepie.
+          'Orientacja (product.metafields.shopify.orientation)': firstRowForProduct
+            ? (p.orientation === 'landscape' ? 'Poziomy' : 'Pionowy')
+            : '',
           'Kształt (product.metafields.shopify.shape)': '',
-          'Motyw (product.metafields.shopify.theme)': '',
+          'Motyw (product.metafields.shopify.theme)': firstRowForProduct ? categoryName(p.category) : '',
           'Variant Image': variantImageCell,
           'Variant Weight Unit': 'kg',
           'Variant Tax Code': '',
@@ -633,7 +717,7 @@ async function main() {
           Title: pierwszy ? title : '',
           'Body (HTML)': pierwszy ? body : '',
           Vendor: pierwszy ? 'REXIMPRIMIS' : '',
-          'Product Category': '',
+          'Product Category': KATEGORIA_SHOPIFY,
           Type: pierwszy ? 'poster set' : '',
           Tags: pierwszy ? tags : '',
           Published: pierwszy ? (z.approvedForPrint ? 'true' : 'false') : '',
@@ -669,15 +753,20 @@ async function main() {
           'SEO Title': pierwszy && title ? `${title} | REXIMPRIMIS` : '',
           'SEO Description': pierwszy ? String(z.shopDescription || '').slice(0, 160) : '',
           'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
-          'Kolor (product.metafields.shopify.color-pattern)': '',
+          'Kolor (product.metafields.shopify.color-pattern)': pierwszy
+            ? normalizeColors(z.colors).map(colorName).join(', ')
+            : '',
           'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
           'Obsługiwany format (product.metafields.shopify.format-supported)': '',
           'Styl oprawki (product.metafields.shopify.frame-style)': '',
           'Materiał (product.metafields.shopify.material)': '',
           'Typ mocowania (product.metafields.shopify.mounting-type)': '',
-          'Orientacja (product.metafields.shopify.orientation)': '',
+          // Standardowe metapole Shopify — napedza natywne filtry w sklepie.
+          'Orientacja (product.metafields.shopify.orientation)': pierwszy
+            ? (z.orientation === 'landscape' ? 'Poziomy' : 'Pionowy')
+            : '',
           'Kształt (product.metafields.shopify.shape)': '',
-          'Motyw (product.metafields.shopify.theme)': '',
+          'Motyw (product.metafields.shopify.theme)': pierwszy ? categoryName(z.category) : '',
           'Variant Image': imageSrcCell || toPublicUrl(thumbRel),
           'Variant Weight Unit': 'kg',
           'Variant Tax Code': '',
