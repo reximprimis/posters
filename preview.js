@@ -251,6 +251,9 @@ async function generateMockupsForPosterIds(posterIds) {
       const { frame, interior } = await mg.generate(masterAbs, outputDir, titleSlug, {
         category: poster.category,
         title: poster.title,
+        // Bez tego plakat poziomy dostawal pionowa ramke 800x1200 — rama
+        // nie pasowala do grafiki, ktora w niej wisiala.
+        orientation: poster.orientation,
       });
       const toRel = (abs) => path.relative(__dirname, abs).replace(/\\/g, '/');
       poster.mockups = {
@@ -2035,6 +2038,8 @@ app.post('/api/posters/:id/generate-mockups', async (req, res) => {
     const { frame, interior } = await mg.generate(masterAbs, outputDir, titleSlug, {
       category: poster.category,
       title: poster.title,
+      // Jak wyzej — orientacja musi dojsc, inaczej rama nie pasuje do grafiki.
+      orientation: poster.orientation,
     });
 
     // Convert abs paths → relative paths for inventory
