@@ -1576,6 +1576,22 @@
       background: linear-gradient(135deg, #2f6b45, #3d8558);
     }
 
+    .potwierdzenie-tlo {
+      position: fixed; inset: 0; z-index: 2000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(6, 6, 8, 0.62); backdrop-filter: blur(3px);
+    }
+    .potwierdzenie-okno {
+      max-width: 460px; margin: 1rem;
+      padding: 1.5rem 1.5rem 1.25rem;
+      border-radius: 14px;
+      background: var(--surface, #fffdf9);
+      color: var(--text, #1a1a1a);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+    .potwierdzenie-tresc { margin: 0 0 1.1rem; line-height: 1.55; font-size: 0.95rem; }
+    .potwierdzenie-akcje { display: flex; gap: 0.6rem; justify-content: flex-end; }
+
     .btn-danger {
       font-family: var(--font-body);
       font-size: 0.88rem;
@@ -9232,7 +9248,7 @@
             'Zatwierdzić do druku ' +
             plCountPosters(n) +
             '? Status „Zatwierdzony” zapisze się w bibliotece.';
-          if (!window.confirm(msg)) return;
+          if (!(await potwierdz(msg, 'Tak, wykonaj'))) return;
           const items = [];
           for (const pathKey of approveBasket.keys()) {
             const row = flatItems.find((x) => x.imagePath === pathKey);
@@ -9261,7 +9277,7 @@
           if (removeBasket.size === 0) return;
           const n = removeBasket.size;
           const msg = `Na pewno usunąć z biblioteki (${plCountPosters(n)})? Znikną wpisy w bibliotece oraz powiązane pliki PNG i PDF w folderze posters/.`;
-          if (!window.confirm(msg)) return;
+          if (!(await potwierdz(msg, 'Tak, wykonaj'))) return;
           const items = [...removeBasket.keys()].map((imagePath) => ({ imagePath }));
           try {
             const res = await fetch('/api/posters/remove', {
@@ -9822,6 +9838,47 @@
       function studioOrientation() {
         const sel = document.getElementById('studioOrientation');
         return sel && sel.value === 'landscape' ? 'landscape' : 'portrait';
+      }
+
+      /**
+       * Potwierdzenie w oknie strony, NIE przez window.confirm.
+       *
+       * Natywny confirm da sie w przegladarce wylaczyc ("nie pozwalaj tej
+       * stronie tworzyc kolejnych okien dialogowych"). Wtedy zwraca od razu
+       * false i przycisk po prostu NIC nie robi — bez komunikatu, bez sladu
+       * w konsoli. Uzytkownik widzi zepsuty przycisk, choc caly mechanizm
+       * dziala. Wlasne okno nie da sie w ten sposob uciszyc.
+       */
+      function potwierdz(tresc, etykietaTak) {
+        return new Promise((resolve) => {
+          const tlo = document.createElement('div');
+          tlo.className = 'potwierdzenie-tlo';
+          tlo.innerHTML =
+            '<div class="potwierdzenie-okno" role="alertdialog" aria-modal="true">' +
+            '<p class="potwierdzenie-tresc"></p>' +
+            '<div class="potwierdzenie-akcje">' +
+            '<button type="button" class="btn-basket-secondary" data-nie>Anuluj</button>' +
+            '<button type="button" class="btn-danger" data-tak></button>' +
+            '</div></div>';
+          tlo.querySelector('.potwierdzenie-tresc').textContent = tresc;
+          tlo.querySelector('[data-tak]').textContent = etykietaTak || 'Potwierdź';
+          document.body.appendChild(tlo);
+
+          const zamknij = (wynik) => {
+            document.removeEventListener('keydown', naKlawisz);
+            tlo.remove();
+            resolve(wynik);
+          };
+          const naKlawisz = (e) => {
+            if (e.key === 'Escape') zamknij(false);
+            if (e.key === 'Enter') zamknij(true);
+          };
+          tlo.querySelector('[data-nie]').addEventListener('click', () => zamknij(false));
+          tlo.querySelector('[data-tak]').addEventListener('click', () => zamknij(true));
+          tlo.addEventListener('click', (e) => { if (e.target === tlo) zamknij(false); });
+          document.addEventListener('keydown', naKlawisz);
+          tlo.querySelector('[data-tak]').focus();
+        });
       }
 
       /** Wybrana okazja albo pusto. Puste = plakat bez okazji, jak dotychczas. */

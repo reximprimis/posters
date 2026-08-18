@@ -1375,6 +1375,26 @@ function collectPosterAssetRelPaths(poster) {
   } else if (rawLs && typeof rawLs === 'object') {
     for (const v of Object.values(rawLs)) add(v);
   }
+
+  // Mockupy. Bez tego usuniety plakat zostawial packshot i wizualizacje
+  // w salonie — katalog po usunieciu nie znikal, bo nie byl pusty, a pliki
+  // zostawaly na dysku bez zadnego rekordu, ktory by o nich wiedzial.
+  if (poster.mockups && typeof poster.mockups === 'object') {
+    for (const k of ['frame', 'interior', 'interior2', 'stack', 'sheets']) {
+      add(poster.mockups[k]);
+    }
+  }
+
+  // Zestawy trzymaja wlasne pliki takze w panelach.
+  if (Array.isArray(poster.panels)) {
+    for (const panel of poster.panels) {
+      if (!panel) continue;
+      add(panel.imagePath);
+      const pp = panel.pdfPaths;
+      if (Array.isArray(pp)) pp.forEach(add);
+      else if (pp && typeof pp === 'object') for (const v of Object.values(pp)) add(v);
+    }
+  }
   return [...out];
 }
 
