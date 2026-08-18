@@ -689,14 +689,15 @@ async function main() {
     const sztuk = z.panelCount || (z.layout === 'duo' ? 2 : 3);
     const title = humanizePosterTitle(z.title);
     const body = htmlDescription(z.shopDescription || '');
+    // Te same przestrzenie nazw co przy pojedynczych plakatach — inaczej
+    // zestawy wypadaja z kazdego filtra i z kazdej kolekcji automatycznej,
+    // mimo ze sa najdrozszym produktem w katalogu.
     const tags = [
-      'poster',
-      'zestaw',
-      z.layout === 'duo' ? 'dyptyk' : 'tryptyk',
-      `zestaw_${sztuk}`,
-      slugifyTag(z.category || ''),
-      slugifyTag(z.artStyle || ''),
-      ...sizeDefs.map((s) => `size_${s.key}`),
+      'set',
+      'set:' + (z.layout === 'duo' ? 'duo' : 'triptych'),
+      'set:pieces-' + sztuk,
+      // zbudujTagi dokłada juz 'poster' na poczatku, wiec tutaj go nie powtarzamy.
+      zbudujTagi(z, slugifyTag(z.category || ''), slugifyTag(z.artStyle || ''), sizeDefs),
     ].filter(Boolean).join(', ');
 
     // ZESTAW MA TYLKO JEDNA OS WARIANTOW: rozmiar.

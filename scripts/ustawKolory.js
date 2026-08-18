@@ -90,7 +90,8 @@ async function policzKolory(abs) {
   let bezPliku = 0;
 
   for (const p of inv.posters) {
-    if (p.kind === 'set') continue;
+    // Zestawy tez licza kolor. Wczesniej byly pomijane, wiec wypadaly
+    // z filtra kolorow w sklepie — a to najdrozszy produkt w katalogu.
     const abs = path.join(ROOT, norm(p.imagePath));
     if (!fs.existsSync(abs)) {
       bezPliku++;
