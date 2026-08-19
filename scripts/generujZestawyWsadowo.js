@@ -12,11 +12,18 @@
  * kadry blizsze i bardziej kameralne — przy dwoch panelach szeroka panorama
  * traci srodek, ktory jest jej najmocniejszym punktem.
  *
- * KOSZT: kazda panorama to platne wywolanie API i okolo 2 minuty. Przy
- * nieczystej linii ciecia generator powtarza (limit SET_CUT_MAX_ATTEMPTS,
- * domyslnie 8). Pelny przebieg 50 zestawow to minimum ~2 godziny, realnie
- * wiecej. Skrypt zapisuje kazdy zestaw osobno, wiec przerwanie w polowie
- * niczego nie traci — po ponownym uruchomieniu pomija juz zrobione.
+ * KOSZT — TRYPTYK JEST WIELOKROTNIE DROZSZY OD DYPTYKU. Z pomiarow przy
+ * pierwszych szesciu zestawach: tryptyk potrzebuje 4-6 prob panoramy, dyptyk
+ * zwykle jednej. Powod: tryptyk ma DWIE linie ciecia zamiast jednej, a kazda
+ * musi wypasc czysto jednoczesnie. Kazda proba to platne wywolanie i ~2 min.
+ *
+ * Stad realny rachunek dla tego planu:
+ *   25 tryptykow x ~5 prob = ~125 wywolan = ~4 h
+ *   25 dyptykow  x ~1 proba =  ~25 wywolan = ~1 h
+ *   razem ~150 wywolan, ~5 godzin
+ *
+ * Skrypt zapisuje kazdy zestaw osobno, wiec przerwanie w polowie niczego nie
+ * traci — po ponownym uruchomieniu pomija juz zrobione.
  *
  *   node scripts/generujZestawyWsadowo.js              — plan i kontrola kolizji
  *   node scripts/generujZestawyWsadowo.js --wykonaj    — generowanie
@@ -170,7 +177,12 @@ function wczytajKartoteke() {
     });
     console.log('');
     console.log('To byl plan. Dodaj --wykonaj, zeby generowac.');
-    console.log('KOSZT: ' + PLAN.length + ' panoram, minimum ~' + Math.round(PLAN.length * 2 / 60) + ' h, realnie wiecej przy powtorkach ciecia.');
+    // Tryptyk liczony po ~5 prob, dyptyk po ~1 — pomiary z pierwszych szesciu
+    // zestawow. Wspolna srednia zanizalaby rachunek ponad dwukrotnie.
+    const proby = TRYPTYKI.length * 5 + DYPTYKI.length * 1;
+    console.log('KOSZT: ~' + proby + ' wywolan API (' + TRYPTYKI.length + ' tryptykow x ~5 prob + ' +
+      DYPTYKI.length + ' dyptykow x ~1), okolo ' + Math.round((proby * 2) / 60) + ' h.');
+    console.log('Tryptyk ma DWIE linie ciecia i obie musza wypasc czysto naraz — stad rozpietosc.');
     return;
   }
 
