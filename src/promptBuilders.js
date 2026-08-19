@@ -12,18 +12,13 @@ const {
   COMPOSITION_ABSTRACT,
   RESTRICTIONS_BLOCK,
   RESTRICTIONS_ABSTRACT,
-  RESTRICTIONS_MINIMAL_LANDSCAPE,
   resolveSafePrintFramingForCategory,
   getCompositionBlock,
   getRestrictionsBlock,
 } = require('./safePrintFraming');
 const {
   MINIMAL_COLOR_PALETTE,
-  MINIMAL_STYLE_DIRECTION,
-  MINIMAL_COMPOSITION,
-  buildMinimalSafeFramingBlock,
   buildMinimalismPrompt,
-  resolveMinimalismSubject,
 } = require('./minimalismSubject');
 const {
   buildTitleBriefBlock,
@@ -161,17 +156,14 @@ function buildBotanicalPhotographyPrompt({ title, category, style }) {
 function buildBotanicalMinimalismPrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
+  // Botanika to kategoria PRZEDMIOTOWA — galaz, kwiat, lisc. Bloki pejzazowe
+  // (horyzont, odbicie, zakaz zwierzat) byly tu wpychane na sztywno; teraz
+  // wariant wybiera buildMinimalismPrompt po kategorii.
   let minimal = buildMinimalismPrompt(titleText, categoryKey, {
     CATEGORY_FOCUS: categoryKey
       ? `Category focus (${categoryKey}): ${getCategoryDescription(categoryKey)}`
       : '',
-    MINIMAL_STYLE_DIRECTION,
     MINIMAL_COLOR_PALETTE,
-    MINIMAL_COMPOSITION,
-    SAFE_PRINT_FRAMING_MINIMAL_LANDSCAPE: buildMinimalSafeFramingBlock(
-      resolveMinimalismSubject(titleText, categoryKey).landscapeFocus
-    ),
-    MINIMAL_RESTRICTIONS: RESTRICTIONS_MINIMAL_LANDSCAPE,
   });
   if (minimal.includes('TITLE BRIEF')) {
     minimal = minimal.replace(
@@ -229,6 +221,15 @@ function buildMapCityPrompt(opts) {
   return buildCategoryHardOverridePrompt(opts);
 }
 
+/**
+ * Minimalizm — jedno wejscie, dwa warianty.
+ *
+ * Wariant wybiera kategoria (patrz MINIMALISM_LANDSCAPE_CATEGORIES):
+ * pejzaz dla nature-landscapes / sea-coast / mountains-hiking, przedmiot dla
+ * calej reszty. Wczesniej ten builder wpychal bloki pejzazowe kazdej kategorii,
+ * wiec plakat koktajlowy dostawal polecenie zbudowania horyzontu i zakaz
+ * pokazania szklanki.
+ */
 function buildMinimalismStylePrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
@@ -236,14 +237,13 @@ function buildMinimalismStylePrompt({ title, category, style }) {
     CATEGORY_FOCUS: categoryKey
       ? `Category focus (${categoryKey}): ${getCategoryDescription(categoryKey)}`
       : '',
-    MINIMAL_STYLE_DIRECTION,
     MINIMAL_COLOR_PALETTE,
-    MINIMAL_COMPOSITION,
-    SAFE_PRINT_FRAMING_MINIMAL_LANDSCAPE: buildMinimalSafeFramingBlock(
-      resolveMinimalismSubject(titleText, categoryKey).landscapeFocus
-    ),
-    MINIMAL_RESTRICTIONS: RESTRICTIONS_MINIMAL_LANDSCAPE,
   });
+}
+
+/** Trasa CATEGORY_STYLE_DEDICATED dla trzech kategorii pejzazowych. */
+function buildMinimalismLandscapePrompt(opts) {
+  return buildMinimalismStylePrompt(opts);
 }
 
 function buildAbstractStylePrompt({ title, category, style }) {
@@ -339,6 +339,7 @@ module.exports = {
   buildSpacePrompt,
   buildMapCityPrompt,
   buildMinimalismStylePrompt,
+  buildMinimalismLandscapePrompt,
   buildAbstractStylePrompt,
   buildIllustrationStylePrompt,
   buildLineArtStylePrompt,

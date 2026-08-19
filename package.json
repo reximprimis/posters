@@ -13,6 +13,7 @@
     "test:guard": "node scripts/testDuplicateGuard.js",
     "test:models": "node scripts/testModelCatalog.js",
     "test:aesthetics": "node scripts/testAesthetics.js",
+    "test:minimalism": "node scripts/testMinimalismPrompts.js",
     "test:marketplaces": "node scripts/testMarketplaces.js",
     "translate:pl": "node scripts/generateTranslations.js --lang=pl",
     "translate:de": "node scripts/generateTranslations.js --lang=de",
