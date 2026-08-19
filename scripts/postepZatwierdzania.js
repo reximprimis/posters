@@ -27,14 +27,21 @@ const bezMockupow = [];
 
 for (const p of zatwierdzone) {
   const dir = path.join(ROOT, path.dirname(norm(p.imagePath)));
-  const baza = path.basename(norm(p.imagePath), '.png');
   if (!fs.existsSync(dir)) continue;
   const pliki = fs.readdirSync(dir);
   if (pliki.some((f) => f.endsWith('.pdf'))) zPdf++;
   if (pliki.some((f) => f.includes('_thumb.'))) zMiniatura++;
+
+  // Sciezki mockupow czytamy z kartoteki, a NIE sklejamy z nazwy pliku PNG.
+  // Nazwa mockupu bierze sie z TYTULU plakatu, ktory bywa inny niz nazwa
+  // pliku: "Magnolia Over Still Water" lezy w Delicate_Magnolia_Branch.png,
+  // a "Red Classic Roadster" w Red_Classic_Roadster_Safe_Frame.png.
+  // Zgadywanie po nazwie pliku dawalo falszywy alarm o czterech brakach.
+  const m = p.mockups || {};
   const maMockupy =
-    fs.existsSync(path.join(dir, baza + '_mockup_frame.jpg')) &&
-    fs.existsSync(path.join(dir, baza + '_mockup_interior.jpg'));
+    m.frame && m.interior &&
+    fs.existsSync(path.join(ROOT, norm(m.frame))) &&
+    fs.existsSync(path.join(ROOT, norm(m.interior)));
   if (maMockupy) zMockupami++;
   else bezMockupow.push(p.title);
 }
