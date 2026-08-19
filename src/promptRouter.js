@@ -2,6 +2,7 @@ const { assertCategoryStyleAllowed, isUserCategory, getCategoryDescription } = r
 const { applyAestheticToPrompt, isKnownAesthetic } = require('./aesthetics');
 const { isKnownOccasion, buildOccasionBlock } = require('./taxonomy');
 const { CATEGORY_PROMPT_MODES } = require('./categoryPromptModes');
+const { MINIMALISM_LANDSCAPE_CATEGORIES } = require('./minimalismSubject');
 const builders = require('./promptBuilders');
 const {
   COMPOSITION_GENERAL,
@@ -37,6 +38,11 @@ const DEDICATED_CATEGORY_STYLE = new Set([
   'sea-coast|Photography',
   'kids-nursery|Illustration',
   'kids-nursery|Minimalism',
+  // Trzy kategorie, w ktorych minimalizm ZNACZY pejzaz. Reszta minimalizmu idzie
+  // wariantem przedmiotowym (src/minimalismSubject.js).
+  'nature-landscapes|Minimalism',
+  'sea-coast|Minimalism',
+  'mountains-hiking|Minimalism',
 ]);
 
 function wouldUseCategoryStylePrompt(categoryKey, styleKey) {
@@ -154,6 +160,9 @@ function buildImagePromptForRoute({ category, style, title }) {
   }
   if (categoryKey === 'kids-nursery' && styleKey === 'Minimalism') {
     return builders.buildChildrenMinimalismPrompt(opts);
+  }
+  if (MINIMALISM_LANDSCAPE_CATEGORIES.has(categoryKey) && styleKey === 'Minimalism') {
+    return builders.buildMinimalismLandscapePrompt(opts);
   }
 
   if (categoryKey === 'gaming-esports') {
