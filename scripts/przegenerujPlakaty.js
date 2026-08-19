@@ -1,16 +1,14 @@
 /**
- * Przegenerowuje plakaty typograficzne, ktore wyszly bez ani jednej litery.
+ * Przegenerowuje wskazane plakaty od nowa, zachowujac kategorie, styl
+ * i orientacje.
  *
- * Kategoria byla zablokowana przez trzy niezalezne zakazy liter w promptcie
- * (brief tytulu, blok Restrictions, tail komercyjny). Po ich naprawie stare
- * obrazy sa nie do uratowania — trzeba je wygenerowac od nowa.
+ * Uzywane, gdy plakat wyszedl wadliwie w sposob nie do poprawienia
+ * (wypalone passe-partout, temat kompletnie obok kategorii). Bierzemy
+ * wylacznie NIEZATWIERDZONE: nie maja PDF-ow, mockupow ani pozycji
+ * w sklepie, wiec skasowanie rekordu i katalogu niczego nie zrywa.
  *
- * Bierzemy tylko plakaty NIEZATWIERDZONE: nie maja PDF-ow, mockupow ani
- * pozycji w sklepie, wiec skasowanie rekordu i katalogu niczego nie zrywa.
- * Plakat zatwierdzony wymaga podmiany w miejscu i osobnego przebiegu.
- *
- *   node scripts/przegenerujTypografie.js             — proba
- *   node scripts/przegenerujTypografie.js --wykonaj   — kasuje i generuje
+ *   node scripts/przegenerujPlakaty.js "Tytul A" "Tytul B"
+ *   node scripts/przegenerujPlakaty.js --wykonaj "Tytul A" "Tytul B"
  */
 
 'use strict';
@@ -21,27 +19,29 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
 const norm = (p) => String(p || '').split('\\').join('/');
-const zapis = process.argv.includes('--wykonaj');
 
-const DO_PRZEGENEROWANIA = [
-  'Coffee First Lettering',
-  'Slow Living Words',
-  'Bloom Where Planted',
-  'Hello Sunshine Type',
-];
+const argumenty = process.argv.slice(2);
+const zapis = argumenty.includes('--wykonaj');
+// Podmiana stylu ratuje plakat, gdy wadliwy jest sam styl w tej kategorii,
+// a nie pojedyncze losowanie.
+const wymuszonyStyl = (argumenty.find((a) => a.startsWith('--styl=')) || '').slice(7);
+const tytuly = argumenty.filter((a) => a !== '--wykonaj' && !a.startsWith('--styl='));
+
+if (!tytuly.length) {
+  console.error('Podaj tytuly plakatow do przegenerowania.');
+  process.exit(1);
+}
 
 (async () => {
   const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
   const plan = [];
 
-  for (const tytul of DO_PRZEGENEROWANIA) {
+  for (const tytul of tytuly) {
     const rekord = inv.posters.find((p) => p.title === tytul);
     if (!rekord) {
       console.log('POMINIETE  ' + tytul + ' — brak w kartotece');
       continue;
     }
-    // Bezpiecznik: gdyby ktos dopisal tu zatwierdzony plakat, kasowanie
-    // rekordu zerwaloby powiazanie ze sklepem i mockupami na CDN.
     if (rekord.approvedForPrint) {
       console.log('POMINIETE  ' + tytul + ' — ZATWIERDZONY, wymaga podmiany w miejscu');
       continue;
@@ -49,7 +49,7 @@ const DO_PRZEGENEROWANIA = [
     plan.push({
       tytul,
       kategoria: rekord.category,
-      styl: rekord.artStyle,
+      styl: wymuszonyStyl || rekord.artStyle,
       orientacja: rekord.orientation || 'portrait',
       katalog: path.join(ROOT, path.dirname(norm(rekord.imagePath))),
       id: rekord.id,
@@ -58,7 +58,7 @@ const DO_PRZEGENEROWANIA = [
 
   console.log('');
   for (const p of plan) {
-    console.log('  ' + p.tytul.padEnd(26) + p.styl.padEnd(12) + p.orientacja);
+    console.log('  ' + p.tytul.padEnd(26) + p.kategoria.padEnd(20) + p.styl.padEnd(12) + p.orientacja);
   }
   console.log('');
   console.log('do przegenerowania: ' + plan.length);
@@ -90,7 +90,7 @@ const DO_PRZEGENEROWANIA = [
   for (let i = 0; i < plan.length; i++) {
     const p = plan[i];
     console.log('');
-    console.log(`[${i + 1}/${plan.length}] ${p.styl} / ${p.orientacja} — "${p.tytul}"`);
+    console.log(`[${i + 1}/${plan.length}] ${p.kategoria} / ${p.styl} / ${p.orientacja} — "${p.tytul}"`);
     try {
       const { text: imagePrompt } = await cg.generateImagePrompt(p.tytul, p.kategoria, p.styl, {});
       if (!imagePrompt) throw new Error('pusty prompt');

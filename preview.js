@@ -599,7 +599,11 @@ function collectImageFilesRecursively(rootDir) {
       if (!['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) continue;
       const lower = e.name.toLowerCase();
       if (lower.endsWith('_ramka.png') || lower.endsWith('_ramka.jpg') || lower.endsWith('_ramka.jpeg') || lower.endsWith('_ramka.webp')) continue;
-      if (lower.endsWith('_master.png') || lower.includes('.gen.tmp.')) continue;
+      // .upscale.tmp. musi byc odsiane razem z .gen.tmp. — generator tworzy
+      // taki plik na czas upscale'u i kasuje po zakonczeniu. Skaner trafial
+      // w to okno i dopisywal rekord-smiec ("Kiss In One Line.Png.Upscale.Tmp"),
+      // ktory potem zostawal w kartotece juz bez pliku na dysku.
+      if (lower.endsWith('_master.png') || lower.includes('.gen.tmp.') || lower.includes('.upscale.tmp.')) continue;
       if (lower.includes('_thumb.')) continue;
       if (lower.includes('_lifestyle.')) continue;
       if (lower.startsWith('mockup_') || lower.includes('_mockup_frame.') || lower.includes('_mockup_interior.')) continue;
@@ -615,7 +619,7 @@ function syncManualImageImports(inventory) {
   const before = inventory.posters.length;
   inventory.posters = inventory.posters.filter((p) => {
     const ip = String((p && p.imagePath) || '').replace(/\\/g, '/');
-    if (/_master\.png$/i.test(ip) || /\.gen\.tmp\.png$/i.test(ip)) {
+    if (/_master\.png$/i.test(ip) || /\.gen\.tmp\.png$/i.test(ip) || /\.upscale\.tmp\.png$/i.test(ip)) {
       changed = true;
       const abs = path.join(__dirname, ip);
       try {

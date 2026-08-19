@@ -162,6 +162,9 @@ function buildBotanicalMinimalismPrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
   let minimal = buildMinimalismPrompt(titleText, categoryKey, {
+    CATEGORY_FOCUS: categoryKey
+      ? `Category focus (${categoryKey}): ${getCategoryDescription(categoryKey)}`
+      : '',
     MINIMAL_STYLE_DIRECTION,
     MINIMAL_COLOR_PALETTE,
     MINIMAL_COMPOSITION,
@@ -230,6 +233,9 @@ function buildMinimalismStylePrompt({ title, category, style }) {
   const titleText = String(title || '').trim();
   const categoryKey = String(category || '').trim();
   return buildMinimalismPrompt(titleText, categoryKey, {
+    CATEGORY_FOCUS: categoryKey
+      ? `Category focus (${categoryKey}): ${getCategoryDescription(categoryKey)}`
+      : '',
     MINIMAL_STYLE_DIRECTION,
     MINIMAL_COLOR_PALETTE,
     MINIMAL_COMPOSITION,

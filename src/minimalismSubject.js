@@ -276,6 +276,11 @@ function buildMinimalismPrompt(title, category, blocks = {}) {
 
   return [
     'Premium fine-art artwork for print.',
+    // Bez tej linii minimalizm nigdy nie widzi kategorii: prompt sklada sie
+    // z samego tytulu i wskazowek stylu. Tytul nastrojowy bez mocnego
+    // rzeczownika ladowal wtedy obok tematu — "Whiskey Amber Glow"
+    // w kategorii bar-cocktails wychodzil dwukrotnie jako zachod slonca.
+    blocks.CATEGORY_FOCUS,
     `TITLE BRIEF — "${titleText}" defines the exact subject; interpret semantically and never render the words as typography, label text, logo, or caption.`,
     `Resolved minimal subject:\n${resolved.resolvedSubject}`,
     `Subject:\n${resolved.primarySubject}`,
