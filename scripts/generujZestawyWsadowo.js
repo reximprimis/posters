@@ -129,11 +129,17 @@ function wczytajKartoteke() {
 
 (async () => {
   const inv = wczytajKartoteke();
-  const istniejace = new Set(inv.posters.map((p) => String(p.title).trim().toLowerCase()));
+  const klucz = (t) => String(t).trim().toLowerCase();
 
-  // Tytul musi dawac unikalny handle GLOBALNIE, nie tylko wsrod zestawow —
-  // kolizja z pojedynczym plakatem nadpisalaby produkt w sklepie.
-  const kolizje = PLAN.filter((z) => istniejace.has(z.tytul.trim().toLowerCase()));
+  // Zestaw o tym samym tytule to NIE kolizja, tylko pozycja juz zrobiona —
+  // inaczej ponowne uruchomienie po czesciowym przebiegu przerywa sie na
+  // wlasnych wynikach zamiast je pominac.
+  const juzZrobione = new Set(inv.posters.filter((p) => p.kind === 'set').map((p) => klucz(p.title)));
+
+  // Prawdziwa kolizja to tytul zajety przez POJEDYNCZY plakat: handle liczy
+  // sie z samego tytulu, wiec zestaw nadpisalby istniejacy produkt w sklepie.
+  const zajetePrzezPlakaty = new Set(inv.posters.filter((p) => p.kind !== 'set').map((p) => klucz(p.title)));
+  const kolizje = PLAN.filter((z) => zajetePrzezPlakaty.has(klucz(z.tytul)));
   const wPlanie = {};
   for (const z of PLAN) wPlanie[z.tytul] = (wPlanie[z.tytul] || 0) + 1;
   const wewnetrzne = Object.entries(wPlanie).filter(([, n]) => n > 1);
@@ -196,7 +202,7 @@ function wczytajKartoteke() {
   }
 
   const doZrobienia = (limit ? PLAN.slice(0, limit) : PLAN).filter(
-    (z) => !istniejace.has(z.tytul.trim().toLowerCase())
+    (z) => !juzZrobione.has(klucz(z.tytul))
   );
   console.log('');
   console.log('do wygenerowania: ' + doZrobienia.length);
