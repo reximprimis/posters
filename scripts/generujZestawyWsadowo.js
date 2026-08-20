@@ -109,10 +109,19 @@ const DYPTYKI = [
   { tytul: 'Sleeping Fox Cubs', kategoria: 'kids-nursery', styl: 'Illustration' },
 ];
 
-const PLAN = [
-  ...TRYPTYKI.map((z) => ({ ...z, uklad: 'tryptyk' })),
-  ...DYPTYKI.map((z) => ({ ...z, uklad: 'duo' })),
-];
+/**
+ * Tryptyki i dyptyki ida NA PRZEMIAN, a nie blokami.
+ *
+ * Dwa powody. Po pierwsze --ile N ma dac probke obu ukladow, a nie piec
+ * tryptykow. Po drugie przebieg trwa godzinami i bywa przerywany — przy
+ * ukladzie blokowym przerwanie w polowie zostawiloby 25 tryptykow i zero
+ * dyptykow, czyli katalog przechylony na jedna strone.
+ */
+const PLAN = [];
+for (let i = 0; i < Math.max(TRYPTYKI.length, DYPTYKI.length); i++) {
+  if (TRYPTYKI[i]) PLAN.push({ ...TRYPTYKI[i], uklad: 'tryptyk' });
+  if (DYPTYKI[i]) PLAN.push({ ...DYPTYKI[i], uklad: 'duo' });
+}
 
 function wczytajKartoteke() {
   return JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
