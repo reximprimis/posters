@@ -117,11 +117,34 @@ const DYPTYKI = [
  * ukladzie blokowym przerwanie w polowie zostawiloby 25 tryptykow i zero
  * dyptykow, czyli katalog przechylony na jedna strone.
  */
+/**
+ * Pozycje ODRZUCONE po obejrzeniu wyniku — skrypt ma je omijac.
+ *
+ * Bez tej listy ponowne uruchomienie wskrzesza kazda pozycje, ktorej nie ma
+ * w kartotece, wiec swiadomie skasowany zestaw wraca. Trzy pierwsze wyszly
+ * z blizniaczymi panelami: motyw symetryczny bez tresci wedrujacej miedzy
+ * panelami daje po podziale dwa niemal identyczne obrazy. Dwie ostatnie
+ * odpadly przy generowaniu — maja pusty srodek, wiec tryptyk nie przechodzi
+ * kontroli tresci w panelu srodkowym.
+ */
+const ODRZUCONE = new Set([
+  'Two Tone Horizon',
+  'Horizontal Colour Fields',
+  'Two Peaks Facing',
+  'Wisteria Along the Wall',
+  'Milky Way Arch',
+]);
+
 const PLAN = [];
 for (let i = 0; i < Math.max(TRYPTYKI.length, DYPTYKI.length); i++) {
-  if (TRYPTYKI[i]) PLAN.push({ ...TRYPTYKI[i], uklad: 'tryptyk' });
-  if (DYPTYKI[i]) PLAN.push({ ...DYPTYKI[i], uklad: 'duo' });
+  if (TRYPTYKI[i] && !ODRZUCONE.has(TRYPTYKI[i].tytul)) PLAN.push({ ...TRYPTYKI[i], uklad: 'tryptyk' });
+  if (DYPTYKI[i] && !ODRZUCONE.has(DYPTYKI[i].tytul)) PLAN.push({ ...DYPTYKI[i], uklad: 'duo' });
 }
+
+// Liczymy PO odsianiu odrzuconych — inaczej naglowek i szacunek kosztu
+// opisuja liste, ktorej skrypt juz nie generuje.
+const wPlanieTryptykow = PLAN.filter((z) => z.uklad === 'tryptyk').length;
+const wPlanieDyptykow = PLAN.filter((z) => z.uklad === 'duo').length;
 
 function wczytajKartoteke() {
   return JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
@@ -144,7 +167,7 @@ function wczytajKartoteke() {
   for (const z of PLAN) wPlanie[z.tytul] = (wPlanie[z.tytul] || 0) + 1;
   const wewnetrzne = Object.entries(wPlanie).filter(([, n]) => n > 1);
 
-  console.log('PLAN: ' + PLAN.length + ' zestawow  (' + TRYPTYKI.length + ' tryptykow, ' + DYPTYKI.length + ' dyptykow)');
+  console.log('PLAN: ' + PLAN.length + ' zestawow  (' + wPlanieTryptykow + ' tryptykow, ' + wPlanieDyptykow + ' dyptykow)');
   console.log('');
 
   const wgKat = {};
@@ -194,9 +217,9 @@ function wczytajKartoteke() {
     console.log('To byl plan. Dodaj --wykonaj, zeby generowac.');
     // Tryptyk liczony po ~5 prob, dyptyk po ~1 — pomiary z pierwszych szesciu
     // zestawow. Wspolna srednia zanizalaby rachunek ponad dwukrotnie.
-    const proby = TRYPTYKI.length * 5 + DYPTYKI.length * 1;
-    console.log('KOSZT: ~' + proby + ' wywolan API (' + TRYPTYKI.length + ' tryptykow x ~5 prob + ' +
-      DYPTYKI.length + ' dyptykow x ~1), okolo ' + Math.round((proby * 2) / 60) + ' h.');
+    const proby = wPlanieTryptykow * 5 + wPlanieDyptykow * 1;
+    console.log('KOSZT: ~' + proby + ' wywolan API (' + wPlanieTryptykow + ' tryptykow x ~5 prob + ' +
+      wPlanieDyptykow + ' dyptykow x ~1), okolo ' + Math.round((proby * 2) / 60) + ' h.');
     console.log('Tryptyk ma DWIE linie ciecia i obie musza wypasc czysto naraz — stad rozpietosc.');
     return;
   }
