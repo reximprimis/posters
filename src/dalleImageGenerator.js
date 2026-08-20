@@ -99,7 +99,27 @@ class DalleImageGenerator {
     });
   }
 
+  /**
+   * @param {string} outputPath
+   * @param {unknown} [orientation] orientacja POJEDYNCZEGO plakatu. Gdy jej
+   *   nie ma, wymiary z .env sa juz docelowe i NIE WOLNO ich obracac — ta sama
+   *   zasada, co w resolveImageSize.
+   *
+   *   Bez tego wyjatku ginely zestawy: panorama tryptyku to 3840x1920, ale
+   *   resolvePrintCanvas porzadkuje boki na "krotszy, dluzszy" i przy braku
+   *   orientacji domysla sie PORTRETU, wiec zwracalo 1920x3840. Panorama byla
+   *   wpasowywana w pionowe plotno i master mial gole pasy tla u gory i dolu,
+   *   a panele tryptyku wychodzily jako paski 640x3840 zamiast kadrow 2:3.
+   */
   async normalizeOutputSize(outputPath, orientation) {
+    if (orientation == null) {
+      const w = parseInt(process.env.IMAGE_TARGET_WIDTH || process.env.DALLE_TARGET_WIDTH || '', 10);
+      const h = parseInt(process.env.IMAGE_TARGET_HEIGHT || process.env.DALLE_TARGET_HEIGHT || '', 10);
+      if (Number.isFinite(w) && Number.isFinite(h) && w >= 256 && h >= 256) {
+        await resizePngFileToPrintCanvas(outputPath, outputPath, w, h);
+      }
+      return;
+    }
     const { width: targetW, height: targetH } = resolvePrintCanvas(orientation);
     if (!Number.isFinite(targetW) || !Number.isFinite(targetH) || targetW < 256 || targetH < 256) {
       return;
