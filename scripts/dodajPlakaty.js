@@ -76,6 +76,32 @@ if (planZPliku) {
     process.exit(1);
   }
 
+  // Plakat udajacy KONKRETNY istniejacy obiekt to produkt wprowadzajacy
+  // w blad: model nie zna lokalnych zabytkow i zamiast odmowic — wymysla je.
+  // "Lomnica Palace" wyszedl jako ogromny barok z ogrodem francuskim, podczas
+  // gdy prawdziwy palac to skromny zolty dwor. Domyslnie blokujemy; swiadome
+  // uzycie wymaga flagi --obiekt-rzeczywisty.
+  const { znajdzRyzykowne } = require('../src/realneObiekty');
+  const ryzykowne = znajdzRyzykowne(plan.map((p) => p.tytul));
+  if (ryzykowne.length && !argumenty.includes('--obiekt-rzeczywisty')) {
+    console.log('');
+    console.log('ZABLOKOWANE — tytuly obiecuja KONKRETNY istniejacy obiekt:');
+    for (const r of ryzykowne) {
+      console.log('   ' + r.tytul.padEnd(32) + r.powod);
+    }
+    console.log('');
+    console.log('Model nie zna lokalnych zabytkow i zamiast odmowic — WYMYSLA je.');
+    console.log('Klient z regionu rozpozna falsz, a produkt pod nazwa istniejacego');
+    console.log('miejsca wprowadza w blad.');
+    console.log('');
+    console.log('Co zrobic:');
+    console.log('  - opisac TYP budowli zamiast adresu ("Stave Church", "Tyrolean House"),');
+    console.log('  - albo uzyc wlasnego zdjecia obiektu,');
+    console.log('  - albo, jesli model ten obiekt naprawde zna i wynik zostal SPRAWDZONY,');
+    console.log('    powtorzyc z flaga --obiekt-rzeczywisty.');
+    process.exit(1);
+  }
+
   console.log('');
   plan.forEach((p) => console.log('  ' + String(p.tytul).padEnd(32) + String(p.kategoria).padEnd(16) +
     String(p.styl).padEnd(13) + p.orientacja));
