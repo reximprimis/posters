@@ -4,26 +4,48 @@
     {
       "name": "Poster Preview Server",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "preview"],
+      "runtimeArgs": [
+        "run",
+        "preview"
+      ],
       "port": 3000,
       "autoPort": true
     },
     {
+      "name": "Poster Preview Server (3001)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "preview.js",
+        "--port",
+        "3001"
+      ],
+      "port": 3001
+    },
+    {
       "name": "Generate Botanika Posters",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "generate-botanika"],
+      "runtimeArgs": [
+        "run",
+        "generate-botanika"
+      ],
       "port": null
     },
     {
       "name": "Generate All Categories",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "generate-all"],
+      "runtimeArgs": [
+        "run",
+        "generate-all"
+      ],
       "port": null
     },
     {
       "name": "View Inventory Stats",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "stats"],
+      "runtimeArgs": [
+        "run",
+        "stats"
+      ],
       "port": null
     }
   ]

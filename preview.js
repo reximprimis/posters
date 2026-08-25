@@ -31,7 +31,24 @@ const {
 const sharp = require('sharp');
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+
+/**
+ * Port: --port 3001, potem PORT z .env, na koncu 3000.
+ *
+ * Argument jest potrzebny, bo na Windows nie ma skladni "PORT=3001 npm run",
+ * a cross-env nie jest zainstalowany. Bez tego jedynym sposobem na drugi
+ * port bylo grzebanie w .env, czyli zmiana wspolna dla wszystkich uruchomien.
+ */
+function resolvePort() {
+  const i = process.argv.indexOf('--port');
+  if (i >= 0) {
+    const v = Number(process.argv[i + 1]);
+    if (Number.isInteger(v) && v > 0 && v < 65536) return v;
+  }
+  return Number(process.env.PORT) || 3000;
+}
+
+const PORT = resolvePort();
 
 // ── Live log broadcaster (SSE) ───────────────────────────────────────────────
 const _logClients = new Set();
