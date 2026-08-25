@@ -49,6 +49,17 @@ const REGULY = [
     },
   },
   {
+    // Nazwa barwy w tytule wystarcza sama. Plakat nazwany "Plum Hills"
+    // albo "Terracotta Arch" powstal POD kolekcje jesienna — wpada do niej
+    // z zamiaru, nie z pomiaru pikseli. Bez tej reguly subtelne kompozycje
+    // wypadaly: paproc w zieleni i szarosci ma tylko JEDEN kolor z palety,
+    // a progu dwoch nie przechodzi, mimo ze jest wprost pod baner.
+    okazja: 'autumn',
+    test: (p, t) =>
+      /\b(terracotta|clay|cocoa|plum|ochre|rust|chestnut|amber|deep green)\b/.test(t) &&
+      ['botanical', 'nature-landscapes', 'mountains-hiking', 'abstract', 'sea-coast'].includes(p.category),
+  },
+  {
     // Osobna os pod baner "Kolory jesieni 2026": glina, kakao, kremowy,
     // gleboka zielen, sliwka. To NIE jest klasyczna ruda jesien, tylko
     // stonowana paleta wnetrzarska — dlatego wlasna regula, a nie autumn.
