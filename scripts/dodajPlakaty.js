@@ -126,9 +126,33 @@ if (planZPliku) {
     console.log('');
     console.log(`[${i + 1}/${plan.length}] ${p.kategoria} / ${p.styl} / ${p.orientacja} — "${p.tytul}"`);
     try {
-      const { text: imagePrompt } = await cg.generateImagePrompt(p.tytul, p.kategoria, p.styl, {
-        aesthetic: p.estetyka || undefined,
-      });
+      let imagePrompt;
+      if (p.opis) {
+        // Obiekt rzeczywisty: prompt budujemy z OPISU CECH budynku, nie
+        // z tytulu. Model nie zna lokalnych zabytkow, wiec sam wymysli
+        // budowle — a opis (bryla, kolor, dach, wieze, liczba osi) pozwala
+        // mu odtworzyc TEN budynek. Ujecie zostaje nasze wlasne, wiec nie
+        // powstaje dzielo pochodne od cudzej fotografii.
+        const { routePromptBuildResult } = require('../src/promptRouter');
+        const bazowy = routePromptBuildResult({
+          category: p.kategoria,
+          style: p.styl,
+          title: p.tytul,
+        }).imagePrompt;
+        imagePrompt = [
+          'Premium fine-art architectural photograph for print.',
+          'BUILDING — reproduce these features exactly:',
+          p.opis,
+          p.ujecie ? 'VIEWPOINT: ' + p.ujecie : '',
+          'The building above is the subject. Keep its shape, proportions, roof form, tower shapes and colours exactly as described; do not invent a different building.',
+          bazowy.replace(/^Premium fine-art[^\n]*\n?/, ''),
+        ].filter(Boolean).join('\n\n');
+      } else {
+        const wynik = await cg.generateImagePrompt(p.tytul, p.kategoria, p.styl, {
+          aesthetic: p.estetyka || undefined,
+        });
+        imagePrompt = wynik.text;
+      }
       if (!imagePrompt) throw new Error('pusty prompt');
       await gen.generateOnePoster(p.kategoria, p.tytul, p.styl, imagePrompt, {
         generatePdf: false,

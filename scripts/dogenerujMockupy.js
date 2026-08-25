@@ -22,7 +22,14 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
-const PORT = process.env.PREVIEW_PORT || 3000;
+/**
+ * Port serwera podgladu. Sprawdzamy 3001 przed 3000, bo preview.js przyjmuje
+ * teraz --port i biegnie tam rownie czesto. Bez tego skrypt trafial w martwy
+ * port i zglaszal "Not Found" dla kazdego plakatu — co wyglada jak brak
+ * rekordu, a jest brakiem serwera pod tym adresem.
+ */
+const PORT = process.env.PREVIEW_PORT || null;
+const PORTY_DO_SPRAWDZENIA = PORT ? [PORT] : [3001, 3000];
 const zapis = process.argv.includes('--wykonaj');
 
 function brakujace() {
@@ -32,8 +39,23 @@ function brakujace() {
   );
 }
 
+/** Port ustalony przy pierwszym udanym polaczeniu — potem juz nie szukamy. */
+let znalezionyPort = null;
+
+async function ustalPort() {
+  if (znalezionyPort) return znalezionyPort;
+  for (const p of PORTY_DO_SPRAWDZENIA) {
+    try {
+      const r = await fetch(`http://localhost:${p}/api/posters`, { method: 'HEAD' });
+      if (r.status < 500) { znalezionyPort = p; return p; }
+    } catch (_) { /* port martwy — probujemy nastepny */ }
+  }
+  throw new Error('Nie znalazlem serwera podgladu na portach: ' + PORTY_DO_SPRAWDZENIA.join(', '));
+}
+
 async function generuj(id) {
-  const res = await fetch(`http://localhost:${PORT}/api/posters/${encodeURIComponent(id)}/generate-mockups`, {
+  const port = await ustalPort();
+  const res = await fetch(`http://localhost:${port}/api/posters/${encodeURIComponent(id)}/generate-mockups`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{}',
