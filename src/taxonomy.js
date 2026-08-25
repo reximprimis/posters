@@ -227,7 +227,11 @@ const ROOMS = [
   { key: 'bedroom', name: 'Bedroom', legacyPl: ['Do sypialni'] },
   { key: 'kitchen', name: 'Kitchen', legacyPl: ['Do kuchni'] },
   { key: 'dining-room', name: 'Dining Room', legacyPl: ['Do jadalni'] },
-  { key: 'office', name: 'Home Office', legacyPl: ['Do biura'] },
+  // Klucz MUSI brzmiec 'home-office', bo taki tag czyta strona
+  // (catalog-taxonomy.ts: room:home-office → "Gabinet"). Przy kluczu 'office'
+  // wysylalismy room:office, ktorego strona nie zna — kolekcja Gabinet byla
+  // pusta mimo 203 pasujacych produktow.
+  { key: 'home-office', name: 'Home Office', legacyPl: ['Do biura'] },
   { key: 'study', name: 'Study', legacyPl: ['Do gabinetu'] },
   { key: 'bathroom', name: 'Bathroom', legacyPl: ['Do łazienki', 'Do Ĺ‚azienki'] },
   { key: 'kids-room', name: 'Kids Room', legacyPl: ['Do pokoju dziecka'] },

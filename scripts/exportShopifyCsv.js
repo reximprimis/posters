@@ -164,6 +164,19 @@ const DNI_NOWOSCI = 30;
  *
  * `poster` zostaje bez prefiksu — to typ, nie wymiar.
  */
+/**
+ * Rozmiar do tagu: zawsze krotszy bok pierwszy.
+ * @param {string} klucz np. "70x50" albo "50x70"
+ * @returns {string} np. "50x70"
+ */
+function kanonicznyRozmiar(klucz) {
+  const m = String(klucz || '').match(/^(\d+)\s*[x×]\s*(\d+)$/i);
+  if (!m) return String(klucz || '');
+  const a = parseInt(m[1], 10);
+  const b = parseInt(m[2], 10);
+  return Math.min(a, b) + 'x' + Math.max(a, b);
+}
+
 function zbudujTagi(p, categoryTag, styleTag, rozmiary) {
   const t = ['poster'];
   if (categoryTag) t.push('category:' + categoryTag);
@@ -182,7 +195,11 @@ function zbudujTagi(p, categoryTag, styleTag, rozmiary) {
   for (const c of normalizeColors(p.colors)) t.push('color:' + c);
   for (const o of normalizeOccasions(p.occasions)) t.push('occasion:' + o);
   for (const k of normalizeCollections(p.collections)) t.push('collection:' + k);
-  for (const s of rozmiary) t.push('size:' + s.key);
+  // Tag rozmiaru zawsze w postaci KANONICZNEJ (krotszy bok pierwszy).
+  // Nazwa wariantu slusznie idzie za orientacja ("70 × 50 cm" dla poziomego),
+  // ale tag filtra nie moze — inaczej plakat poziomy dostaje size:70x50,
+  // strona zna tylko size:50x70 i poziome wypadaja z filtra rozmiaru.
+  for (const s of rozmiary) t.push('size:' + kanonicznyRozmiar(s.key));
 
   // Nowosci licza sie z daty powstania — bez tego kolekcje trzeba by
   // odswiezac recznie, a przy kazdym eksporcie i tak przeliczamy wszystko.
