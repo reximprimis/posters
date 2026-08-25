@@ -58,7 +58,10 @@ for (const p of plakaty.filter((x) => x.approvedForPrint)) {
 }
 
 // ── 4. Zestawy: panele i komplet PDF-ow ─────────────────────────────────────
-for (const z of zestawy) {
+// Tylko ZATWIERDZONE: pozycja odrzucona po przegladzie nie idzie do sklepu,
+// wiec brak jej PDF-ow nie jest przeszkoda w eksporcie. Bez tego filtra jeden
+// swiadomie odlozony zestaw blokowal caly eksport.
+for (const z of zestawy.filter((x) => x.approvedForPrint)) {
   const paneli = (z.panels || []).length;
   if (paneli !== 2 && paneli !== 3) {
     dodaj('BLOKUJE', `${z.title}: ${paneli} paneli (dozwolone 2 lub 3)`);
