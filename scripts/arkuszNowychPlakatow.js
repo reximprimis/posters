@@ -17,6 +17,18 @@ const ROOT = path.join(__dirname, '..');
 const norm = (p) => String(p || '').split('\\').join('/');
 const GODZIN = Number(process.argv[2]) || 6;
 
+/**
+ * Estetyka NIE jest zapisywana na rekordzie plakatu — idzie tylko do promptu.
+ * Bez tego legenda mowila o estetyce w naglowku, a drukowala pusta kolumne
+ * (ostatnia kolumna to kolory, ktorych swiezy plakat jeszcze nie ma).
+ * Czytamy ja wiec z promptu, ktory JEST zapisany.
+ */
+const estetykaZPromptu = (p) => {
+  const l = String(p.prompt || '').split('\n').find((x) => /AESTHETIC OVERRIDE/i.test(x));
+  if (!l) return '—';
+  return l.replace(/.*AESTHETIC OVERRIDE\s*[—-]\s*/i, '').replace(/:\s*$/, '').trim().toLowerCase();
+};
+
 const SZER = 260;
 const KOL = 6;
 
@@ -62,6 +74,7 @@ const KOL = 6;
     console.log(
       '    ' + poz + ' ' + String(p.title).padEnd(28) +
       String(p.artStyle).padEnd(14) +
+      estetykaZPromptu(p).padEnd(20) +
       String(p.orientation || 'portrait').padEnd(11) +
       (p.colors || []).join(', ')
     );
