@@ -27,6 +27,7 @@ const { CATEGORY_STYLES } = require('../src/categoryStyles');
 const pools = require('../src/categoryTitlePools');
 const PULE = pools.CATEGORY_TITLE_POOLS || pools;
 const { znajdzRyzykowne } = require('../src/realneObiekty');
+const { ESTETYKI, LUBIA_POZIOM } = require('../src/categoryAesthetics');
 
 const wyjscie = process.argv[2];
 if (!wyjscie || wyjscie.includes(':')) {
@@ -47,6 +48,63 @@ if (!zadania.length) {
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
 const uzyte = new Set(inv.posters.map((p) => String(p.title).trim().toLowerCase()));
 
+
+/**
+ * Uklada pary styl+estetyka tak, zeby zadna nie powtorzyla sie przed
+ * wyczerpaniem siatki, a przy tym KAZDY styl i KAZDA estetyka wchodzily
+ * rownomiernie.
+ *
+ * Dwa podejscia, ktore tu nie wystarczyly:
+ *
+ * 1. Rotacja dwoma indeksami zawodzi, gdy dlugosci list maja wspolny dzielnik:
+ *    przy dwoch stylach i dwoch estetykach wychodzily w kolko te same dwie
+ *    pary, choc dostepne byly cztery.
+ *
+ * 2. Zachlanne "byle inne niz poprzednie" naprawilo powtorki, ale zawezilo
+ *    kategorie do dwoch pierwszych stylow — kuchnia dostawala na przemian
+ *    Photography i Minimalism, a Line art i Illustration nie wchodzily wcale.
+ *
+ * Dlatego wybieramy pare o NAJRZADZIEJ dotad uzytym stylu i estetyce, a dopiero
+ * przy remisie patrzymy, czy rozni sie od poprzedniej.
+ *
+ * Powtorka jest mozliwa dopiero, gdy zamawiamy wiecej plakatow niz siatka ma
+ * pol (retro-vintage: dwa style x dwie estetyki = cztery, a chcemy piec) — i
+ * wtedy jest to ograniczenie kategorii, nie blad rotacji.
+ */
+function ulozPary(style, estetyki) {
+  const siatka = [];
+  for (const st of style) for (const es of estetyki) siatka.push({ styl: st, estetyka: es });
+
+  const ileStyl = new Map();
+  const ileEst = new Map();
+  const out = [];
+  let ostatni = { styl: null, estetyka: null };
+
+  const ocena = (p) => [
+    (ileStyl.get(p.styl) || 0) + (ileEst.get(p.estetyka) || 0),
+    p.styl === ostatni.styl ? 1 : 0,
+    p.estetyka === ostatni.estetyka ? 1 : 0,
+  ];
+  const mniejsza = (a, b) => {
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] < b[i];
+    return false;
+  };
+
+  while (siatka.length) {
+    let najlepszy = 0;
+    let najlepszaOcena = ocena(siatka[0]);
+    for (let i = 1; i < siatka.length; i++) {
+      const o = ocena(siatka[i]);
+      if (mniejsza(o, najlepszaOcena)) { najlepszaOcena = o; najlepszy = i; }
+    }
+    ostatni = siatka.splice(najlepszy, 1)[0];
+    ileStyl.set(ostatni.styl, (ileStyl.get(ostatni.styl) || 0) + 1);
+    ileEst.set(ostatni.estetyka, (ileEst.get(ostatni.estetyka) || 0) + 1);
+    out.push(ostatni);
+  }
+  return out;
+}
+
 const plan = [];
 const raport = [];
 
@@ -63,15 +121,20 @@ for (const z of zadania) {
   const ryzyko = new Set(znajdzRyzykowne(pula).map((r) => r.tytul));
   const wolne = pula.filter((t) => !ryzyko.has(t));
 
+  const estetyki = ESTETYKI[z.kat] || [''];
+  const pary = ulozPary(style, estetyki);
+
   const ile = Math.min(z.ile, wolne.length);
   for (let i = 0; i < ile; i++) {
     plan.push({
       tytul: wolne[i],
       kategoria: z.kat,
-      styl: style[i % style.length],
-      // Co czwarty poziomy — katalog ma ich za malo, a filtr orientacji
-      // dziala od dzisiaj.
-      orientacja: i % 4 === 3 ? 'landscape' : 'portrait',
+      styl: pary[i % pary.length].styl,
+      estetyka: pary[i % pary.length].estetyka,
+      // Poziom co czwarty, ale tylko tam, gdzie ma sens sam z siebie. Poziomy
+      // plakat kuchenny czy nursery to rzadkosc — wymuszanie go psuje kategorie,
+      // zeby poprawic licznik orientacji.
+      orientacja: LUBIA_POZIOM.has(z.kat) && i % 4 === 3 ? 'landscape' : 'portrait',
     });
     uzyte.add(String(wolne[i]).trim().toLowerCase());
   }
