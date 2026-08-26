@@ -28,6 +28,7 @@ const pools = require('../src/categoryTitlePools');
 const PULE = pools.CATEGORY_TITLE_POOLS || pools;
 const { znajdzRyzykowne } = require('../src/realneObiekty');
 const { ESTETYKI, LUBIA_POZIOM } = require('../src/categoryAesthetics');
+const { zbytPodobne } = require('../src/podobneTytuly');
 
 const wyjscie = process.argv[2];
 if (!wyjscie || wyjscie.includes(':')) {
@@ -124,10 +125,21 @@ for (const z of zadania) {
   const estetyki = ESTETYKI[z.kat] || [''];
   const pary = ulozPary(style, estetyki);
 
-  const ile = Math.min(z.ile, wolne.length);
+  // Tytul bliskoznaczny do juz wzietego odpada. Pula podaje tytuly po kolei,
+  // a sasiednie bywaja tym samym plakatem pod dwiema nazwami — bez tego
+  // sports-hobbies dostalo naraz "Volleyball on Sand" i "Volleyball Net Morning".
+  const wziete = [];
+  for (const t of wolne) {
+    if (wziete.length >= z.ile) break;
+    if (wziete.some((w) => zbytPodobne(w, t))) continue;
+    wziete.push(t);
+  }
+  const odsianeJakoBliznieta = Math.min(z.ile, wolne.length) - wziete.length;
+
+  const ile = wziete.length;
   for (let i = 0; i < ile; i++) {
     plan.push({
-      tytul: wolne[i],
+      tytul: wziete[i],
       kategoria: z.kat,
       styl: pary[i % pary.length].styl,
       estetyka: pary[i % pary.length].estetyka,
@@ -136,11 +148,12 @@ for (const z of zadania) {
       // zeby poprawic licznik orientacji.
       orientacja: LUBIA_POZIOM.has(z.kat) && i % 4 === 3 ? 'landscape' : 'portrait',
     });
-    uzyte.add(String(wolne[i]).trim().toLowerCase());
+    uzyte.add(String(wziete[i]).trim().toLowerCase());
   }
   raport.push('   ' + z.kat.padEnd(26) + ile + '/' + z.ile +
     (ile < z.ile ? '  ← pula ma tylko ' + wolne.length : '') +
-    (ryzyko.size ? '  (odsiane ryzykowne: ' + ryzyko.size + ')' : ''));
+    (ryzyko.size ? '  (odsiane ryzykowne: ' + ryzyko.size + ')' : '') +
+    (odsianeJakoBliznieta > 0 ? '  (odsiane blizniacze tytuly: ' + odsianeJakoBliznieta + ')' : ''));
 }
 
 fs.writeFileSync(path.resolve(ROOT, wyjscie), JSON.stringify(plan, null, 2) + '\n', 'utf8');

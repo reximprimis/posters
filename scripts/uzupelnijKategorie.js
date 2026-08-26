@@ -43,33 +43,16 @@ const POMIJANE = new Set(['club-orzel']);
 
 const { ESTETYKI, LUBIA_POZIOM } = require('../src/categoryAesthetics');
 
-const SLOWA_PUSTE = new Set(['the', 'and', 'in', 'on', 'at', 'of', 'a', 'to', 'over', 'with', 'study', 'lines']);
-const znaczace = (t) =>
-  new Set(String(t).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2 && !SLOWA_PUSTE.has(w)));
-
-const SYNONIMY = [
-  ['soccer', 'football'], ['grass', 'turf', 'meadow'], ['mist', 'misty', 'fog', 'haze'],
-  ['peak', 'summit', 'ridge'], ['vinyl', 'record'], ['sea', 'ocean', 'coast'],
-  ['dune', 'dunes', 'sand'], ['neon', 'glow'], ['moon', 'lunar'],
-];
-
-function zbytPodobne(a, b) {
-  const A = znaczace(a);
-  const B = znaczace(b);
-  for (const w of A) if (B.has(w)) return true;
-  for (const g of SYNONIMY) if (g.some((w) => A.has(w)) && g.some((w) => B.has(w))) return true;
-  return false;
-}
+const { zbytPodobne } = require('../src/podobneTytuly');
 
 /**
- * Tytuly, ktore filtr bezpieczenstwa OpenAI odrzuca jako tresc seksualna.
- *
- * Kategoria line-art-figures dotyczy ludzkiej sylwetki, wiec slowa nazywajace
- * cialo wprost ("torso", "reclining", "nude") wchodza w klasyfikator, mimo ze
- * prompt mowi jasno "anatomy suggested, never explicit". Decyduje sam TYTUL.
- * Sprawdzone na produkcji: "Contour Torso Study" odrzucone bledem 400.
+ * Tytuly odrzucane przez filtr bezpieczenstwa dostawcy oraz obiecujace
+ * konkretny istniejacy obiekt i cudze znaki towarowe — wszystko z jednego
+ * modulu. Ten skrypt mial WLASNA, wezsza kopie listy slow (bez
+ * "silhouette of a woman"), wiec przepuszczal tytuly, ktore drugi skrypt
+ * planujacy zatrzymywal. Nie mial tez w ogole blokady znakow towarowych.
  */
-const RYZYKOWNE = /\b(torso|nude|reclining|bare|naked|intimate|lingerie)\b/i;
+const { ocenTytul } = require('../src/realneObiekty');
 
 function zbudujPlan(ile) {
   const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
@@ -103,7 +86,7 @@ function zbudujPlan(ile) {
     const wolne = (PULE[k] || []).filter(
       (t) =>
         !uzyte.has(t.toLowerCase()) &&
-        !RYZYKOWNE.test(t) &&
+        !ocenTytul(t).ryzyko &&
         !s.wziete.some((w) => zbytPodobne(w, t))
     );
     if (!wolne.length) {
