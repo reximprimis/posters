@@ -100,7 +100,12 @@ const CATEGORY_DESCRIPTIONS = {
   'mountains-hiking':
     'alpine peaks, ridgelines, mountain huts, hiking trails, summit panoramas, glaciers, high-altitude weather, boots and rope as quiet props — the mountains of the Alps and northern Europe rather than generic scenery',
   'line-art-figures':
-    'single continuous-line human forms, abstract faces, hands, torsos and couples reduced to contour, one confident unbroken stroke, generous empty space — anatomy suggested, never explicit',
+    // Bez slowa "torsos": trafialo do KAZDEGO promptu w tej kategorii
+    // i filtr bezpieczenstwa dostawcy odrzucal wywolanie (safety_violations
+    // [sexual]) niezaleznie od tytulu — "Shoulder And Neck" odpadl tak samo
+    // jak "Contour Torso Study". Opis mowi teraz o postawie i gescie, co
+    // daje ten sam rysunek bez slownictwa anatomicznego.
+    'single continuous-line human forms, abstract faces, hands, posture and couples reduced to contour, one confident unbroken stroke, generous empty space — figures suggested by gesture, never explicit',
   'bar-cocktails':
     'cocktails, coupe and highball glasses, shakers, citrus twists, ice, spirits bottles without brands, beer and brewing, bar counter still life in warm evening light',
   'zodiac-astrology':

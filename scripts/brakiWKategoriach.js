@@ -30,6 +30,13 @@ const PULE = pools.CATEGORY_TITLE_POOLS || pools;
 const zatwierdzone = inv.posters.filter((p) => p.approvedForPrint && p.kind !== 'set');
 const uzyte = new Set(inv.posters.map((p) => String(p.title).trim().toLowerCase()));
 
+// Do sklepu ida tylko zatwierdzone, ale swiezo wygenerowane tez sie licza —
+// bez tej kolumny raport po duzym przebiegu pokazuje te same liczby co przed
+// nim i wyglada, jakby nic nie powstalo.
+const oczekujace = inv.posters.filter((p) => !p.approvedForPrint && p.kind !== 'set');
+const wgOczekujacych = {};
+for (const p of oczekujace) wgOczekujacych[p.category] = (wgOczekujacych[p.category] || 0) + 1;
+
 const wg = {};
 for (const p of zatwierdzone) wg[p.category] = (wg[p.category] || 0) + 1;
 
@@ -39,18 +46,20 @@ for (const kat of CATEGORIES) {
   const ile = wg[klucz] || 0;
   const pula = PULE[klucz] || [];
   const wolne = pula.filter((t) => !uzyte.has(String(t).trim().toLowerCase())).length;
-  wiersze.push({ klucz, nazwa: kat.name || '', ile, wolne, pula: pula.length, brak: Math.max(0, PROG - ile) });
+  const czeka = wgOczekujacych[klucz] || 0;
+  wiersze.push({ klucz, nazwa: kat.name || '', ile, czeka, wolne, pula: pula.length, brak: Math.max(0, PROG - ile - czeka) });
 }
 
 wiersze.sort((a, b) => a.ile - b.ile);
 
 console.log('prog: ' + PROG + ' plakatow na kategorie');
 console.log('');
-console.log('  MA  BRAK  WOLNYCH  KATEGORIA');
+console.log('  MA  CZEKA  BRAK  WOLNYCH  KATEGORIA');
 for (const w of wiersze) {
   const znacznik = w.brak > 0 ? (w.wolne < w.brak ? '  ← pula za mala' : '') : '';
   console.log(
     '  ' + String(w.ile).padStart(2) +
+    '  ' + String(w.czeka || '-').padStart(5) +
     '  ' + String(w.brak || '-').padStart(4) +
     '  ' + String(w.wolne).padStart(7) +
     '  ' + w.klucz.padEnd(26) + znacznik

@@ -43,12 +43,65 @@ const NIE_NAZWY = new Set([
 ]);
 
 /**
+ * ZNAKI TOWAROWE w tytule produktu.
+ *
+ * To osobne ryzyko od wymyslonych zabytkow: tu nie chodzi o wiernosc, tylko
+ * o prawo do nazwy. Plakat sprzedawany jako "Classic Porsche Profile" uzywa
+ * cudzego znaku w nazwie wlasnego produktu — a sylwetka 911 jest w UE
+ * zarejestrowanym znakiem trojwymiarowym. Przy rynku niemieckim jako glownym
+ * to realne ryzyko, nie teoretyczne.
+ *
+ * Lista obejmuje marki, ktore realnie pojawialy sie w pulach tytulow.
+ */
+const MARKI = [
+  'porsche', 'ferrari', 'lamborghini', 'bugatti', 'maserati', 'bentley',
+  'rolls-royce', 'mercedes', 'bmw', 'audi', 'volkswagen', 'tesla', 'mustang',
+  'harley', 'vespa', 'cadillac', 'corvette', 'jaguar', 'aston martin', 'mini cooper',
+  'polaroid', 'leica', 'nikon', 'canon', 'rolex', 'chanel', 'gucci', 'prada',
+  'louis vuitton', 'nike', 'adidas', 'coca-cola', 'pepsi', 'starbucks', 'ikea',
+];
+
+/**
+ * Slowa, na ktorych filtr bezpieczenstwa dostawcy odrzuca cale wywolanie.
+ *
+ * Nie chodzi o nasze zasady, tylko o to, ze zadanie wraca bledem 400
+ * (safety_violations) i plakat po prostu nie powstaje. "Contour Torso Study"
+ * w line-art-figures odpadl wlasnie tak — a to kategoria, w ktorej takie
+ * tytuly sa naturalne, wiec latwo wpadaja do puli.
+ *
+ * Ta sama lista byla juz w uzupelnijKategorie.js. Trzymanie jej w dwoch
+ * miejscach sprawilo, ze nowy skrypt planujacy jej nie mial i przepuscil
+ * tytul, ktory z gory nie mial szans.
+ */
+const RYZYKOWNE_TRESCI = /\b(torso|nude|reclining|bare|naked|intimate|lingerie|silhouette of a woman)\b/i;
+
+/**
  * @param {string} tytul
  * @returns {{ ryzyko: boolean, obiekt: string|null, nazwa: string|null, powod: string }}
  */
 function ocenTytul(tytul) {
   const t = String(tytul || '').trim();
   const niski = t.toLowerCase();
+
+  const trescOdrzucana = t.match(RYZYKOWNE_TRESCI);
+  if (trescOdrzucana) {
+    return {
+      ryzyko: true,
+      obiekt: 'tresc odrzucana',
+      nazwa: trescOdrzucana[0],
+      powod: `"${trescOdrzucana[0]}" — filtr bezpieczenstwa dostawcy odrzuci wywolanie`,
+    };
+  }
+
+  const marka = MARKI.find((m) => new RegExp('\\b' + m.replace(/[-\s]/g, '[-\\s]') + '\\b', 'i').test(niski));
+  if (marka) {
+    return {
+      ryzyko: true,
+      obiekt: 'znak towarowy',
+      nazwa: marka,
+      powod: `"${marka}" to ZNAK TOWAROWY — nie moze byc w nazwie naszego produktu`,
+    };
+  }
 
   const obiekt = OBIEKTY.find((o) => niski.includes(o)) || null;
   if (!obiekt) {
@@ -90,4 +143,4 @@ function znajdzRyzykowne(tytuly) {
   return out;
 }
 
-module.exports = { OBIEKTY, ocenTytul, znajdzRyzykowne };
+module.exports = { OBIEKTY, MARKI, RYZYKOWNE_TRESCI, ocenTytul, znajdzRyzykowne };

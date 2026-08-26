@@ -29,7 +29,12 @@ for (const p of zatwierdzone) {
   const dir = path.join(ROOT, path.dirname(norm(p.imagePath)));
   if (!fs.existsSync(dir)) continue;
   const pliki = fs.readdirSync(dir);
-  if (pliki.some((f) => f.endsWith('.pdf'))) zPdf++;
+  // Komplet to DWANASCIE PDF-ow: szesc rozmiarow pelnospadowych i szesc
+  // z passe-partout. Sprawdzanie "czy jest jakikolwiek PDF" pokazywalo 100%
+  // w polowie roboty — pipeline robil wtedy dopiero wersje _ramka_, a licznik
+  // sugerowal, ze zostaly same mockupy.
+  const pdf = pliki.filter((f) => f.endsWith('.pdf')).length;
+  if (pdf >= 12) zPdf++;
   if (pliki.some((f) => f.includes('_thumb.'))) zMiniatura++;
 
   // Sciezki mockupow czytamy z kartoteki, a NIE sklejamy z nazwy pliku PNG.
