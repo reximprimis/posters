@@ -27,7 +27,7 @@ const { CATEGORY_STYLES } = require('../src/categoryStyles');
 const pools = require('../src/categoryTitlePools');
 const PULE = pools.CATEGORY_TITLE_POOLS || pools;
 const { znajdzRyzykowne } = require('../src/realneObiekty');
-const { ESTETYKI, LUBIA_POZIOM } = require('../src/categoryAesthetics');
+const { ESTETYKI, LUBIA_POZIOM, estetykaPasujeDoTytulu } = require('../src/categoryAesthetics');
 const { zbytPodobne } = require('../src/podobneTytuly');
 
 const wyjscie = process.argv[2];
@@ -49,6 +49,17 @@ if (!zadania.length) {
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
 const uzyte = new Set(inv.posters.map((p) => String(p.title).trim().toLowerCase()));
 
+
+
+/**
+ * Zwraca estetyke z rotacji, a gdy klocy sie z tytulem — pierwsza z listy
+ * kategorii, ktora nie kloci sie wcale. Gdy zadna nie pasuje, zostawiamy
+ * pusta: brak estetyki jest lepszy niz estetyka zaprzeczajaca tytulowi.
+ */
+function dobierzEstetyke(tytul, zRotacji, dostepne) {
+  if (estetykaPasujeDoTytulu(tytul, zRotacji)) return zRotacji;
+  return dostepne.find((e) => estetykaPasujeDoTytulu(tytul, e)) || '';
+}
 
 /**
  * Uklada pary styl+estetyka tak, zeby zadna nie powtorzyla sie przed
@@ -142,7 +153,10 @@ for (const z of zadania) {
       tytul: wziete[i],
       kategoria: z.kat,
       styl: pary[i % pary.length].styl,
-      estetyka: pary[i % pary.length].estetyka,
+      // Estetyka z rotacji, chyba ze klocy sie z tytulem — wtedy pierwsza
+      // pasujaca z listy kategorii. Rotacja nie zna tytulu, wiec sama by tego
+      // nie zlapala: "Server Rack Blue" z czarno-biala wyszedl bez grama blekitu.
+      estetyka: dobierzEstetyke(wziete[i], pary[i % pary.length].estetyka, estetyki),
       // Poziom co czwarty, ale tylko tam, gdzie ma sens sam z siebie. Poziomy
       // plakat kuchenny czy nursery to rzadkosc — wymuszanie go psuje kategorie,
       // zeby poprawic licznik orientacji.

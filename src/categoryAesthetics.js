@@ -64,4 +64,28 @@ const LUBIA_POZIOM = new Set([
   'mountains-hiking', 'nature-landscapes', 'sea-coast', 'cities-travel', 'space-astronomy',
 ]);
 
-module.exports = { ESTETYKI, LUBIA_POZIOM };
+
+/**
+ * TYTUL OBIECUJACY KOLOR NIE MOZE DOSTAC ESTETYKI CZARNO-BIALEJ.
+ *
+ * Estetyka nadpisuje palete, wiec "Server Rack Blue" z czarno-biala wyszedl
+ * jako weglowy monochrom bez grama blekitu, a "Saxophone Golden Light" bez
+ * grama zlota. Sam plakat jest dobry — sprzeczny jest PRODUKT: klient czyta
+ * tytul, ktory obiecuje kolor, i dostaje jego brak.
+ *
+ * Sprawdzamy tytul, a nie prompt, bo to tytul widzi kupujacy.
+ */
+const KOLOR_W_TYTULE = /\b(blue|golden|gold|red|green|pink|purple|amber|crimson|azure|teal|orange|yellow|silver|copper|rose|violet|indigo|emerald|turquoise|scarlet|lilac|mint|coral|ruby|jade)\b/i;
+
+/**
+ * @param {string} tytul
+ * @param {string} estetyka
+ * @returns {boolean}
+ */
+function estetykaPasujeDoTytulu(tytul, estetyka) {
+  if (estetyka !== 'black-white') return true;
+  return !KOLOR_W_TYTULE.test(String(tytul || ''));
+}
+
+module.exports = { ESTETYKI, LUBIA_POZIOM, KOLOR_W_TYTULE, estetykaPasujeDoTytulu };
+

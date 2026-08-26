@@ -9,12 +9,14 @@
  *
  *   node scripts/przegenerujPlakaty.js "Tytul A" "Tytul B"
  *   node scripts/przegenerujPlakaty.js --wykonaj "Tytul A" "Tytul B"
+ *   node scripts/przegenerujPlakaty.js --wykonaj --estetyka=bauhaus "Tytul A"
  */
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { ESTETYKI, estetykaPasujeDoTytulu } = require('../src/categoryAesthetics');
 
 const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
@@ -25,11 +27,44 @@ const zapis = argumenty.includes('--wykonaj');
 // Podmiana stylu ratuje plakat, gdy wadliwy jest sam styl w tej kategorii,
 // a nie pojedyncze losowanie.
 const wymuszonyStyl = (argumenty.find((a) => a.startsWith('--styl=')) || '').slice(7);
-const tytuly = argumenty.filter((a) => a !== '--wykonaj' && !a.startsWith('--styl='));
+// To samo dla estetyki: gdy plakat jest do przegenerowania WLASNIE z jej
+// powodu (czarno-biala przy tytule obiecujacym kolor), przeniesienie starej
+// odtworzyloby wade.
+const wymuszonaEstetyka = (argumenty.find((a) => a.startsWith('--estetyka=')) || '').slice(11);
+const tytuly = argumenty.filter((a) => a !== '--wykonaj' && !a.startsWith('--styl=') && !a.startsWith('--estetyka='));
 
 if (!tytuly.length) {
   console.error('Podaj tytuly plakatow do przegenerowania.');
   process.exit(1);
+}
+
+
+/**
+ * Estetyka NIE jest polem rekordu — idzie tylko do promptu, wiec przy
+ * przegenerowaniu trzeba ja odczytac z promptu starego plakatu. Bez tego
+ * skrypt "zachowujacy kategorie, styl i orientacje" po cichu gubil czwarta
+ * os i oddawal plakat bez estetyki, czyli z paleta zjezdzajaca w bez i braz.
+ *
+ * Naglowki blokow sa po polsku, wiec mapujemy z powrotem na nazwy kluczy.
+ */
+const NAZWY_PL = {
+  'plakat wystawowy': 'exhibition', 'czarno-biały': 'black-white', 'skandynawski': 'scandi',
+  'mid-century': 'mid-century', 'bauhaus': 'bauhaus', 'japandi': 'japandi', 'boho': 'boho',
+  'wabi-sabi': 'wabi-sabi', 'ukiyo-e': 'ukiyo-e', 'quiet luxury': 'quiet-luxury',
+};
+
+function estetykaStarego(rekord) {
+  const l = String(rekord.prompt || '').split('\n').find((x) => /AESTHETIC OVERRIDE/i.test(x));
+  if (!l) return '';
+  const pl = l.replace(/.*AESTHETIC OVERRIDE\s*[—-]\s*/i, '').replace(/:\s*$/, '').trim().toLowerCase();
+  const klucz = NAZWY_PL[pl] || '';
+  if (!klucz) return '';
+
+  // Jesli stara estetyka klocila sie z tytulem, wlasnie po to przegenerowujemy —
+  // biore pierwsza z listy kategorii, ktora nie kloci sie wcale.
+  if (estetykaPasujeDoTytulu(rekord.title, klucz)) return klucz;
+  const lista = ESTETYKI[rekord.category] || [];
+  return lista.find((e) => estetykaPasujeDoTytulu(rekord.title, e)) || '';
 }
 
 (async () => {
@@ -50,6 +85,7 @@ if (!tytuly.length) {
       tytul,
       kategoria: rekord.category,
       styl: wymuszonyStyl || rekord.artStyle,
+      estetyka: wymuszonaEstetyka || estetykaStarego(rekord),
       orientacja: rekord.orientation || 'portrait',
       katalog: path.join(ROOT, path.dirname(norm(rekord.imagePath))),
       id: rekord.id,
@@ -90,13 +126,16 @@ if (!tytuly.length) {
   for (let i = 0; i < plan.length; i++) {
     const p = plan[i];
     console.log('');
-    console.log(`[${i + 1}/${plan.length}] ${p.kategoria} / ${p.styl} / ${p.orientacja} — "${p.tytul}"`);
+    console.log(`[${i + 1}/${plan.length}] ${p.kategoria} / ${p.styl} / ${p.estetyka || 'bez estetyki'} / ${p.orientacja} — "${p.tytul}"`);
     try {
-      const { text: imagePrompt } = await cg.generateImagePrompt(p.tytul, p.kategoria, p.styl, {});
+      const { text: imagePrompt } = await cg.generateImagePrompt(p.tytul, p.kategoria, p.styl, {
+        aesthetic: p.estetyka || undefined,
+      });
       if (!imagePrompt) throw new Error('pusty prompt');
       await gen.generateOnePoster(p.kategoria, p.tytul, p.styl, imagePrompt, {
         generatePdf: false,
         orientation: p.orientacja,
+        aesthetic: p.estetyka || undefined,
       });
       ok++;
       console.log('   OK');
