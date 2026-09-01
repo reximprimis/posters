@@ -90,7 +90,7 @@ const REGULY = [
     test: (p, t) => /\b(summer|beach|shore|wave|palm|sunset over|coast)\b/.test(t),
   },
   {
-    okazja: 'valentines',
+    okazja: 'valentines-day',
     test: (p, t) => p.category === 'love-romance' && /\b(heart|kiss|love|couple|embrace|two)\b/.test(t),
   },
   {
@@ -102,7 +102,7 @@ const REGULY = [
     test: (p) => p.category === 'kids-nursery',
   },
   {
-    okazja: 'einschulung',
+    okazja: 'first-day-of-school',
     test: (p, t) => /\b(school|pencil|alphabet|abc|crayon)\b/.test(t),
   },
   {
@@ -115,7 +115,7 @@ const REGULY = [
     test: (p) => ['coffee-tea', 'kitchen-food', 'architecture'].includes(p.category),
   },
   {
-    okazja: 'party',
+    okazja: 'party-fun',
     test: (p) => ['bar-cocktails', 'humor-memes', 'gaming-esports'].includes(p.category),
   },
   {

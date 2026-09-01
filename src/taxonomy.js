@@ -134,7 +134,7 @@ const OCCASIONS = [
     promptHint: 'early spring mood: budding branches, eggs, young leaves, pale yellow, soft green and warm white',
   },
   {
-    key: 'valentines',
+    key: 'valentines-day',
     name: "Valentine's Day",
     promptHint: 'romantic mood: hearts used sparingly, dusty rose, deep red and warm cream, soft intimate light',
   },
@@ -164,7 +164,7 @@ const OCCASIONS = [
     promptHint: 'new home mood: keys, doorways, warm interior light, welcoming earthy palette',
   },
   {
-    key: 'party',
+    key: 'party-fun',
     name: 'Party & Fun',
     promptHint: 'party mood: confetti, playful energy, bold saturated palette, cheerful and loud',
   },
@@ -205,7 +205,7 @@ const OCCASIONS = [
     promptHint: 'Bavarian folk festival mood: beer steins, pretzels, gingham blue and white, alpine folk ornament, warm tent light',
   },
   {
-    key: 'einschulung',
+    key: 'first-day-of-school',
     name: 'First Day of School',
     promptHint: 'first school day mood: the German Schultüte cone, satchel, pencils, bright optimistic primary palette, proud and excited',
   },
