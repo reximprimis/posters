@@ -144,10 +144,22 @@ async function policzKolory(abs) {
     return;
   }
 
-  for (const z of zmiany) z.rekord.colors = z.kolory;
-  fs.writeFileSync(INVENTORY, JSON.stringify(inv, null, 2), 'utf8');
+  // Kartoteke wczytujemy PONOWNIE tuz przed zapisem i nanosimy na nia tylko
+  // wlasne pole. Ten skrypt analizuje obrazy wszystkich plakatow, wiec od
+  // odczytu do zapisu mijaja minuty — a w tym czasie kartoteke zmienia serwer
+  // podgladu i skrypt mockupow. Zapisanie calego obiektu sprzed analizy
+  // skasowalo 34 wpisy mockupow, mimo ze pliki lezaly na dysku.
+  //
+  // przypiszOkazje.js robi tak od poczatku; tutaj tego brakowalo.
+  const swieza = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
+  const wgId = new Map(zmiany.map((z) => [z.rekord.id, z.kolory]));
+  let zapisanych = 0;
+  for (const p of swieza.posters) {
+    if (wgId.has(p.id)) { p.colors = wgId.get(p.id); zapisanych++; }
+  }
+  fs.writeFileSync(INVENTORY, JSON.stringify(swieza, null, 2), 'utf8');
   console.log('');
-  console.log('Zapisane.');
+  console.log('Zapisane: ' + zapisanych);
 })().catch((e) => {
   console.error(e);
   process.exit(1);

@@ -1,0 +1,352 @@
+[
+  {
+    "tytul": "Wadden Tide Channels",
+    "kategoria": "sea-coast",
+    "styl": "Photography",
+    "estetyka": "scandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Harbour Crane Silhouette",
+    "kategoria": "sea-coast",
+    "styl": "Minimalism",
+    "estetyka": "wabi-sabi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Ferry Wake Foam",
+    "kategoria": "sea-coast",
+    "styl": "Abstract",
+    "estetyka": "exhibition",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Salt Marsh Evening",
+    "kategoria": "sea-coast",
+    "styl": "Illustration",
+    "estetyka": "japandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Pier Planks Perspective",
+    "kategoria": "sea-coast",
+    "styl": "Photography",
+    "estetyka": "wabi-sabi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Buoy Red Floating",
+    "kategoria": "sea-coast",
+    "styl": "Minimalism",
+    "estetyka": "scandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Sailboat Mast Row",
+    "kategoria": "sea-coast",
+    "styl": "Abstract",
+    "estetyka": "japandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Fishing Net Drying",
+    "kategoria": "sea-coast",
+    "styl": "Illustration",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Heathland Purple Bloom",
+    "kategoria": "nature-landscapes",
+    "styl": "Photography",
+    "estetyka": "wabi-sabi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Vineyard Terraces Slope",
+    "kategoria": "nature-landscapes",
+    "styl": "Minimalism",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Poplar Avenue Long",
+    "kategoria": "nature-landscapes",
+    "styl": "Photography",
+    "estetyka": "scandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Birch Grove Light",
+    "kategoria": "nature-landscapes",
+    "styl": "Minimalism",
+    "estetyka": "japandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Windmill Sail Cross",
+    "kategoria": "nature-landscapes",
+    "styl": "Photography",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Cable Car Ascent",
+    "kategoria": "mountains-hiking",
+    "styl": "Photography",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Chalet Balcony Flowers",
+    "kategoria": "mountains-hiking",
+    "styl": "Minimalism",
+    "estetyka": "scandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Via Ferrata Ladder",
+    "kategoria": "mountains-hiking",
+    "styl": "Illustration",
+    "estetyka": "wabi-sabi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Rock Face Overhang",
+    "kategoria": "mountains-hiking",
+    "styl": "Line art",
+    "estetyka": "black-white",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Ski Lift Pylon",
+    "kategoria": "mountains-hiking",
+    "styl": "Photography",
+    "estetyka": "scandi",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Half Timbered Row",
+    "kategoria": "architecture",
+    "styl": "Photography",
+    "estetyka": "bauhaus",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Cobbled Lane Arch",
+    "kategoria": "architecture",
+    "styl": "Minimalism",
+    "estetyka": "black-white",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Iron Balcony Grid",
+    "kategoria": "architecture",
+    "styl": "Abstract",
+    "estetyka": "exhibition",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Slate Roof Pattern",
+    "kategoria": "architecture",
+    "styl": "Line art",
+    "estetyka": "mid-century",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Brick Gothic Wall",
+    "kategoria": "architecture",
+    "styl": "Photography",
+    "estetyka": "black-white",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Ivy Wall Texture",
+    "kategoria": "botanical",
+    "styl": "Photography",
+    "estetyka": "japandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Moss Stone Detail",
+    "kategoria": "botanical",
+    "styl": "Minimalism",
+    "estetyka": "scandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Hop Vine Climbing",
+    "kategoria": "botanical",
+    "styl": "Line art",
+    "estetyka": "wabi-sabi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Spruce Cone Macro",
+    "kategoria": "botanical",
+    "styl": "Illustration",
+    "estetyka": "black-white",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Advent Lantern Street",
+    "kategoria": "cities-travel",
+    "styl": "Photography",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Vineyard Village Slope",
+    "kategoria": "cities-travel",
+    "styl": "Minimalism",
+    "estetyka": "black-white",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "River Barge Passing",
+    "kategoria": "cities-travel",
+    "styl": "Abstract",
+    "estetyka": "mid-century",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Tram Wires Crossing",
+    "kategoria": "cities-travel",
+    "styl": "Illustration",
+    "estetyka": "bauhaus",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Cyclist Dyke Road",
+    "kategoria": "cities-travel",
+    "styl": "Line art",
+    "estetyka": "exhibition",
+    "orientacja": "landscape"
+  },
+  {
+    "tytul": "Wine Cellar Barrels",
+    "kategoria": "bar-cocktails",
+    "styl": "Photography",
+    "estetyka": "mid-century",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Schnapps Bottle Shelf",
+    "kategoria": "bar-cocktails",
+    "styl": "Illustration",
+    "estetyka": "quiet-luxury",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Cake Fork Plate",
+    "kategoria": "coffee-tea",
+    "styl": "Photography",
+    "estetyka": "japandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Herbal Infusion Jar",
+    "kategoria": "coffee-tea",
+    "styl": "Minimalism",
+    "estetyka": "wabi-sabi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Forest Deer Standing",
+    "kategoria": "animals",
+    "styl": "Photography",
+    "estetyka": "scandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Wild Boar Woodland",
+    "kategoria": "animals",
+    "styl": "Illustration",
+    "estetyka": "japandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Stork Nest Roof",
+    "kategoria": "animals",
+    "styl": "Line art",
+    "estetyka": "black-white",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Hedgehog Leaf Pile",
+    "kategoria": "animals",
+    "styl": "Minimalism",
+    "estetyka": "ukiyo-e",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Alpine Cow Bell Close",
+    "kategoria": "animals",
+    "styl": "Photography",
+    "estetyka": "japandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Bauhaus Grid Study",
+    "kategoria": "abstract",
+    "styl": "Abstract",
+    "estetyka": "bauhaus",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Mustard Pot Ceramic",
+    "kategoria": "kitchen-food",
+    "styl": "Photography",
+    "estetyka": "wabi-sabi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Red Cabbage Half",
+    "kategoria": "kitchen-food",
+    "styl": "Minimalism",
+    "estetyka": "mid-century",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Reading Corner Lamp",
+    "kategoria": "kids-nursery",
+    "styl": "Illustration",
+    "estetyka": "scandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Wooden Toy Train",
+    "kategoria": "kids-nursery",
+    "styl": "Minimalism",
+    "estetyka": "boho",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Sauna Birch Whisk",
+    "kategoria": "wellness-yoga",
+    "styl": "Photography",
+    "estetyka": "japandi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Thermal Bath Steam",
+    "kategoria": "wellness-yoga",
+    "styl": "Minimalism",
+    "estetyka": "wabi-sabi",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Rotary Phone Cream",
+    "kategoria": "retro-vintage",
+    "styl": "Photography",
+    "estetyka": "mid-century",
+    "orientacja": "portrait"
+  },
+  {
+    "tytul": "Dachshund Long Stretch",
+    "kategoria": "humor-memes",
+    "styl": "Illustration",
+    "estetyka": "mid-century",
+    "orientacja": "portrait"
+  }
+]
