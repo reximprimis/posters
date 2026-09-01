@@ -68,21 +68,20 @@ for (let i = 0; i < plan.length; i++) {
 console.log(bledy.length ? 'BLEDY (' + bledy.length + '):' : 'PLAN CZYSTY');
 bledy.forEach((b) => console.log('   ' + b));
 
-// jaka okazje dostanie kazdy tytul
-const REG = {
-  christmas: /\b(christmas|advent|nativity|reindeer|mistletoe)\b/i,
-  halloween: /\b(halloween|pumpkin|ghost|skull|spooky|raven)\b/i,
-  easter: /\b(easter|egg|bunny|rabbit)\b/i,
-  valentines: /\b(heart|kiss|love|couple|embrace|two)\b/i,
-  'new-year': /\b(new year|fireworks|midnight|champagne|toast)\b/i,
-  birthday: /\b(birthday|balloon|candle|celebration)\b/i,
-  wedding: /\b(ring|wedding|vow|anniversary|bouquet)\b/i,
-};
+// Ktora okazje zlapie kazdy tytul. Reguly bierzemy z src/regulyOkazji.js —
+// ta sama lista, ktorej uzywa przypiszOkazje.js. Pierwsza wersja tego pliku
+// miala wlasna kopie i znala szesc okazji z szesnastu, wiec pokazywala
+// "ZADNEJ" przy tytulach, ktore regule spelnialy.
+const { REGULY } = require(ROOT + '/src/regulyOkazji');
 console.log('');
 console.log('OKAZJE, KTORE ZLAPIE KAZDY TYTUL:');
 const licz = {};
 for (const z of plan) {
-  const trafienia = Object.entries(REG).filter(([, re]) => re.test(z.tytul)).map(([k]) => k);
+  const udawany = { category: z.kategoria, title: z.tytul, colors: [] };
+  const tekst = String(z.tytul).toLowerCase();
+  const trafienia = [...new Set(REGULY.filter((r) => {
+    try { return r.test(udawany, tekst, []); } catch (e) { return false; }
+  }).map((r) => r.okazja))];
   trafienia.forEach((k) => { licz[k] = (licz[k] || 0) + 1; });
   console.log('   ' + z.tytul.padEnd(28) + (trafienia.join(', ') || '*** ZADNEJ ***'));
 }
