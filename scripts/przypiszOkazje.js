@@ -90,7 +90,7 @@ const REGULY = [
     test: (p, t) => /\b(summer|beach|shore|wave|palm|sunset over|coast)\b/.test(t),
   },
   {
-    okazja: 'valentines-day',
+    okazja: 'valentines',
     test: (p, t) => p.category === 'love-romance' && /\b(heart|kiss|love|couple|embrace|two)\b/.test(t),
   },
   {
@@ -102,7 +102,7 @@ const REGULY = [
     test: (p) => p.category === 'kids-nursery',
   },
   {
-    okazja: 'first-day-of-school',
+    okazja: 'einschulung',
     test: (p, t) => /\b(school|pencil|alphabet|abc|crayon)\b/.test(t),
   },
   {
@@ -115,7 +115,7 @@ const REGULY = [
     test: (p) => ['coffee-tea', 'kitchen-food', 'architecture'].includes(p.category),
   },
   {
-    okazja: 'party-fun',
+    okazja: 'party',
     test: (p) => ['bar-cocktails', 'humor-memes', 'gaming-esports'].includes(p.category),
   },
   {
@@ -135,6 +135,28 @@ const REGULY = [
     test: (p, t) => /\b(birthday|balloon|candle|celebration)\b/.test(t),
   },
 ];
+
+/**
+ * KLUCZ SPOZA TAKSONOMII MA ZATRZYMAC SKRYPT, A NIE PRZEJSC.
+ *
+ * Trzy reguly pisaly klucze, ktorych taksonomia nie zna: "valentines-day"
+ * zamiast "valentines", "party-fun" zamiast "party", "first-day-of-school"
+ * zamiast "einschulung". normalizeOccasions() takie klucze po cichu WYRZUCA,
+ * wiec 43 plakaty mialy w kartotece okazje, ktora nigdy nie dotarla do
+ * Shopify — a pozycje "Walentynki" i "Impreza" w menu sklepu byly puste,
+ * mimo ze towar istnial. Nic nie zglaszalo bledu na zadnym etapie.
+ *
+ * Sprawdzenie przy starcie, bo pomylka w kluczu jest literowka, a jej skutek
+ * to niewidoczna pusta kolekcja.
+ */
+const { isKnownOccasion } = require('../src/taxonomy');
+const zleKlucze = [...new Set(REGULY.map((r) => r.okazja).filter((k) => !isKnownOccasion(k)))];
+if (zleKlucze.length) {
+  console.error('KLUCZE SPOZA TAKSONOMII: ' + zleKlucze.join(', '));
+  console.error('normalizeOccasions() wyrzuci je po cichu — popraw w REGULY albo dopisz do taxonomy.js');
+  process.exit(1);
+}
+
 
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
 const zatwierdzone = inv.posters.filter((p) => p.approvedForPrint);
