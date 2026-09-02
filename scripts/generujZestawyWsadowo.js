@@ -74,6 +74,14 @@ const TRYPTYKI = [
   { tytul: 'Cranes Over Still Water', kategoria: 'animals', styl: 'Illustration' },
   { tytul: 'Horizontal Colour Fields', kategoria: 'abstract', styl: 'Abstract' },
   { tytul: 'Sand Ripple Sequence', kategoria: 'abstract', styl: 'Minimalism' },
+  // DRUGA TURA — kategorie o kompozycji ciaglej, ktore mialy po dwa-trzy
+  // zestawy przy kilkunastu plakatach. Motywy dobrane pod udokumentowane
+  // wyzej wpadki: kazdy ma tresc WEDRUJACA przez panele, wiec srodkowy panel
+  // nie wyjdzie pusty ani blizniaczy wobec skrajnych.
+  { tytul: 'Waterfront Warehouses Stretch', kategoria: 'cities-travel', styl: 'Photography' },
+  { tytul: 'Solar System Ribbon', kategoria: 'space-astronomy', styl: 'Illustration' },
+  { tytul: 'Portico Column Rhythm', kategoria: 'architecture', styl: 'Photography' },
+  { tytul: 'Gradient Sweep Long', kategoria: 'abstract', styl: 'Abstract' },
 ];
 
 /**
@@ -107,6 +115,14 @@ const DYPTYKI = [
   { tytul: 'Deer Pair in Mist', kategoria: 'animals', styl: 'Photography' },
   { tytul: 'Flight of Two Birds', kategoria: 'animals', styl: 'Line art' },
   { tytul: 'Sleeping Fox Cubs', kategoria: 'kids-nursery', styl: 'Illustration' },
+  // DRUGA TURA — dyptyki do tych samych kategorii. Kazdy ma dwa bieguny albo
+  // rytm, a nie jeden srodek ciezkosci; swiadomie odrzucilem "Mirrored Curve
+  // Duo", bo motyw lustrzany to dokladnie ta wada, przez ktora odpadly
+  // "Two Tone Horizon" i "Two Peaks Facing".
+  { tytul: 'Old Town Gables Panorama', kategoria: 'cities-travel', styl: 'Illustration' },
+  { tytul: 'Comet Trail Pair', kategoria: 'space-astronomy', styl: 'Abstract' },
+  { tytul: 'Window Bay Repetition', kategoria: 'architecture', styl: 'Minimalism' },
+  { tytul: 'Diagonal Split Tones', kategoria: 'abstract', styl: 'Minimalism' },
 ];
 
 /**
@@ -133,6 +149,12 @@ const ODRZUCONE = new Set([
   'Two Peaks Facing',
   'Wisteria Along the Wall',
   'Milky Way Arch',
+  // Powtarzalny element architektoniczny przecięty na dwa panele daje dwie
+  // identyczne polowy — motyw rytmiczny NIE MA KIERUNKU, wiec nie ma czego
+  // przenosic miedzy panelami. Obie pozycje wyszly tak samo i obie odpadaja.
+  // 'Window Light Pair' wrocilo, bo skasowano je kiedys bez dopisania tutaj.
+  'Window Light Pair',
+  'Window Bay Repetition',
 ]);
 
 const PLAN = [];

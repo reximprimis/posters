@@ -275,6 +275,14 @@ async function generateSet({
     panelCount: plan.panelCount,
     category,
     artStyle: style,
+    // ORIENTACJA POJEDYNCZEGO PANELU, nie panoramy.
+    //
+    // Kupujacy wiesza pionowe panele obok siebie, wiec dla filtra orientacji
+    // na stronie zestaw jest pionowy — mimo ze zrodlowa panorama jest szeroka.
+    // Wszystkie 47 wczesniejszych zestawow ma tu "portrait"; nowe rekordy tego
+    // pola NIE MIALY, wiec wypadaly z filtra orientacji po cichu. Audyt
+    // zglaszal to jako DROBNE, a eksport szedl bez tagu i nic nie protestowalo.
+    orientation: 'portrait',
     aesthetic: aestheticInfo ? aestheticInfo.id : '',
     title,
     // imagePath wskazuje panorame: to tozsamosc rekordu dla dedupe i unikalnosci handli.
