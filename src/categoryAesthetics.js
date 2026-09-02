@@ -66,16 +66,35 @@ const LUBIA_POZIOM = new Set([
 
 
 /**
- * TYTUL OBIECUJACY KOLOR NIE MOZE DOSTAC ESTETYKI CZARNO-BIALEJ.
+ * TYTUL OBIECUJACY KOLOR ALBO MATERIAL NIE MOZE DOSTAC ESTETYKI CZARNO-BIALEJ.
  *
- * Estetyka nadpisuje palete, wiec "Server Rack Blue" z czarno-biala wyszedl
- * jako weglowy monochrom bez grama blekitu, a "Saxophone Golden Light" bez
- * grama zlota. Sam plakat jest dobry — sprzeczny jest PRODUKT: klient czyta
- * tytul, ktory obiecuje kolor, i dostaje jego brak.
+ * Estetyka nadpisuje palete, wiec "Server Rack Blue" wyszedl weglowym
+ * monochromem bez grama blekitu, a "Saxophone Golden Light" bez grama zlota.
+ * Sam plakat bywa dobry — sprzeczny jest PRODUKT: klient czyta tytul, ktory
+ * obiecuje kolor, i dostaje jego brak.
  *
- * Sprawdzamy tytul, a nie prompt, bo to tytul widzi kupujacy.
+ * DRUGA LISTA, MATERIALY, powstala po dwoch kolejnych wpadkach tego samego
+ * rodzaju, ktorych pierwsza wersja blokady nie lapala. "Slate Roof Pattern"
+ * dostal pomaranczowo-zielone dachowki, bo lupek niesie kolor dopiero przez
+ * material. "Wooden Dashboard Dials" wyszedl ciemnym metalem — drewna nie
+ * bylo wcale. Nazwa materialu jest dla kupujacego taka sama obietnica jak
+ * nazwa koloru, wiec traktujemy ja tak samo.
+ *
+ * Sprawdzamy TYTUL, a nie prompt, bo to tytul widzi kupujacy.
  */
 const KOLOR_W_TYTULE = /\b(blue|golden|gold|red|green|pink|purple|amber|crimson|azure|teal|orange|yellow|silver|copper|rose|violet|indigo|emerald|turquoise|scarlet|lilac|mint|coral|ruby|jade)\b/i;
+
+/**
+ * Materialy, ktore niosa CIEPLY kolor — czarno-biala im go odbiera.
+ *
+ * Nie ma tu lupka, marmuru, stali ani szkla: one sa szare albo bezbarwne
+ * z natury, wiec w monochromie wygladaja wiarygodnie. "Slate Roof Pattern"
+ * po przegenerowaniu na czarno-biala wyszedl poprawnie, bo lupek JEST szary —
+ * jego pierwsza wpadka miala inna przyczyne: estetyka mid-century narzucila
+ * cieply pomaranczowo-zielony kafel materialowi, ktory taki nie jest.
+ * Tego ta blokada nie lapie i nie udaje, ze lapie — wychwycil to przeglad.
+ */
+const MATERIAL_W_TYTULE = /\b(wooden|wood|oak|walnut|teak|mahogany|brass|bronze|terracotta|rust|rusted|leather)\b/i;
 
 /**
  * @param {string} tytul
@@ -84,8 +103,9 @@ const KOLOR_W_TYTULE = /\b(blue|golden|gold|red|green|pink|purple|amber|crimson|
  */
 function estetykaPasujeDoTytulu(tytul, estetyka) {
   if (estetyka !== 'black-white') return true;
-  return !KOLOR_W_TYTULE.test(String(tytul || ''));
+  const t = String(tytul || '');
+  return !KOLOR_W_TYTULE.test(t) && !MATERIAL_W_TYTULE.test(t);
 }
 
-module.exports = { ESTETYKI, LUBIA_POZIOM, KOLOR_W_TYTULE, estetykaPasujeDoTytulu };
+module.exports = { ESTETYKI, LUBIA_POZIOM, KOLOR_W_TYTULE, MATERIAL_W_TYTULE, estetykaPasujeDoTytulu };
 
