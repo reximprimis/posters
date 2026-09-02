@@ -193,7 +193,6 @@ const CATEGORY_TITLE_POOLS = {
     'Dragonfly Wing Study',
     'Luna Moth Spread',
     'Honeybee Anatomy',
-    'Goldfinch Perched Plate',
     'Azure Halcyon Study',
     'Wren Nest Eggs',
     'Snail Shell Spiral',
@@ -208,6 +207,7 @@ const CATEGORY_TITLE_POOLS = {
     'Woodlouse Segments',
     'Pipistrelle Bat Plate',
     'Mole Fore Paw',
+    'Goldfinch on Thistle Head',
   ],
   'cities-travel': [
     // Ze scalonych kategorii: miejsca z "Japonii" oraz cala pula podrozna.

@@ -43,15 +43,17 @@ if (!tytuly.length) {
  * Estetyka NIE jest polem rekordu — idzie tylko do promptu, wiec przy
  * przegenerowaniu trzeba ja odczytac z promptu starego plakatu. Bez tego
  * skrypt "zachowujacy kategorie, styl i orientacje" po cichu gubil czwarta
- * os i oddawal plakat bez estetyki, czyli z paleta zjezdzajaca w bez i braz.
+ * os i oddawal plakat bez estetyki.
  *
- * Naglowki blokow sa po polsku, wiec mapujemy z powrotem na nazwy kluczy.
+ * Naglowki blokow sa PO POLSKU, wiec mapujemy z powrotem na klucze — ale
+ * mapa BUDUJE SIE Z src/aesthetics.js, a nie jest przepisana recznie.
+ * Recznie przepisana zdazyla juz zawiesc: po dodaniu estetyki
+ * "rycina przyrodnicza" nie znala jej etykiety, wiec przegenerowanie
+ * pierwszej rytiny oddalo plakat CALKIEM bez estetyki. Kazda nowa estetyka
+ * lapie sie teraz sama.
  */
-const NAZWY_PL = {
-  'plakat wystawowy': 'exhibition', 'czarno-biały': 'black-white', 'skandynawski': 'scandi',
-  'mid-century': 'mid-century', 'bauhaus': 'bauhaus', 'japandi': 'japandi', 'boho': 'boho',
-  'wabi-sabi': 'wabi-sabi', 'ukiyo-e': 'ukiyo-e', 'quiet luxury': 'quiet-luxury',
-};
+const { AESTHETICS } = require('../src/aesthetics');
+const NAZWY_PL = Object.fromEntries(AESTHETICS.map((a) => [String(a.label).toLowerCase(), a.id]));
 
 function estetykaStarego(rekord) {
   const l = String(rekord.prompt || '').split('\n').find((x) => /AESTHETIC OVERRIDE/i.test(x));
