@@ -56,6 +56,10 @@ const SLOWA_PUSTE = new Set([
   'group', 'set', 'collection',
   // podpora, na ktorej siedzi temat — nie sam temat
   'branch', 'perch', 'bough',
+  // czesc ciala i element, ktory ma prawie kazdy okaz; tematem jest GATUNEK
+  'nest', 'shell', 'wing', 'wings', 'feather', 'seed', 'pod',
+  // slownik ryciny przyrodniczej — te slowa nosi kazdy tytul w tej estetyce
+  'specimen', 'plate', 'herbarium', 'section', 'anatomy', 'variety',
 ]);
 
 const znaczace = (t) =>

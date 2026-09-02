@@ -111,6 +111,32 @@ const AESTHETICS = [
     texture: 'delicate watercolor bleed, fine paper tooth, gentle tonal gradation',
     avoid: 'loud color, heavy contrast, visible branding, decorative excess, harsh lines',
   },
+  // Dopisana po researchu rynku niemieckiego (wrzesien 2026). Siatki
+  // bestsellerow niemieckich sklepow — Posteryard, bimago, Artfilia,
+  // VintagePosteria — sa pelne antycznych plansz przyrodniczych: ptaki,
+  // motyle, grzyby, zielniki. Nasze retro-vintage to PRZEDMIOTY (kaseta,
+  // maszyna do pisania), czyli zupelnie co innego. Bez tej estetyki nie da
+  // sie tego zrobic samym doborem tytulow.
+  //
+  // Kluczowe dla wiarygodnosci: rycina, nie fotografia. Kreskowanie i
+  // akwarelowe laserunki na papierze czerpanym, jeden okaz na srodku,
+  // duzo swiatla dookola. Podpis gatunku jest czescia gatunku plakatu, ale
+  // NIE moze przejsc w napis dekoracyjny — stad osobne zdanie o male,
+  // drukowanej etykiecie i zakaz naglowkow.
+  {
+    id: 'vintage-plate',
+    label: 'Rycina przyrodnicza',
+    description: 'Antyczna plansza z atlasu: pojedynczy okaz, kreskowanie, kremowy papier, podpis gatunku.',
+    badge: 'TOP 2026',
+    palette:
+      'aged cream and ivory paper ground, muted botanical greens, faded sepia and umber, soft ochre, dusty rose, restrained indigo — as if pigments had faded for a century',
+    mood:
+      'nineteenth-century scientific plate from a natural history atlas, one specimen centred with generous empty margins, patient observational accuracy, engraved line work with delicate watercolour washes over it, calm and studious',
+    texture:
+      'laid paper with visible fibre and gentle foxing, fine engraved hatching and stipple, matte watercolour bleed, slightly uneven antique printing',
+    avoid:
+      'photographic realism, digital gloss, modern flat vector shapes, neon or saturated colour, dramatic lighting, decorative headings or large display lettering, busy backgrounds, multiple competing specimens',
+  },
   {
     id: 'mid-century',
     label: 'Mid-century',
