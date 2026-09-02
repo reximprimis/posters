@@ -96,7 +96,27 @@ function main() {
   }
 
   if (reconcileSummary.changed > 0) {
-    fs.writeFileSync(inventoryPath, JSON.stringify(inv, null, 2), 'utf8');
+    // Kartoteke wczytujemy PONOWNIE tuz przed zapisem i nanosimy na nia TYLKO
+    // wlasne pola. Ten skrypt kopiuje miniatury i mockupy setek produktow, wiec
+    // od odczytu do zapisu mijaja minuty — a zapisanie calego obiektu sprzed
+    // kopiowania kasuje wszystko, co w miedzyczasie dopisaly inne skrypty.
+    //
+    // Zdarzylo sie naprawde: 40 swiezych plakatow stracilo wpisy mockupow, przez
+    // co poszly do CSV z DWOMA obrazami zamiast czterech. Audyt tego nie zglosil,
+    // bo pliki na dysku byly — brakowalo wylacznie wskaznika w kartotece.
+    //
+    // Ta sama poprawka co w ustawKolory.js; wzorzec dotyczy kazdego skryptu,
+    // ktory czyta wczesnie i pisze pozno.
+    const swieza = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+    const wgId = new Map(posters.map((p) => [p.id, p]));
+    for (const p of swieza.posters || []) {
+      const zrodlo = wgId.get(p.id);
+      if (!zrodlo) continue;
+      p.shopifyState = zrodlo.shopifyState;
+      p.shopifyStateUpdatedAt = zrodlo.shopifyStateUpdatedAt;
+      p.shopifyIssues = zrodlo.shopifyIssues;
+    }
+    fs.writeFileSync(inventoryPath, JSON.stringify(swieza, null, 2), 'utf8');
   }
 
   console.log(`Master thumbs copied: ${masterCopied}`);
