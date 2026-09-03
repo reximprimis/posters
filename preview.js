@@ -181,8 +181,32 @@ async function autoFillMissingShopListingsByImageKeys(imageKeys) {
       }
     }
     if (changed > 0) {
-      fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
-      console.log(`auto listing generated for ${changed} approved posters`);
+      // ZNALEZIONY SPRAWCA ZNIKAJACYCH WPISOW MOCKUPOW.
+      //
+      // Ta funkcja czyta kartoteke, po czym dla KAZDEGO nowego plakatu bez
+      // opisu wola model jezykowy. Przy czterdziestu nowych to kilkanascie
+      // minut — a zapisywala potem caly obiekt sprzed tych wywolan, kasujac
+      // wszystko, co w miedzyczasie dopisal skrypt mockupow.
+      //
+      // Objaw byl mylacy, bo pliki mockupow zostawaly na dysku: audyt czysty,
+      // licznik 100%, a CSV wychodzil z dwoma obrazami zamiast czterech.
+      // Uruchamia sie sama po pojawieniu sie nowych plakatow, wiec kasowala
+      // dokladnie te wpisy, ktore wlasnie powstaly.
+      //
+      // Czytamy ponownie tuz przed zapisem i nanosimy TYLKO opis.
+      const swieza = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+      const opisy = new Map(
+        inventory.posters.filter((p) => p.shopDescription).map((p) => [p.id, p.shopDescription])
+      );
+      let zapisanych = 0;
+      for (const p of swieza.posters || []) {
+        if (!opisy.has(p.id)) continue;
+        if (typeof p.shopDescription === 'string' && p.shopDescription.trim()) continue;
+        p.shopDescription = opisy.get(p.id);
+        zapisanych += 1;
+      }
+      fs.writeFileSync(INVENTORY_PATH, JSON.stringify(swieza, null, 2), 'utf-8');
+      console.log(`auto listing generated for ${zapisanych} approved posters`);
     }
   } catch (err) {
     console.warn('autoFillMissingShopListingsByImageKeys failed:', err && err.message ? err.message : err);
