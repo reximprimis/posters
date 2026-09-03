@@ -21,7 +21,11 @@ const norm = (p) => String(p || '').split('\\').join('/');
 const jest = (rel) => rel && fs.existsSync(path.join(ROOT, norm(rel)));
 
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
-const plakaty = inv.posters.filter((p) => p.kind !== 'set');
+// Galerie sa osobnym rodzajem produktu — nie maja wlasnych PDF-ow ani mockupow,
+// wiec petla plakatow musi je pomijac, inaczej audyt blokuje eksport na braku,
+// ktorego z zalozenia nie bedzie.
+const plakaty = inv.posters.filter((p) => p.kind !== 'set' && p.kind !== 'gallery');
+const galerie = inv.posters.filter((p) => p.kind === 'gallery');
 const zestawy = inv.posters.filter((p) => p.kind === 'set');
 
 const problemy = [];
@@ -57,6 +61,29 @@ for (const p of plakaty.filter((x) => x.approvedForPrint)) {
   else if (!jest(m.frame) || !jest(m.interior)) dodaj('BLOKUJE', `${p.title}: mockupy w kartotece, brak plikow`);
 }
 
+
+// ── 3b. Zestawy scienne: skladniki i pliki do druku ─────────────────────────
+//
+// Galeria NIE MA wlasnych PDF-ow ani mockupow i to jest poprawne — sklada sie
+// z gotowych plakatow. Sprawdzamy wiec co innego: czy kazdy skladnik nadal
+// istnieje, jest zatwierdzony i ma PDF w zadanym rozmiarze, oraz czy kopie
+// leza w podkatalogu druk/. Zestaw, ktorego nie da sie wydrukowac, sprzeda sie
+// tak samo jak kazdy inny — i dopiero wtedy okaze sie, ze nie ma czego wyslac.
+for (const g of galerie.filter((x) => x.approvedForPrint)) {
+  if (!jest(g.imagePathThumb)) dodaj('BLOKUJE', `${g.title}: brak podgladu sciany`);
+  const katalog = path.dirname(norm(g.imagePath));
+  for (const it of g.items || []) {
+    const skladnik = inv.posters.find((p) => p.title === it.title && p.kind !== 'set' && p.kind !== 'gallery');
+    if (!skladnik) { dodaj('BLOKUJE', `${g.title}: skladnik "${it.title}" zniknal z kartoteki`); continue; }
+    if (!skladnik.approvedForPrint) dodaj('BLOKUJE', `${g.title}: skladnik "${it.title}" nie jest zatwierdzony`);
+    if (!jest(it.pdf)) dodaj('BLOKUJE', `${g.title}: brak PDF skladnika ${it.size} "${it.title}"`);
+  }
+  const druk = path.join(ROOT, katalog, 'druk');
+  const ilePlikow = fs.existsSync(druk) ? fs.readdirSync(druk).filter((f) => f.endsWith('.pdf')).length : 0;
+  if (ilePlikow < (g.items || []).length) {
+    dodaj('WAZNE', `${g.title}: w druk/ jest ${ilePlikow} PDF-ow, a pozycji ${(g.items || []).length}`);
+  }
+}
 // ── 4. Zestawy: panele i komplet PDF-ow ─────────────────────────────────────
 // Tylko ZATWIERDZONE: pozycja odrzucona po przegladzie nie idzie do sklepu,
 // wiec brak jej PDF-ow nie jest przeszkoda w eksporcie. Bez tego filtra jeden
