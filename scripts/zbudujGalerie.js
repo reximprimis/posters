@@ -34,6 +34,7 @@ const fileExists = (p) => !!p && fs.existsSync(abs(p));
 const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieScienne');
 const { toPosterHandle } = require('../src/posterTitle');
 const { buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
+const { buildGalleryDescription, findForbiddenTerms } = require('../src/galleryDescription');
 
 const plikDef = process.argv[2];
 const zapis = process.argv.includes('--wykonaj');
@@ -67,6 +68,23 @@ console.log('');
 pozycje.forEach((z) => console.log('   ' + z.rozmiar.padEnd(8) + z.tytul.padEnd(30) + z.poster.category));
 console.log('');
 console.log('   osobno: ' + cenaOsobno(def.pozycje) + ' zl   ->   zestaw: ' + cenaZestawu(def.pozycje) + ' zl');
+
+// Opis budujemy TERAZ, nie na eksporcie — tak samo jak dyptyk/tryptyk
+// (scripts/generateSet.js: buildSetDescription w momencie tworzenia rekordu).
+// Jedno zrodlo prawdy: cena, sztuki i rozmiary trafiaja do tekstu raz i nie
+// licza sie osobno przy kazdym eksporcie CSV.
+const opis = buildGalleryDescription({
+  opisMotywu: def.opis,
+  pieceCount: pozycje.length,
+  sizes: pozycje.map((p) => p.rozmiar),
+});
+const naruszenia = findForbiddenTerms(opis);
+if (naruszenia.length) {
+  console.log('');
+  console.log('OPIS ZAWIERA ZAKAZANE OKRESLENIA: ' + naruszenia.join(', '));
+  console.log('Popraw definicje.opis i uruchom ponownie.');
+  process.exit(1);
+}
 
 if (!zapis) { console.log(''); console.log('To byla proba. Dodaj --wykonaj.'); process.exit(0); }
 
@@ -127,7 +145,7 @@ const items = pozycje.map((z) => {
     createdAt: new Date().toISOString(),
     status: 'ready',
     approvedForPrint: false,
-    shopDescription: def.opis || '',
+    shopDescription: opis,
   });
   fs.writeFileSync(INVENTORY, JSON.stringify(swieza, null, 2) + '\n', 'utf8');
 

@@ -832,7 +832,6 @@ async function main() {
     if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw scienny "${g.title}" — brak ceny, pomijam.`); continue; }
 
     const sztuk = g.pieceCount || (g.items || []).length;
-    const rozmiary = [...new Set((g.items || []).map((i) => i.size))].join(', ');
     const title = humanizePosterTitle(g.title);
     const tags = [
       'gallery-set',
@@ -840,10 +839,12 @@ async function main() {
       g.wallColor ? 'wall:' + slugifyTag(g.wallColor) : '',
       zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
     ].filter(Boolean).join(', ');
+    // Opis jest UPIECZONY w rekordzie przy budowie zestawu (buildGalleryDescription
+    // w zbudujGalerie.js) — ta sama zasada co przy dyptyku/tryptyku. Tu tylko
+    // dopisujemy oszczednosc w zlotowkach, bo ceny licza sie na eksporcie.
     const opis = htmlDescription(
       String(g.shopDescription || '') +
-      '\n\nW zestawie ' + sztuk + ' plakaty w rozmiarach ' + rozmiary + '.' +
-      (g.priceSeparate ? ' Kupowane osobno kosztowalyby ' + g.priceSeparate + ' zl.' : '')
+      (g.priceSeparate ? '\n\nKupowane osobno kosztowalyby ' + g.priceSeparate + ' zl.' : '')
     );
 
     const row = {
