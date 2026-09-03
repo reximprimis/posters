@@ -69,17 +69,31 @@ for (let i = 1; i < w.length; i++) {
 
 const chude = [];
 for (const p of inv.posters) {
-  // Galeria ma JEDNO zdjecie — podglad sciany — i to jest komplet.
   if (!p.approvedForPrint || p.kind === 'set' || p.kind === 'gallery') continue;
   const n = (obrazy.get(toPosterHandle(p.title)) || new Set()).size;
   if (n < 4) chude.push(p.title + '  (' + n + ' obrazow)');
 }
 
-if (chude.length) {
-  console.log('NIEPELNE GALERIE: ' + chude.length);
-  chude.slice(0, 15).forEach((t) => console.log('   ' + t));
+// Zestaw scienny ma DWA zdjecia produktu — packshot i salon — nie cztery
+// jak plakat (bez wariantu z ramka, bez osobnych mockupow do liczenia).
+const chudeGalerie = [];
+for (const g of inv.posters) {
+  if (!g.approvedForPrint || g.kind !== 'gallery') continue;
+  const n = (obrazy.get(toPosterHandle(g.title)) || new Set()).size;
+  if (n < 2) chudeGalerie.push(g.title + '  (' + n + ' obrazow)');
+}
+
+if (chude.length || chudeGalerie.length) {
+  if (chude.length) {
+    console.log('NIEPELNE GALERIE PLAKATOW: ' + chude.length);
+    chude.slice(0, 15).forEach((t) => console.log('   ' + t));
+  }
+  if (chudeGalerie.length) {
+    console.log('NIEPELNE ZESTAWY SCIENNE (brak packshotu lub salonu): ' + chudeGalerie.length);
+    chudeGalerie.slice(0, 15).forEach((t) => console.log('   ' + t));
+  }
   console.log('');
   console.log('Uruchom naprawWpisyMockupow.js --wykonaj i wyeksportuj ponownie.');
   process.exit(1);
 }
-console.log('wszystkie galerie pelne (4 obrazy na plakat)');
+console.log('wszystkie galerie pelne (plakaty: 4 obrazy, zestawy scienne: 2 obrazy)');

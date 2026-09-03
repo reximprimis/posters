@@ -818,8 +818,16 @@ async function main() {
     if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
     if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
 
-    const thumbRel = g.imagePathThumb && fileExists(g.imagePathThumb) ? normalizeRelPath(g.imagePathThumb) : '';
-    if (!thumbRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak podgladu, pomijam.`); continue; }
+    // Dwa zdjecia produktu, jak przy kazdym innym produkcie w katalogu:
+    // packshot (oprawione elementy na czystym tle) i salon (ta sama
+    // kompozycja na scianie prawdziwego wnetrza). Miniatura to tylko
+    // pomniejszony packshot — nie liczy sie jako osobne zdjecie produktu.
+    const mk = g.mockups || {};
+    const packshotRel = mk.frame && fileExists(mk.frame) ? normalizeRelPath(mk.frame)
+      : (g.imagePath && fileExists(g.imagePath) ? normalizeRelPath(g.imagePath) : '');
+    const salonRel = mk.interior && fileExists(mk.interior) ? normalizeRelPath(mk.interior) : '';
+    if (!packshotRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak packshotu, pomijam.`); continue; }
+    const ZDJECIA_GALERII = [toPublicUrl(packshotRel), salonRel ? toPublicUrl(salonRel) : ''].filter(Boolean);
     const cena = Number(g.price);
     if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw scienny "${g.title}" — brak ceny, pomijam.`); continue; }
 
@@ -865,7 +873,7 @@ async function main() {
       'Unit Price Total Measure': '', 'Unit Price Total Measure Unit': '',
       'Unit Price Base Measure': '', 'Unit Price Base Measure Unit': '',
       'Variant Barcode': '',
-      'Image Src': toPublicUrl(thumbRel),
+      'Image Src': ZDJECIA_GALERII[0],
       'Image Position': '1',
       'Image Alt Text': title,
       'Gift Card': 'false',
@@ -881,13 +889,22 @@ async function main() {
       'Orientacja (product.metafields.shopify.orientation)': '',
       'Kształt (product.metafields.shopify.shape)': '',
       'Motyw (product.metafields.shopify.theme)': '',
-      'Variant Image': toPublicUrl(thumbRel),
+      'Variant Image': ZDJECIA_GALERII[0],
       'Variant Weight Unit': 'kg',
       'Variant Tax Code': '',
       'Cost per item': '',
       Status: g.approvedForPrint ? 'active' : 'draft',
     };
     lines.push(makeRow(headers, row));
+
+    // Produkt ma JEDEN wariant, wiec drugie i kolejne zdjecie nie ma na czym
+    // "jechac" jak przy plakatach (tam kazdy rozmiar niesie kolejny obraz).
+    // Doklejamy je jako osobne wiersze samego zdjecia — standardowa technika
+    // importu Shopify: te same Handle, reszta kolumn pusta.
+    for (let i = 1; i < ZDJECIA_GALERII.length; i++) {
+      lines.push(makeRow(headers, { Handle: handle, 'Image Src': ZDJECIA_GALERII[i], 'Image Position': String(i + 1) }));
+    }
+
     exportedHandles.add(handle);
     galeriiWyeksportowanych += 1;
   }

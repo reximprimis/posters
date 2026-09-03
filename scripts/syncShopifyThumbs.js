@@ -77,14 +77,16 @@ function main() {
   //
   // Osobna petla z tego samego powodu co wyzej: nie maja mastera ani wariantu
   // z ramka, wiec evaluatePosterShopifyState odrzucilby je jako "not ready".
-  // Ich jedyne zdjecie to podglad sciany, ale to ono JEST produktem — bez
-  // skopiowania do shopify_thumbs karta w sklepie byla by pusta.
+  // Dwa zdjecia produktu — packshot i salon — sa w mockups.frame/interior,
+  // tak jak przy kazdym innym produkcie w katalogu; bez skopiowania do
+  // shopify_thumbs karta w sklepie miałaby tylko miniature.
   let galeriePliki = 0;
   let galerieSzt = 0;
   for (const g of posters) {
     if (!g || g.kind !== 'gallery' || g.approvedForPrint !== true) continue;
+    const mk = g.mockups || {};
     let skopiowane = 0;
-    for (const rel of [g.imagePathThumb, g.imagePath]) {
+    for (const rel of [g.imagePathThumb, g.imagePath, mk.frame, mk.interior]) {
       if (rel && copyIfExists(rel)) skopiowane += 1;
     }
     if (skopiowane) { galeriePliki += skopiowane; galerieSzt += 1; }

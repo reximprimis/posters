@@ -1,11 +1,14 @@
 /**
- * Buduje ZESTAW SCIENNY z definicji: podglad sciany, kopie PDF-ow do druku,
+ * Buduje ZESTAW SCIENNY z definicji: packshot, salon, kopie PDF-ow do druku,
  * manifest produkcyjny i rekord w kartotece.
  *
- * PODGLAD RYSUJEMY W SKALI RZECZYWISTEJ. Plakat 50x70 obok 21x30 musi na
- * obrazku miec te sama proporcje co na scianie — inaczej klient zamawia
- * kompozycje, ktorej nie dostanie. Wysokosci licza sie z centymetrow,
- * a nie z pikseli plikow zrodlowych.
+ * DWA ZDJECIA PRODUKTU, jak przy kazdym innym produkcie w katalogu:
+ *   packshot — oprawione elementy na czystym tle, tak jak packshot
+ *              pojedynczego plakatu czy dyptyku/tryptyku,
+ *   salon    — ta sama kompozycja wklejona w prawdziwe zdjecie wnetrza
+ *              (assets/set_rooms/), ten sam zasob co dyptyki i tryptyki.
+ * Oba licza sie z centymetrow, wiec 50x70 obok 21x30 ma na obrazku te sama
+ * proporcje co na scianie — logika w src/galleryVisuals.js.
  *
  * Galeria NICZEGO NIE GENERUJE do druku. Kazdy plakat skladowy ma juz komplet
  * PDF-ow we wszystkich rozmiarach — kopiujemy wlasciwy do podkatalogu druk/,
@@ -30,6 +33,7 @@ const fileExists = (p) => !!p && fs.existsSync(abs(p));
 
 const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieScienne');
 const { toPosterHandle } = require('../src/posterTitle');
+const { buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
 
 const plikDef = process.argv[2];
 const zapis = process.argv.includes('--wykonaj');
@@ -71,60 +75,20 @@ const katalogDruk = path.join(katalog, 'druk');
 fs.mkdirSync(katalogDruk, { recursive: true });
 
 const cm = (r) => r.split('x').map(Number);
-const najwiekszy = pozycje.reduce((a, b) => (cm(a.rozmiar)[1] > cm(b.rozmiar)[1] ? a : b));
-const PIX_NA_CM = 900 / cm(najwiekszy.rozmiar)[1];
-const ODSTEP = Math.round(3 * PIX_NA_CM);
-const MARGINES = Math.round(6 * PIX_NA_CM);
-
-const TLA = {
-  green: '#5d6b57', beige: '#d9cfc0', white: '#f2f0ec',
-  grey: '#9a9a95', blue: '#5a6b7a', terracotta: '#b0705a',
-};
+const items = pozycje.map((z) => {
+  const wym = cm(z.rozmiar);
+  return { absPath: abs(z.poster.imagePath), widthCm: wym[0], heightCm: wym[1] };
+});
 
 (async () => {
-  const kafle = [];
-  for (const z of pozycje) {
-    const wym = cm(z.rozmiar);
-    kafle.push({
-      z,
-      w: Math.round(wym[0] * PIX_NA_CM),
-      h: Math.round(wym[1] * PIX_NA_CM),
-      src: abs(z.poster.imagePath),
-    });
-  }
+  const packshot = path.join(katalog, handle + '_packshot.jpg');
+  await buildGalleryPackshot(items, packshot);
 
-  // Uklad: hero po lewej, mniejsze w kolumnie po prawej. Prosty, ale czytelny
-  // i dokladnie taki, jaki klient powiesi — duzy plakat plus dwa mniejsze obok.
-  const hero = kafle.find((k) => k.z === najwiekszy);
-  const reszta = kafle.filter((k) => k !== hero);
-  const wysReszty = reszta.reduce((s, k) => s + k.h, 0) + Math.max(0, reszta.length - 1) * ODSTEP;
-  const szerCalosci = MARGINES * 2 + hero.w + (reszta.length ? ODSTEP + Math.max.apply(null, reszta.map((k) => k.w)) : 0);
-  const wysCalosci = MARGINES * 2 + Math.max(hero.h, wysReszty);
-
-  const warstwy = [];
-  warstwy.push({
-    input: await sharp(hero.src).resize(hero.w, hero.h, { fit: 'fill' }).toBuffer(),
-    left: MARGINES,
-    top: Math.round((wysCalosci - hero.h) / 2),
-  });
-  let y = Math.round((wysCalosci - wysReszty) / 2);
-  for (const k of reszta) {
-    warstwy.push({
-      input: await sharp(k.src).resize(k.w, k.h, { fit: 'fill' }).toBuffer(),
-      left: MARGINES + hero.w + ODSTEP,
-      top: y,
-    });
-    y += k.h + ODSTEP;
-  }
-
-  // Tlo w kolorze sciany z definicji — to ono sprzedaje pomysl "zielona sciana".
-  const tlo = TLA[def.sciana] || '#e8e4dd';
-  const podglad = path.join(katalog, handle + '_podglad.jpg');
-  await sharp({ create: { width: szerCalosci, height: wysCalosci, channels: 3, background: tlo } })
-    .composite(warstwy).jpeg({ quality: 90 }).toFile(podglad);
+  const salon = path.join(katalog, handle + '_salon.jpg');
+  await buildGalleryInterior(items, salon, { roomId: def.pokojId || undefined });
 
   const thumb = path.join(katalog, handle + '_thumb.jpg');
-  await sharp(podglad).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
+  await sharp(packshot).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
 
   const manifest = { tytul: def.tytul, handle: handle, utworzono: new Date().toISOString(), pozycje: [] };
   const linie = ['ZESTAW SCIENNY: ' + def.tytul, 'handle: ' + handle, '', 'DO WYDRUKOWANIA:'];
@@ -151,8 +115,9 @@ const TLA = {
     artStyle: pozycje[0].poster.artStyle,
     wallColor: def.sciana || '',
     pieceCount: pozycje.length,
-    imagePath: rel(podglad),
+    imagePath: rel(packshot),
     imagePathThumb: rel(thumb),
+    mockups: { frame: rel(packshot), interior: rel(salon), generatedAt: new Date().toISOString() },
     items: manifest.pozycje.map((p) => ({ title: p.tytul, size: p.rozmiar, pdf: p.pdfZrodlowy })),
     priceSeparate: cenaOsobno(def.pozycje),
     price: cenaZestawu(def.pozycje),
@@ -167,8 +132,9 @@ const TLA = {
   fs.writeFileSync(INVENTORY, JSON.stringify(swieza, null, 2) + '\n', 'utf8');
 
   console.log('');
-  console.log('katalog:  posters/_galerie/' + handle);
-  console.log('podglad:  ' + path.basename(podglad) + '  (' + szerCalosci + 'x' + wysCalosci + ')');
-  console.log('do druku: ' + pozycje.length + ' PDF-ow w druk/');
-  console.log('rekord dodany, NIEZATWIERDZONY — obejrzyj podglad i zatwierdz.');
+  console.log('katalog:   posters/_galerie/' + handle);
+  console.log('packshot:  ' + path.basename(packshot));
+  console.log('salon:     ' + path.basename(salon));
+  console.log('do druku:  ' + pozycje.length + ' PDF-ow w druk/');
+  console.log('rekord dodany, NIEZATWIERDZONY — obejrzyj packshot i salon, potem zatwierdz.');
 })().catch((e) => { console.error(e); process.exit(1); });

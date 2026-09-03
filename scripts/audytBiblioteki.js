@@ -62,15 +62,17 @@ for (const p of plakaty.filter((x) => x.approvedForPrint)) {
 }
 
 
-// ── 3b. Zestawy scienne: skladniki i pliki do druku ─────────────────────────
+// ── 3b. Zestawy scienne: zdjecia produktu, skladniki i pliki do druku ──────
 //
-// Galeria NIE MA wlasnych PDF-ow ani mockupow i to jest poprawne — sklada sie
-// z gotowych plakatow. Sprawdzamy wiec co innego: czy kazdy skladnik nadal
-// istnieje, jest zatwierdzony i ma PDF w zadanym rozmiarze, oraz czy kopie
-// leza w podkatalogu druk/. Zestaw, ktorego nie da sie wydrukowac, sprzeda sie
-// tak samo jak kazdy inny — i dopiero wtedy okaze sie, ze nie ma czego wyslac.
+// Galeria NIE MA wlasnych PDF-ow do druku i to jest poprawne — sklada sie
+// z gotowych plakatow, kazdy juz wydrukowalny. Ale MA dwa zdjecia produktu —
+// packshot i salon, w mockups.frame/interior — tak jak kazdy inny produkt
+// w katalogu, wiec sprawdzamy je tak samo jak przy plakacie.
 for (const g of galerie.filter((x) => x.approvedForPrint)) {
-  if (!jest(g.imagePathThumb)) dodaj('BLOKUJE', `${g.title}: brak podgladu sciany`);
+  if (!jest(g.imagePathThumb)) dodaj('BLOKUJE', `${g.title}: brak miniatury`);
+  const gm = g.mockups || {};
+  if (!gm.frame || !gm.interior) dodaj('WAZNE', `${g.title}: brak packshotu lub salonu w kartotece`);
+  else if (!jest(gm.frame) || !jest(gm.interior)) dodaj('BLOKUJE', `${g.title}: packshot/salon w kartotece, brak plikow`);
   const katalog = path.dirname(norm(g.imagePath));
   for (const it of g.items || []) {
     const skladnik = inv.posters.find((p) => p.title === it.title && p.kind !== 'set' && p.kind !== 'gallery');
