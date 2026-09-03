@@ -934,6 +934,19 @@ app.get('/api/posters', (req, res) => {
             })),
           }
         : {}),
+      // Zestaw scienny (kind: 'gallery') — bez tego pola frontend nie ma jak
+      // odroznic go od zwyklego plakatu: pokazywal wtedy przyciski MASTER/RAMKA
+      // (wariant Print Style), ktorego ten produkt w ogole nie ma — jeden SKU,
+      // jedna cena, patrz src/galerieScienne.js. Ten sam blad ksztaltu co przy
+      // 'set' powyzej: pole trzeba PRZEPISAC jawnie, bo domyslny ksztalt
+      // odpowiedzi nie niesie kind wcale.
+      ...(primary.kind === 'gallery'
+        ? {
+            kind: 'gallery',
+            pieceCount: primary.pieceCount || (Array.isArray(primary.items) ? primary.items.length : 0),
+            wallColor: primary.wallColor || '',
+          }
+        : {}),
     });
   }
 

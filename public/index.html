@@ -8688,7 +8688,15 @@
         // Zestawy sa wylacznie full bleed — wariant z passe-partout nie istnieje
         // jako produkt, wiec przycisk RAMKA znika, a nie tylko sie wyszarza.
         const isSet = modalPosterItem.kind === 'set';
-        const canFramed = !!framed && !isSet;
+        // Zestaw scienny (gallery) nie ma Print Style w ogole — jeden SKU, jedna
+        // cena, zero wariantow (src/galerieScienne.js). Jego imagePath to gotowy
+        // PACKSHOT (elementy juz w ramach na czystym tle), wiec pokazanie go pod
+        // etykieta "MASTER" sugerowaloby wariant bez ramki, ktorego produkt nie
+        // ma — i myliloby sie z prawdziwym Packshotem nizej na tej samej liscie.
+        // Oba przyciski Master/Ramka znikaja; jedyne wlasciwe zdjecia to
+        // Packshot i Salon z mockups.frame/interior, pokazywane osobno.
+        const isGallery = modalPosterItem.kind === 'gallery';
+        const canFramed = !!framed && !isSet && !isGallery;
         const v = variant === 'framed' && canFramed ? 'framed' : 'full';
         const src = v === 'framed' ? framed : full;
         if (!src) return;
@@ -8698,13 +8706,14 @@
           const on = v === 'full';
           els.modalPreviewFullBtn.classList.toggle('is-active', on);
           els.modalPreviewFullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          els.modalPreviewFullBtn.hidden = isGallery;
         }
         if (els.modalPreviewFramedBtn) {
           const on = v === 'framed';
           els.modalPreviewFramedBtn.classList.toggle('is-active', on);
           els.modalPreviewFramedBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
           els.modalPreviewFramedBtn.disabled = !canFramed;
-          els.modalPreviewFramedBtn.hidden = isSet;
+          els.modalPreviewFramedBtn.hidden = isSet || isGallery;
         }
         fetchModalTechnicalMeta(src);
         if (els.modalLightbox && !els.modalLightbox.hidden) {
