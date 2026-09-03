@@ -44,7 +44,7 @@ for (const m of src.matchAll(/namespaced\("([a-z]+)",\s*"([a-z0-9-]+)"\)/g)) {
 
 const csv = fs.readFileSync(CSV, 'utf8');
 const wysylane = new Map();
-for (const m of csv.matchAll(/\b(category|style|aesthetic|room|color|occasion|collection|orientation|size|set|gallery-set|wall):([a-z0-9-]+)/g)) {
+for (const m of csv.matchAll(/\b(category|style|aesthetic|room|color|occasion|collection|orientation|size|set|gallery-set|wall|framed-gallery-set|frame-color|frame-material):([a-z0-9-]+)/g)) {
   const t = m[1] + ':' + m[2];
   wysylane.set(t, (wysylane.get(t) || 0) + 1);
 }

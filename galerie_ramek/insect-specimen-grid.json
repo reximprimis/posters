@@ -1,0 +1,25 @@
+{
+  "tytul": "Insect Specimen Grid",
+  "kategoria": "animals",
+  "kolorRamy": "czarny-mat",
+  "pomieszczenie": "home-office",
+  "opis": "Cztery ryciny owadow w stylu antycznej planszy przyrodniczej: motyl, chrzaszcz, wazka i ćma, ulozone w rowna krate. Male, zwarte gniazdo idealne do gabinetu, korytarza lub nad biurkiem.",
+  "pozycje": [
+    {
+      "tytul": "Swallowtail Wing Pattern",
+      "rozmiar": "13x18"
+    },
+    {
+      "tytul": "Ground Beetle Carapace",
+      "rozmiar": "13x18"
+    },
+    {
+      "tytul": "Dragonfly Wing Study",
+      "rozmiar": "13x18"
+    },
+    {
+      "tytul": "Luna Moth Spread",
+      "rozmiar": "13x18"
+    }
+  ]
+}

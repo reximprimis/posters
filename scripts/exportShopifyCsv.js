@@ -477,9 +477,10 @@ async function main() {
   // Zestawy ida OSOBNA petla — maja wlasny cennik (mnoznik za uklad), brak
   // wariantu z passe-partout i inny zestaw zdjec. Trzymanie ich poza glowna
   // petla sprawia, ze wiersze plakatow pozostaja bajt w bajt niezmienione.
-  const posters = wszystkie.filter((p) => p && p.kind !== 'set' && p.kind !== 'gallery');
+  const posters = wszystkie.filter((p) => p && p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed');
   const zestawy = wszystkie.filter((p) => p && p.kind === 'set');
   const galerie = wszystkie.filter((p) => p && p.kind === 'gallery');
+  const galerieRamek = wszystkie.filter((p) => p && p.kind === 'gallery-framed');
 
   // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
   // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby
@@ -813,6 +814,7 @@ async function main() {
   //      przekreslona kwota ma pokazywac realna oszczednosc, nie promocje.
   // ─────────────────────────────────────────────────────────────────────────
   let galeriiWyeksportowanych = 0;
+  let wierszyGaleriiTotal = 0;
   for (const g of galerie) {
     const handle = toPosterHandle(g.title);
     if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
@@ -904,6 +906,7 @@ async function main() {
       Status: g.approvedForPrint ? 'active' : 'draft',
     };
     lines.push(makeRow(headers, row));
+    wierszyGaleriiTotal += 1;
 
     // Produkt ma JEDEN wariant, wiec drugie i kolejne zdjecie nie ma na czym
     // "jechac" jak przy plakatach (tam kazdy rozmiar niesie kolejny obraz).
@@ -911,10 +914,121 @@ async function main() {
     // importu Shopify: te same Handle, reszta kolumn pusta.
     for (let i = 1; i < ZDJECIA_GALERII.length; i++) {
       lines.push(makeRow(headers, { Handle: handle, 'Image Src': ZDJECIA_GALERII[i], 'Image Position': String(i + 1) }));
+      wierszyGaleriiTotal += 1;
     }
 
     exportedHandles.add(handle);
     galeriiWyeksportowanych += 1;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ZESTAWY PLAKATOW I RAMEK (kind: 'gallery-framed')
+  //
+  // Rama jest CZESCIA PRODUKTU (src/galerieRamek.js, src/ramkiKatalog.js), nie
+  // wizualizacja — stad tylko DWA zdjecia (master oprawiony + salon), nie trzy
+  // jak przy zwyklym zestawie sciennym. Master pierwszy — pokazuje dokladnie
+  // to, co przyjedzie: juz oprawione.
+  // ─────────────────────────────────────────────────────────────────────────
+  let galeriiRamekWyeksportowanych = 0;
+  let wierszyGaleriiRamekTotal = 0;
+  for (const g of galerieRamek) {
+    const handle = toPosterHandle(g.title);
+    if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
+    if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
+
+    const mk = g.mockups || {};
+    const masterRel = g.imagePath && fileExists(g.imagePath) ? normalizeRelPath(g.imagePath) : '';
+    const salonRel = mk.interior && fileExists(mk.interior) ? normalizeRelPath(mk.interior) : '';
+    if (!masterRel) { console.log(`⚠ Zestaw plakatow i ramek "${g.title}" — brak mastera, pomijam.`); continue; }
+    const ZDJECIA_RAMEK = [
+      toPublicUrl(masterRel),
+      salonRel ? toPublicUrl(salonRel) : '',
+    ].filter(Boolean);
+    const cena = Number(g.price);
+    if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw plakatow i ramek "${g.title}" — brak ceny, pomijam.`); continue; }
+
+    const sztuk = g.pieceCount || (g.items || []).length;
+    const title = humanizePosterTitle(g.title);
+    const tags = [
+      'framed-gallery-set',
+      'framed-gallery-set:pieces-' + sztuk,
+      g.frameColor ? 'frame-color:' + slugifyTag(g.frameColor) : '',
+      g.frameMaterial ? 'frame-material:' + slugifyTag(g.frameMaterial) : '',
+      zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
+    ].filter(Boolean).join(', ');
+    // Opis jest UPIECZONY w rekordzie przy budowie (buildFramedDescription
+    // w zbudujZestawRamek.js) i JUZ WSPOMINA rame — jedyny produkt w katalogu,
+    // ktory ma do tego prawo, bo tu rama faktycznie jest w cenie.
+    const opis = htmlDescription(
+      String(g.shopDescription || '') +
+      (g.priceSeparate ? '\n\nKupowane osobno (wydruki + ramy) kosztowalyby ' + g.priceSeparate + ' zl.' : '')
+    );
+
+    const row = {
+      Handle: handle,
+      Title: title,
+      'Body (HTML)': opis,
+      Vendor: 'REXIMPRIMIS',
+      'Product Category': KATEGORIA_SHOPIFY,
+      Type: 'framed gallery set',
+      Tags: tags,
+      Published: g.approvedForPrint ? 'true' : 'false',
+      'Option1 Name': 'Title',
+      'Option1 Value': 'Default Title',
+      'Option1 Linked To': '',
+      'Option2 Name': '', 'Option2 Value': '', 'Option2 Linked To': '',
+      'Option3 Name': '', 'Option3 Value': '', 'Option3 Linked To': '',
+      'Variant SKU': '',
+      'Variant Grams': '',
+      'Variant Inventory Tracker': '',
+      'Variant Inventory Qty': '',
+      'Variant Inventory Policy': 'deny',
+      'Variant Fulfillment Service': 'manual',
+      'Variant Price': cena.toFixed(2),
+      'Variant Compare At Price': g.priceSeparate ? Number(g.priceSeparate).toFixed(2) : '',
+      'Variant Requires Shipping': 'true',
+      'Variant Taxable': 'true',
+      'Unit Price Total Measure': '', 'Unit Price Total Measure Unit': '',
+      'Unit Price Base Measure': '', 'Unit Price Base Measure Unit': '',
+      'Variant Barcode': '',
+      'Image Src': ZDJECIA_RAMEK[0],
+      'Image Position': '1',
+      'Image Alt Text': title,
+      'Gift Card': 'false',
+      'SEO Title': `${title} | REXIMPRIMIS`,
+      'SEO Description': String(g.shopDescription || '').slice(0, 160),
+      // Metapola shopify.* MUSZA zostac PUSTE, tak jak przy kazdym innym
+      // produkcie w tym eksporcie — wypelnienie ktoregokolwiek z nich (nawet
+      // prawdziwa, sensowna trescia jak material ramy) zostalo juz kiedys
+      // sprawdzone i ODRZUCA CALY IMPORT po stronie Shopify. Material i kolor
+      // ramy ida do klienta przez tagi (frame-material:, frame-color:) i przez
+      // opis, nie przez te pola.
+      'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
+      'Kolor (product.metafields.shopify.color-pattern)': '',
+      'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
+      'Obsługiwany format (product.metafields.shopify.format-supported)': '',
+      'Styl oprawki (product.metafields.shopify.frame-style)': '',
+      'Materiał (product.metafields.shopify.material)': '',
+      'Typ mocowania (product.metafields.shopify.mounting-type)': '',
+      'Orientacja (product.metafields.shopify.orientation)': '',
+      'Kształt (product.metafields.shopify.shape)': '',
+      'Motyw (product.metafields.shopify.theme)': '',
+      'Variant Image': ZDJECIA_RAMEK[0],
+      'Variant Weight Unit': 'kg',
+      'Variant Tax Code': '',
+      'Cost per item': '',
+      Status: g.approvedForPrint ? 'active' : 'draft',
+    };
+    lines.push(makeRow(headers, row));
+    wierszyGaleriiRamekTotal += 1;
+
+    for (let i = 1; i < ZDJECIA_RAMEK.length; i++) {
+      lines.push(makeRow(headers, { Handle: handle, 'Image Src': ZDJECIA_RAMEK[i], 'Image Position': String(i + 1) }));
+      wierszyGaleriiRamekTotal += 1;
+    }
+
+    exportedHandles.add(handle);
+    galeriiRamekWyeksportowanych += 1;
   }
 
   const csvText = lines.join('\n') + '\n';
@@ -930,13 +1044,15 @@ async function main() {
 
   console.log(`Shopify CSV exported: ${outputUsedPath}`);
   // Zestaw ma o polowe mniej wierszy niz plakat (jeden print style zamiast dwoch),
-  // wiec liczba produktow nie da sie wyliczyc z samej liczby wierszy.
-  // Zestaw ma jedna os wariantow (rozmiar), plakat dwie — stad rozne mnozniki.
+  // wiec liczba produktow nie da sie wyliczyc z samej liczby wierszy. Galerie
+  // i zestawy ramek maja jeszcze inny ksztalt (1-3 wiersze, po jednym na
+  // zdjecie, nie na rozmiar) — trzeba je odjac tak samo, inaczej ich wiersze
+  // zawyzalyby policzona liczbe zwyklych plakatow.
   const wierszyZestawow = zestawowWyeksportowanych * sizeDefs.length;
-  const wierszyPlakatow = lines.length - 1 - wierszyZestawow;
+  const wierszyPlakatow = lines.length - 1 - wierszyZestawow - wierszyGaleriiTotal - wierszyGaleriiRamekTotal;
   console.log(
     `Products exported: ${Math.max(0, Math.floor(wierszyPlakatow / (sizeDefs.length * PRINT_STYLES.length)))}` +
-      ` + ${zestawowWyeksportowanych} zestaw(ow), rows: ${lines.length - 1}`
+      ` + ${zestawowWyeksportowanych} zestaw(ow) + ${galeriiWyeksportowanych} galeria(e) + ${galeriiRamekWyeksportowanych} zestaw(ow) z rama, rows: ${lines.length - 1}`
   );
   if (zestawowWyeksportowanych > 0) {
     const opis = Object.entries(settings.setMultipliers).map(([k, v]) => `${k} ×${v}`).join(', ');

@@ -92,9 +92,24 @@ function main() {
     if (skopiowane) { galeriePliki += skopiowane; galerieSzt += 1; }
   }
 
+  // ZESTAWY PLAKATOW I RAMEK (kind: 'gallery-framed') — rama wliczona w cene.
+  // Tylko DWA zdjecia (master oprawiony + salon, w imagePath/mockups.interior)
+  // — nie ma osobnego packshotu, bo master JUZ pokazuje oprawiona wersje.
+  let galerieRamekPliki = 0;
+  let galerieRamekSzt = 0;
+  for (const g of posters) {
+    if (!g || g.kind !== 'gallery-framed' || g.approvedForPrint !== true) continue;
+    const mk = g.mockups || {};
+    let skopiowane = 0;
+    for (const rel of [g.imagePathThumb, g.imagePath, mk.interior]) {
+      if (rel && copyIfExists(rel)) skopiowane += 1;
+    }
+    if (skopiowane) { galerieRamekPliki += skopiowane; galerieRamekSzt += 1; }
+  }
+
   for (const p of posters) {
     if (!p || p.approvedForPrint !== true) continue;
-    if (p.kind === 'set' || p.kind === 'gallery') continue; // obsluzone wyzej
+    if (p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed') continue; // obsluzone wyzej
     const evalState = evaluatePosterShopifyState(projectRoot, p);
     if (evalState.state !== 'ready') {
       skippedNotReady += 1;
@@ -145,6 +160,7 @@ function main() {
   console.log(`Mockup interior copied: ${mockupInteriorCopied}`);
   console.log(`Zestawy: ${zestawySzt} (plikow: ${zestawyPliki})`);
   console.log(`Zestawy scienne: ${galerieSzt} (plikow: ${galeriePliki})`);
+  console.log(`Zestawy plakatow i ramek: ${galerieRamekSzt} (plikow: ${galerieRamekPliki})`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
   console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
   console.log(

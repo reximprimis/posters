@@ -69,7 +69,7 @@ for (let i = 1; i < w.length; i++) {
 
 const chude = [];
 for (const p of inv.posters) {
-  if (!p.approvedForPrint || p.kind === 'set' || p.kind === 'gallery') continue;
+  if (!p.approvedForPrint || p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed') continue;
   const n = (obrazy.get(toPosterHandle(p.title)) || new Set()).size;
   if (n < 4) chude.push(p.title + '  (' + n + ' obrazow)');
 }
@@ -84,7 +84,17 @@ for (const g of inv.posters) {
   if (n < 3) chudeGalerie.push(g.title + '  (' + n + ' obrazow)');
 }
 
-if (chude.length || chudeGalerie.length) {
+// Zestaw plakatow i ramek ma DWA zdjecia produktu — master (juz oprawiony,
+// wiec pokazuje efekt koncowy) i salon. Bez osobnego packshotu, bo master
+// go zastepuje.
+const chudeGalerieRamek = [];
+for (const g of inv.posters) {
+  if (!g.approvedForPrint || g.kind !== 'gallery-framed') continue;
+  const n = (obrazy.get(toPosterHandle(g.title)) || new Set()).size;
+  if (n < 2) chudeGalerieRamek.push(g.title + '  (' + n + ' obrazow)');
+}
+
+if (chude.length || chudeGalerie.length || chudeGalerieRamek.length) {
   if (chude.length) {
     console.log('NIEPELNE GALERIE PLAKATOW: ' + chude.length);
     chude.slice(0, 15).forEach((t) => console.log('   ' + t));
@@ -93,8 +103,12 @@ if (chude.length || chudeGalerie.length) {
     console.log('NIEPELNE ZESTAWY SCIENNE (brak mastera, packshotu lub salonu): ' + chudeGalerie.length);
     chudeGalerie.slice(0, 15).forEach((t) => console.log('   ' + t));
   }
+  if (chudeGalerieRamek.length) {
+    console.log('NIEPELNE ZESTAWY PLAKATOW I RAMEK (brak mastera lub salonu): ' + chudeGalerieRamek.length);
+    chudeGalerieRamek.slice(0, 15).forEach((t) => console.log('   ' + t));
+  }
   console.log('');
   console.log('Uruchom naprawWpisyMockupow.js --wykonaj i wyeksportuj ponownie.');
   process.exit(1);
 }
-console.log('wszystkie galerie pelne (plakaty: 4 obrazy, zestawy scienne: 3 obrazy)');
+console.log('wszystkie galerie pelne (plakaty: 4 obrazy, zestawy scienne: 3 obrazy, zestawy plakatow i ramek: 2 obrazy)');

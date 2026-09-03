@@ -24,8 +24,9 @@ const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
 // Galerie sa osobnym rodzajem produktu — nie maja wlasnych PDF-ow ani mockupow,
 // wiec petla plakatow musi je pomijac, inaczej audyt blokuje eksport na braku,
 // ktorego z zalozenia nie bedzie.
-const plakaty = inv.posters.filter((p) => p.kind !== 'set' && p.kind !== 'gallery');
+const plakaty = inv.posters.filter((p) => p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed');
 const galerie = inv.posters.filter((p) => p.kind === 'gallery');
+const galerieRamek = inv.posters.filter((p) => p.kind === 'gallery-framed');
 const zestawy = inv.posters.filter((p) => p.kind === 'set');
 
 const problemy = [];
@@ -87,6 +88,35 @@ for (const g of galerie.filter((x) => x.approvedForPrint)) {
     dodaj('WAZNE', `${g.title}: w druk/ jest ${ilePlikow} PDF-ow, a pozycji ${(g.items || []).length}`);
   }
 }
+// ── 3c. Zestawy plakatow i ramek: zdjecia, skladniki, pliki do druku i ramy ─
+//
+// Rama jest CZESCIA PRODUKTU (kind: 'gallery-framed'), wiec — inaczej niz przy
+// zwyklym zestawie sciennym — MASTER pokazuje oprawione elementy i nie ma
+// osobnego packshotu; DWA zdjecia, nie trzy: master (imagePath) i salon
+// (mockups.interior). Dodatkowo kazda pozycja musi miec frameSku — bez niego
+// nie wiadomo, ktora rame fizycznie zapakowac przy wysylce.
+for (const g of galerieRamek.filter((x) => x.approvedForPrint)) {
+  if (!jest(g.imagePathThumb)) dodaj('BLOKUJE', `${g.title}: brak miniatury`);
+  if (!jest(g.imagePath)) dodaj('BLOKUJE', `${g.title}: brak mastera (imagePath)`);
+  const gm = g.mockups || {};
+  if (!gm.interior) dodaj('WAZNE', `${g.title}: brak salonu w kartotece`);
+  else if (!jest(gm.interior)) dodaj('BLOKUJE', `${g.title}: salon w kartotece, brak pliku`);
+  if (!g.frameColor) dodaj('BLOKUJE', `${g.title}: brak frameColor`);
+  const katalog = path.dirname(norm(g.imagePath));
+  for (const it of g.items || []) {
+    const skladnik = inv.posters.find((p) => p.title === it.title && p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed');
+    if (!skladnik) { dodaj('BLOKUJE', `${g.title}: skladnik "${it.title}" zniknal z kartoteki`); continue; }
+    if (!skladnik.approvedForPrint) dodaj('BLOKUJE', `${g.title}: skladnik "${it.title}" nie jest zatwierdzony`);
+    if (!jest(it.pdf)) dodaj('BLOKUJE', `${g.title}: brak PDF skladnika ${it.size} "${it.title}"`);
+    if (!it.frameSku) dodaj('BLOKUJE', `${g.title}: brak SKU ramy dla "${it.title}" — nie ma co zapakowac`);
+  }
+  const druk = path.join(ROOT, katalog, 'druk');
+  const ilePlikow = fs.existsSync(druk) ? fs.readdirSync(druk).filter((f) => f.endsWith('.pdf')).length : 0;
+  if (ilePlikow < (g.items || []).length) {
+    dodaj('WAZNE', `${g.title}: w druk/ jest ${ilePlikow} PDF-ow, a pozycji ${(g.items || []).length}`);
+  }
+}
+
 // ── 4. Zestawy: panele i komplet PDF-ow ─────────────────────────────────────
 // Tylko ZATWIERDZONE: pozycja odrzucona po przegladzie nie idzie do sklepu,
 // wiec brak jej PDF-ow nie jest przeszkoda w eksporcie. Bez tego filtra jeden
