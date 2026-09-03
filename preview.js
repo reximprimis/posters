@@ -947,6 +947,20 @@ app.get('/api/posters', (req, res) => {
             wallColor: primary.wallColor || '',
           }
         : {}),
+      // Rezerwacja pod przyszly produkt "zestaw plakatow i ramek" (rama
+      // WLICZONA w cene, w odroznieniu od 'gallery' powyzej). Nie istnieje
+      // jeszcze w kartotece — zaden rekord nie ma tego kind. Wpisane juz
+      // teraz, zeby przy jego budowie nie powtorzyc bledu z 'gallery': tam
+      // kind() nie byl przekazywany wcale, wiec fronted mylil go ze zwyklym
+      // plakatem (MASTER/RAMKA zamiast Packshot/Salon), a przyczyne trzeba
+      // bylo znalezc po fakcie.
+      ...(primary.kind === 'gallery-framed'
+        ? {
+            kind: 'gallery-framed',
+            pieceCount: primary.pieceCount || (Array.isArray(primary.items) ? primary.items.length : 0),
+            wallColor: primary.wallColor || '',
+          }
+        : {}),
     });
   }
 

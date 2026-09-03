@@ -8359,7 +8359,11 @@
             // ma wisiec jak pionowa kompozycja. Dla tych dwoch rodzajow
             // ufamy zadeklarowanej orientacji (item.orientation), nie
             // pikselom wczytanego obrazka.
-            const isComposite = isSet || item.kind === 'gallery';
+            // 'gallery-framed' to przyszly zestaw plakatow i ramek (rama
+            // WLICZONA w cene) — jeszcze nie istnieje w kartotece, ale jego
+            // miniatura bedzie tym samym rodzajem kompozycji co 'gallery',
+            // wiec ten sam blad ksztaltu wrocilby przy pierwszym produkcie.
+            const isComposite = isSet || item.kind === 'gallery' || item.kind === 'gallery-framed';
             const applyOrientationClass = () => {
               let isLandscape;
               if (isComposite) {
