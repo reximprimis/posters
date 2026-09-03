@@ -1,0 +1,12 @@
+{
+  "tytul": "Green Botanical Wall",
+  "kategoria": "botanical",
+  "sciana": "green",
+  "pomieszczenie": "living-room",
+  "opis": "Trzy ryciny botaniczne dobrane tak, by wisialy razem: jeden duzy arkusz 50x70 i dwa mniejsze 21x30. Wszystkie z tej samej estetyki antycznej planszy zielnikowej, na kremowym papierze - komplet wyglada jak strony wyjete z jednego atlasu. Dobrane pod ciemnozielona sciane w salonie.",
+  "pozycje": [
+    { "tytul": "Elderflower Umbel", "rozmiar": "50x70" },
+    { "tytul": "Meadowsweet Froth", "rozmiar": "21x30" },
+    { "tytul": "Comfrey Root Drawing", "rozmiar": "21x30" }
+  ]
+}

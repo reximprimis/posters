@@ -73,9 +73,26 @@ function main() {
     }
   }
 
+  // ZESTAWY SCIENNE (kind: 'gallery') — kompozycje z istniejacych plakatow.
+  //
+  // Osobna petla z tego samego powodu co wyzej: nie maja mastera ani wariantu
+  // z ramka, wiec evaluatePosterShopifyState odrzucilby je jako "not ready".
+  // Ich jedyne zdjecie to podglad sciany, ale to ono JEST produktem — bez
+  // skopiowania do shopify_thumbs karta w sklepie byla by pusta.
+  let galeriePliki = 0;
+  let galerieSzt = 0;
+  for (const g of posters) {
+    if (!g || g.kind !== 'gallery' || g.approvedForPrint !== true) continue;
+    let skopiowane = 0;
+    for (const rel of [g.imagePathThumb, g.imagePath]) {
+      if (rel && copyIfExists(rel)) skopiowane += 1;
+    }
+    if (skopiowane) { galeriePliki += skopiowane; galerieSzt += 1; }
+  }
+
   for (const p of posters) {
     if (!p || p.approvedForPrint !== true) continue;
-    if (p.kind === 'set') continue; // obsluzone wyzej
+    if (p.kind === 'set' || p.kind === 'gallery') continue; // obsluzone wyzej
     const evalState = evaluatePosterShopifyState(projectRoot, p);
     if (evalState.state !== 'ready') {
       skippedNotReady += 1;
@@ -119,11 +136,13 @@ function main() {
     fs.writeFileSync(inventoryPath, JSON.stringify(swieza, null, 2), 'utf8');
   }
 
-  console.log(`Master thumbs copied: ${masterCopied}`);
+  console.log();
+  console.log();
   console.log(`Framed thumbs copied: ${framedCopied}`);
   console.log(`Mockup frame copied: ${mockupFrameCopied}`);
   console.log(`Mockup interior copied: ${mockupInteriorCopied}`);
   console.log(`Zestawy: ${zestawySzt} (plikow: ${zestawyPliki})`);
+  console.log(`Zestawy scienne: ${galerieSzt} (plikow: ${galeriePliki})`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
   console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
   console.log(

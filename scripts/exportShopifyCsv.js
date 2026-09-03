@@ -477,8 +477,9 @@ async function main() {
   // Zestawy ida OSOBNA petla — maja wlasny cennik (mnoznik za uklad), brak
   // wariantu z passe-partout i inny zestaw zdjec. Trzymanie ich poza glowna
   // petla sprawia, ze wiersze plakatow pozostaja bajt w bajt niezmienione.
-  const posters = wszystkie.filter((p) => p && p.kind !== 'set');
+  const posters = wszystkie.filter((p) => p && p.kind !== 'set' && p.kind !== 'gallery');
   const zestawy = wszystkie.filter((p) => p && p.kind === 'set');
+  const galerie = wszystkie.filter((p) => p && p.kind === 'gallery');
 
   // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
   // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby
@@ -794,6 +795,101 @@ async function main() {
     }
     exportedHandles.add(handle);
     zestawowWyeksportowanych += 1;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ZESTAWY SCIENNE (kind: 'gallery')
+  //
+  // Kompozycja z ISTNIEJACYCH plakatow w roznych rozmiarach. Trzy roznice
+  // wobec dyptyku i tryptyku:
+  //
+  //   1. BRAK WARIANTOW. Rozmiary sa czescia produktu, nie wyborem klienta,
+  //      wiec jest JEDEN wiersz. Shopify wymaga nazwy opcji, wiec dajemy
+  //      "Title / Default Title" — tak zapisuje sie produkt bez wariantow.
+  //   2. CENA Z REKORDU, nie z mnoznika ukladu. Wynika z sumy skladnikow minus
+  //      rabat, policzonej przy budowie zestawu, bo skladniki maja rozne
+  //      rozmiary i mnoznik nie mialby czego mnozyc.
+  //   3. Compare-at to CENA OSOBNO, a nie dwukrotnosc jak przy plakatach —
+  //      przekreslona kwota ma pokazywac realna oszczednosc, nie promocje.
+  // ─────────────────────────────────────────────────────────────────────────
+  let galeriiWyeksportowanych = 0;
+  for (const g of galerie) {
+    const handle = toPosterHandle(g.title);
+    if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
+    if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
+
+    const thumbRel = g.imagePathThumb && fileExists(g.imagePathThumb) ? normalizeRelPath(g.imagePathThumb) : '';
+    if (!thumbRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak podgladu, pomijam.`); continue; }
+    const cena = Number(g.price);
+    if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw scienny "${g.title}" — brak ceny, pomijam.`); continue; }
+
+    const sztuk = g.pieceCount || (g.items || []).length;
+    const rozmiary = [...new Set((g.items || []).map((i) => i.size))].join(', ');
+    const title = humanizePosterTitle(g.title);
+    const tags = [
+      'gallery-set',
+      'gallery-set:pieces-' + sztuk,
+      g.wallColor ? 'wall:' + slugifyTag(g.wallColor) : '',
+      zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
+    ].filter(Boolean).join(', ');
+    const opis = htmlDescription(
+      String(g.shopDescription || '') +
+      '\n\nW zestawie ' + sztuk + ' plakaty w rozmiarach ' + rozmiary + '.' +
+      (g.priceSeparate ? ' Kupowane osobno kosztowalyby ' + g.priceSeparate + ' zl.' : '')
+    );
+
+    const row = {
+      Handle: handle,
+      Title: title,
+      'Body (HTML)': opis,
+      Vendor: 'REXIMPRIMIS',
+      'Product Category': KATEGORIA_SHOPIFY,
+      Type: 'gallery set',
+      Tags: tags,
+      Published: g.approvedForPrint ? 'true' : 'false',
+      'Option1 Name': 'Title',
+      'Option1 Value': 'Default Title',
+      'Option1 Linked To': '',
+      'Option2 Name': '', 'Option2 Value': '', 'Option2 Linked To': '',
+      'Option3 Name': '', 'Option3 Value': '', 'Option3 Linked To': '',
+      'Variant SKU': '',
+      'Variant Grams': '',
+      'Variant Inventory Tracker': '',
+      'Variant Inventory Qty': '',
+      'Variant Inventory Policy': 'deny',
+      'Variant Fulfillment Service': 'manual',
+      'Variant Price': cena.toFixed(2),
+      'Variant Compare At Price': g.priceSeparate ? Number(g.priceSeparate).toFixed(2) : '',
+      'Variant Requires Shipping': 'true',
+      'Variant Taxable': 'true',
+      'Unit Price Total Measure': '', 'Unit Price Total Measure Unit': '',
+      'Unit Price Base Measure': '', 'Unit Price Base Measure Unit': '',
+      'Variant Barcode': '',
+      'Image Src': toPublicUrl(thumbRel),
+      'Image Position': '1',
+      'Image Alt Text': title,
+      'Gift Card': 'false',
+      'SEO Title': `${title} | REXIMPRIMIS`,
+      'SEO Description': String(g.shopDescription || '').slice(0, 160),
+      'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
+      'Kolor (product.metafields.shopify.color-pattern)': '',
+      'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
+      'Obsługiwany format (product.metafields.shopify.format-supported)': '',
+      'Styl oprawki (product.metafields.shopify.frame-style)': '',
+      'Materiał (product.metafields.shopify.material)': '',
+      'Typ mocowania (product.metafields.shopify.mounting-type)': '',
+      'Orientacja (product.metafields.shopify.orientation)': '',
+      'Kształt (product.metafields.shopify.shape)': '',
+      'Motyw (product.metafields.shopify.theme)': '',
+      'Variant Image': toPublicUrl(thumbRel),
+      'Variant Weight Unit': 'kg',
+      'Variant Tax Code': '',
+      'Cost per item': '',
+      Status: g.approvedForPrint ? 'active' : 'draft',
+    };
+    lines.push(makeRow(headers, row));
+    exportedHandles.add(handle);
+    galeriiWyeksportowanych += 1;
   }
 
   const csvText = lines.join('\n') + '\n';

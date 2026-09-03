@@ -32,6 +32,10 @@ if (!fs.existsSync(taksonomia)) {
   process.exit(1);
 }
 
+// Lista przestrzeni nazw MUSI obejmowac wszystko, co realnie wysylamy.
+// Byla wezsza, wiec nowe przestrzenie (set:, gallery-set:, wall:) przechodzily
+// obok kontroli — skrypt meldowal "zero nieznanych" nie dlatego, ze strona je
+// zna, tylko dlatego, ze ich nie sprawdzal.
 const src = fs.readFileSync(taksonomia, 'utf8');
 const oczekiwane = new Set();
 for (const m of src.matchAll(/namespaced\("([a-z]+)",\s*"([a-z0-9-]+)"\)/g)) {
@@ -40,7 +44,7 @@ for (const m of src.matchAll(/namespaced\("([a-z]+)",\s*"([a-z0-9-]+)"\)/g)) {
 
 const csv = fs.readFileSync(CSV, 'utf8');
 const wysylane = new Map();
-for (const m of csv.matchAll(/\b(category|style|aesthetic|room|color|occasion|collection|orientation|size):([a-z0-9-]+)/g)) {
+for (const m of csv.matchAll(/\b(category|style|aesthetic|room|color|occasion|collection|orientation|size|set|gallery-set|wall):([a-z0-9-]+)/g)) {
   const t = m[1] + ':' + m[2];
   wysylane.set(t, (wysylane.get(t) || 0) + 1);
 }
