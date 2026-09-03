@@ -818,16 +818,23 @@ async function main() {
     if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
     if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
 
-    // Dwa zdjecia produktu, jak przy kazdym innym produkcie w katalogu:
-    // packshot (oprawione elementy na czystym tle) i salon (ta sama
-    // kompozycja na scianie prawdziwego wnetrza). Miniatura to tylko
-    // pomniejszony packshot — nie liczy sie jako osobne zdjecie produktu.
+    // Trzy zdjecia produktu, w kolejnosci, w jakiej klient ma je zobaczyc:
+    //   1. master   — same wydruki, BEZ ramy. To jest produkt.
+    //   2. packshot — te same wydruki oprawione, na czystym tle — wizualizacja
+    //                 efektu, NIE zawartosc paczki.
+    //   3. salon    — packshot na scianie prawdziwego wnetrza.
+    // Master pierwszy, bo to on ma odpowiadac na pytanie "co dostane" —
+    // dokladnie tak, jak przy kazdym pojedynczym plakacie w katalogu.
     const mk = g.mockups || {};
-    const packshotRel = mk.frame && fileExists(mk.frame) ? normalizeRelPath(mk.frame)
-      : (g.imagePath && fileExists(g.imagePath) ? normalizeRelPath(g.imagePath) : '');
+    const masterRel = g.imagePath && fileExists(g.imagePath) ? normalizeRelPath(g.imagePath) : '';
+    const packshotRel = mk.frame && fileExists(mk.frame) ? normalizeRelPath(mk.frame) : '';
     const salonRel = mk.interior && fileExists(mk.interior) ? normalizeRelPath(mk.interior) : '';
-    if (!packshotRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak packshotu, pomijam.`); continue; }
-    const ZDJECIA_GALERII = [toPublicUrl(packshotRel), salonRel ? toPublicUrl(salonRel) : ''].filter(Boolean);
+    if (!masterRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak mastera, pomijam.`); continue; }
+    const ZDJECIA_GALERII = [
+      toPublicUrl(masterRel),
+      packshotRel ? toPublicUrl(packshotRel) : '',
+      salonRel ? toPublicUrl(salonRel) : '',
+    ].filter(Boolean);
     const cena = Number(g.price);
     if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw scienny "${g.title}" — brak ceny, pomijam.`); continue; }
 

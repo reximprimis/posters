@@ -1,5 +1,5 @@
 /**
- * Wizualizacje ZESTAWOW SCIENNYCH (kind: 'gallery') — packshot i salon.
+ * Wizualizacje ZESTAWOW SCIENNYCH (kind: 'gallery') — master, packshot, salon.
  *
  * Rozni sie od posterSetVisuals.js (dyptyk/tryptyk) w jednej istotnej rzeczy:
  * tam panele sa ROWNE, bo pochodza z jednej pocietej panoramy. Tu skladniki
@@ -10,9 +10,21 @@
  * dostaje wspolny mnoznik pikseli-na-centymetr, wiec proporcje miedzy
  * elementami sa fizycznie prawdziwe.
  *
- * Uklad: NAJWIEKSZY element (po wysokosci w cm) po lewej, reszta w kolumnie
- * po prawej, od gory do dolu w kolejnosci z definicji. To samo, co pierwszy
- * podglad kompozycji — tu tylko dochodzi oprawa i tlo.
+ * TRZY OBRAZY, NIE DWA — i to jest wazne, nie kosmetyka:
+ *
+ *   MASTER   — same wydruki, BEZ ramy. To jest produkt: klient kupuje
+ *              papier, rame dobiera osobno w sklepie, dokladnie jak przy
+ *              kazdym pojedynczym plakacie w katalogu. Zdjecie z czarna
+ *              rama jako GLOWNE zdjecie sugerowaloby, ze rama jest w cenie —
+ *              nieprawda o produkcie.
+ *   PACKSHOT — te same wydruki oprawione, na czystym tle. Wizualizacja
+ *              efektu, nie zawartosc paczki — ten sam zabieg co przy kazdym
+ *              plakacie w katalogu, ktory tez ma zdjecie w ramie i tez jest
+ *              sprzedawany bez niej.
+ *   SALON    — packshot wklejony w prawdziwe zdjecie wnetrza.
+ *
+ * Uklad we wszystkich trzech: NAJWIEKSZY element (po wysokosci w cm) po
+ * lewej, reszta w kolumnie po prawej, od gory do dolu w kolejnosci z definicji.
  *
  * Skladane lokalnie przez sharp, bez modelu — deterministyczne i darmowe.
  */
@@ -28,6 +40,10 @@ const FRAME_CM = 1.1;
 const GAP_HERO_CM = 2.2;
 const GAP_STACK_CM = 1.6;
 const MARGIN_CM = 3.5;
+// Cien pod arkuszem BEZ ramy — wezszy niz cien pod rama, bo sugeruje lezacy
+// papier, a nie uniesiona, cięzka oprawe. Ten sam zabieg co "arkusze"
+// (buildSetSheets) przy dyptyku/tryptyku w posterSetVisuals.js.
+const SHADOW_BARE_CM = 0.8;
 
 function svgBuffer(svg) {
   return Buffer.from(svg);
@@ -39,12 +55,14 @@ async function zapisz(buf, outputPath, tloDlaJpeg) {
 }
 
 /**
- * Oprawia jeden element w ramke o zadanych wymiarach w PIKSELACH.
- * Grafika wypelnia wnetrze od krawedzi do krawedzi (full bleed, jak przy
- * pojedynczych plakatach w tej samej estetyce).
+ * Uklada jeden element w podanych wymiarach. Z rama (ramuj=true) dostaje
+ * czarna oprawe o grubosci frameJednostka; bez ramy zwraca sama grafike
+ * w jej docelowym rozmiarze — nic wiecej.
  */
-async function oprawObraz(absPath, innerW, innerH, frameJednostka) {
+async function ulozElement(absPath, innerW, innerH, frameJednostka, ramuj) {
   const art = await sharp(absPath).resize(innerW, innerH, { fit: 'cover', position: 'centre' }).png().toBuffer();
+  if (!ramuj) return { buffer: art, width: innerW, height: innerH };
+
   const totalW = innerW + frameJednostka * 2;
   const totalH = innerH + frameJednostka * 2;
   const svg = '<svg width="' + totalW + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">' +
@@ -56,12 +74,13 @@ async function oprawObraz(absPath, innerW, innerH, frameJednostka) {
   return { buffer: buf, width: totalW, height: totalH };
 }
 
-async function cienPod(w, h, padPx) {
+async function cienPod(w, h, padPx, sila) {
+  const alpha = sila == null ? 0.28 : sila;
   const svg = '<svg width="' + (w + padPx * 2) + '" height="' + (h + padPx * 2) + '" xmlns="http://www.w3.org/2000/svg">' +
     '<defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%">' +
     '<feGaussianBlur stdDeviation="' + Math.round(padPx / 2.4) + '"/></filter></defs>' +
     '<rect x="' + padPx + '" y="' + (padPx + Math.round(padPx / 3)) + '" width="' + w + '" height="' + h + '" ' +
-    'fill="rgba(0,0,0,0.28)" filter="url(#b)"/></svg>';
+    'fill="rgba(0,0,0,' + alpha + ')" filter="url(#b)"/></svg>';
   return sharp(svgBuffer(svg)).png().toBuffer();
 }
 
@@ -70,23 +89,27 @@ async function cienPod(w, h, padPx) {
  * @param {Array<{absPath:string, widthCm:number, heightCm:number}>} items
  * @param {number} pxPerCm
  * @param {string|null} background kolor tla albo null dla przezroczystego
+ * @param {boolean} [ramuj] domyslnie true — false daje gole arkusze (MASTER)
  * @returns {Promise<{buffer:Buffer, width:number, height:number}>}
  */
-async function skladajUklad(items, pxPerCm, background) {
+async function skladajUklad(items, pxPerCm, background, ramuj) {
+  const oprawiony = ramuj !== false;
   const hero = items.reduce((a, b) => (b.heightCm > a.heightCm ? b : a));
   const reszta = items.filter((it) => it !== hero);
-  const frameJednostka = Math.round(FRAME_CM * pxPerCm);
+  const frameJednostka = oprawiony ? Math.round(FRAME_CM * pxPerCm) : 0;
   const gapHero = Math.round(GAP_HERO_CM * pxPerCm);
   const gapStack = Math.round(GAP_STACK_CM * pxPerCm);
   const margines = Math.round(MARGIN_CM * pxPerCm);
+  const padCien = oprawiony ? Math.round(frameJednostka * 2.2) : Math.round(SHADOW_BARE_CM * pxPerCm);
+  const silaCienia = oprawiony ? 0.28 : 0.16;
 
-  const heroFrame = await oprawObraz(
-    hero.absPath, Math.round(hero.widthCm * pxPerCm), Math.round(hero.heightCm * pxPerCm), frameJednostka
+  const heroFrame = await ulozElement(
+    hero.absPath, Math.round(hero.widthCm * pxPerCm), Math.round(hero.heightCm * pxPerCm), frameJednostka, oprawiony
   );
   const kolumna = [];
   for (const it of reszta) {
-    kolumna.push(await oprawObraz(
-      it.absPath, Math.round(it.widthCm * pxPerCm), Math.round(it.heightCm * pxPerCm), frameJednostka
+    kolumna.push(await ulozElement(
+      it.absPath, Math.round(it.widthCm * pxPerCm), Math.round(it.heightCm * pxPerCm), frameJednostka, oprawiony
     ));
   }
 
@@ -95,7 +118,6 @@ async function skladajUklad(items, pxPerCm, background) {
 
   const rzadW = heroFrame.width + (kolumna.length ? gapHero + kolumnaW : 0);
   const rzadH = Math.max(heroFrame.height, kolumnaH);
-  const padCien = Math.round(frameJednostka * 2.2);
 
   const canvasW = rzadW + margines * 2 + padCien * 2;
   const canvasH = rzadH + margines * 2 + padCien * 2;
@@ -107,13 +129,13 @@ async function skladajUklad(items, pxPerCm, background) {
   const layers = [];
   const heroX = margines + padCien;
   const heroY = margines + padCien + Math.round((rzadH - heroFrame.height) / 2);
-  layers.push({ input: await cienPod(heroFrame.width, heroFrame.height, padCien), left: heroX - padCien, top: heroY - padCien });
+  layers.push({ input: await cienPod(heroFrame.width, heroFrame.height, padCien, silaCienia), left: heroX - padCien, top: heroY - padCien });
   layers.push({ input: heroFrame.buffer, left: heroX, top: heroY });
 
   let y = margines + padCien + Math.round((rzadH - kolumnaH) / 2);
   const kolX = heroX + heroFrame.width + gapHero;
   for (const k of kolumna) {
-    layers.push({ input: await cienPod(k.width, k.height, padCien), left: kolX - padCien, top: y - padCien });
+    layers.push({ input: await cienPod(k.width, k.height, padCien, silaCienia), left: kolX - padCien, top: y - padCien });
     layers.push({ input: k.buffer, left: kolX, top: y });
     y += k.height + gapStack;
   }
@@ -123,12 +145,20 @@ async function skladajUklad(items, pxPerCm, background) {
 }
 
 /**
- * Packshot: oprawione elementy na czystym, neutralnym tle. Skala stala —
- * nie ma zony do wypelnienia, wiec bierzemy px/cm, ktory daje ostry,
- * duzy obraz niezaleznie od liczby elementow.
+ * Master: same wydruki, BEZ ramy, na czystym tle. To jest GLOWNE zdjecie
+ * produktu — pokazuje dokladnie to, co przyjedzie w paczce.
+ */
+async function buildGalleryMaster(items, outputPath) {
+  const wynik = await skladajUklad(items, 26, null, false);
+  return zapisz(wynik.buffer, outputPath, '#f4f2ee');
+}
+
+/**
+ * Packshot: oprawione elementy na czystym, neutralnym tle. Wizualizacja
+ * efektu w ramie — nie zawartosc paczki, patrz komentarz na gorze pliku.
  */
 async function buildGalleryPackshot(items, outputPath) {
-  const wynik = await skladajUklad(items, 26, null);
+  const wynik = await skladajUklad(items, 26, null, true);
   return zapisz(wynik.buffer, outputPath, '#f4f2ee');
 }
 
@@ -136,6 +166,8 @@ async function buildGalleryPackshot(items, outputPath) {
  * Salon: kompozycja wklejona w strefe sciany prawdziwego zdjecia wnetrza.
  * Tlo pochodzi z assets/set_rooms/ — ten sam zasob, ktory uzywaja dyptyki
  * i tryptyki, wiec zestaw scienny wisi w tym samym, sprawdzonym pokoju.
+ * Pokazuje oprawiony wariant — tak jak "efekt na scianie" przy kazdym
+ * innym produkcie w katalogu.
  *
  * Skala liczona ANALITYCZNIE z centymetrow ukladu i wymiarow strefy w cm,
  * a nie przez docinanie gotowego obrazu — inaczej ramki wychodzilyby
@@ -162,7 +194,7 @@ async function buildGalleryInterior(items, outputPath, opts) {
   const calkowiteHcm = ukladHcm + MARGIN_CM * 2 + FRAME_CM * 4.4;
 
   const pxPerCm = Math.min(zoneWpx / calkowiteWcm, zoneHpx / calkowiteHcm);
-  const wynik = await skladajUklad(items, pxPerCm, null);
+  const wynik = await skladajUklad(items, pxPerCm, null, true);
 
   const zoneX = Math.round(scene.zone.x * meta.width);
   const zoneY = Math.round(scene.zone.y * meta.height);
@@ -179,4 +211,4 @@ async function buildGalleryInterior(items, outputPath, opts) {
   return outputPath;
 }
 
-module.exports = { buildGalleryPackshot, buildGalleryInterior };
+module.exports = { buildGalleryMaster, buildGalleryPackshot, buildGalleryInterior };

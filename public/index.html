@@ -8689,12 +8689,12 @@
         // jako produkt, wiec przycisk RAMKA znika, a nie tylko sie wyszarza.
         const isSet = modalPosterItem.kind === 'set';
         // Zestaw scienny (gallery) nie ma Print Style w ogole — jeden SKU, jedna
-        // cena, zero wariantow (src/galerieScienne.js). Jego imagePath to gotowy
-        // PACKSHOT (elementy juz w ramach na czystym tle), wiec pokazanie go pod
-        // etykieta "MASTER" sugerowaloby wariant bez ramki, ktorego produkt nie
-        // ma — i myliloby sie z prawdziwym Packshotem nizej na tej samej liscie.
-        // Oba przyciski Master/Ramka znikaja; jedyne wlasciwe zdjecia to
-        // Packshot i Salon z mockups.frame/interior, pokazywane osobno.
+        // cena, zero wariantow (src/galerieScienne.js), wiec RAMKA znika tak
+        // samo jak przy zwyklym zestawie. MASTER zostaje widoczny — jego
+        // imagePath to teraz prawdziwy master: same wydruki BEZ ramy (src/
+        // galleryVisuals.js: buildGalleryMaster), czyli dokladnie to, co
+        // przyjedzie w paczce. Oprawione wizualizacje (Packshot, Salon) sa
+        // osobnymi przyciskami nizej, zasilanymi z mockups.frame/interior.
         const isGallery = modalPosterItem.kind === 'gallery';
         const canFramed = !!framed && !isSet && !isGallery;
         const v = variant === 'framed' && canFramed ? 'framed' : 'full';
@@ -8706,7 +8706,6 @@
           const on = v === 'full';
           els.modalPreviewFullBtn.classList.toggle('is-active', on);
           els.modalPreviewFullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-          els.modalPreviewFullBtn.hidden = isGallery;
         }
         if (els.modalPreviewFramedBtn) {
           const on = v === 'framed';

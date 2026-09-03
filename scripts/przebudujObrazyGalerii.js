@@ -23,7 +23,7 @@ const norm = (p) => String(p || '').split(BS).join('/');
 const abs = (p) => path.join(ROOT, norm(p));
 
 const { toPosterHandle } = require('../src/posterTitle');
-const { buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
+const { buildGalleryMaster, buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
 
 const tytul = process.argv[2];
 if (!tytul) { console.error('Podaj tytul zestawu.'); process.exit(1); }
@@ -43,25 +43,31 @@ const handle = toPosterHandle(g.title);
 const katalog = path.join(ROOT, path.dirname(norm(g.imagePath)));
 
 (async () => {
+  const master = path.join(katalog, handle + '_master.jpg');
+  await buildGalleryMaster(items, master);
   const packshot = path.join(katalog, handle + '_packshot.jpg');
   await buildGalleryPackshot(items, packshot);
   const salon = path.join(katalog, handle + '_salon.jpg');
   await buildGalleryInterior(items, salon);
   const thumb = path.join(katalog, handle + '_thumb.jpg');
-  await sharp(packshot).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
+  await sharp(master).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
 
   const rel = (p) => path.relative(ROOT, p).split(BS).join('/');
   const swieza = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
   const cel = swieza.posters.find((p) => p.id === g.id);
-  cel.imagePath = rel(packshot);
+  // imagePath = MASTER (bez ramy) — to jest produkt. Packshot i salon zostaja
+  // wizualizacjami efektu w mockups, tak jak przy kazdym innym produkcie.
+  cel.imagePath = rel(master);
   cel.imagePathThumb = rel(thumb);
   cel.mockups = { frame: rel(packshot), interior: rel(salon), generatedAt: new Date().toISOString() };
   fs.writeFileSync(INVENTORY, JSON.stringify(swieza, null, 2) + '\n', 'utf8');
 
   console.log('przebudowane: ' + g.title);
+  console.log('   master:   ' + rel(master));
   console.log('   packshot: ' + rel(packshot));
   console.log('   salon:    ' + rel(salon));
 
-  // Stary plik podgladu (flat) zostaje na dysku jako nieuzywany — nie kasujemy
-  // automatycznie plikow spoza tego, co ten skrypt sam tworzy.
+  // Stare pliki (podglad, poprzedni packshot-jako-imagePath) zostaja na dysku
+  // jako nieuzywane — nie kasujemy automatycznie plikow spoza tego, co ten
+  // skrypt sam tworzy w tym przebiegu.
 })().catch((e) => { console.error(e); process.exit(1); });

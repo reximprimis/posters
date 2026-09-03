@@ -65,11 +65,12 @@ for (const p of plakaty.filter((x) => x.approvedForPrint)) {
 // ── 3b. Zestawy scienne: zdjecia produktu, skladniki i pliki do druku ──────
 //
 // Galeria NIE MA wlasnych PDF-ow do druku i to jest poprawne — sklada sie
-// z gotowych plakatow, kazdy juz wydrukowalny. Ale MA dwa zdjecia produktu —
-// packshot i salon, w mockups.frame/interior — tak jak kazdy inny produkt
-// w katalogu, wiec sprawdzamy je tak samo jak przy plakacie.
+// z gotowych plakatow, kazdy juz wydrukowalny. Ale MA TRZY zdjecia produktu —
+// master (imagePath, bez ramy — to jest produkt), packshot i salon
+// (mockups.frame/interior, wizualizacje efektu) — sprawdzamy wszystkie trzy.
 for (const g of galerie.filter((x) => x.approvedForPrint)) {
   if (!jest(g.imagePathThumb)) dodaj('BLOKUJE', `${g.title}: brak miniatury`);
+  if (!jest(g.imagePath)) dodaj('BLOKUJE', `${g.title}: brak mastera (imagePath)`);
   const gm = g.mockups || {};
   if (!gm.frame || !gm.interior) dodaj('WAZNE', `${g.title}: brak packshotu lub salonu w kartotece`);
   else if (!jest(gm.frame) || !jest(gm.interior)) dodaj('BLOKUJE', `${g.title}: packshot/salon w kartotece, brak plikow`);

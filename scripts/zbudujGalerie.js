@@ -1,14 +1,18 @@
 /**
- * Buduje ZESTAW SCIENNY z definicji: packshot, salon, kopie PDF-ow do druku,
- * manifest produkcyjny i rekord w kartotece.
+ * Buduje ZESTAW SCIENNY z definicji: master, packshot, salon, kopie PDF-ow
+ * do druku, manifest produkcyjny i rekord w kartotece.
  *
- * DWA ZDJECIA PRODUKTU, jak przy kazdym innym produkcie w katalogu:
- *   packshot — oprawione elementy na czystym tle, tak jak packshot
- *              pojedynczego plakatu czy dyptyku/tryptyku,
+ * TRZY ZDJECIA PRODUKTU, jak przy kazdym innym produkcie w katalogu:
+ *   master   — same wydruki, BEZ ramy. To GLOWNE zdjecie: pokazuje dokladnie
+ *              to, co przyjedzie w paczce. Rama jest osobnym produktem,
+ *              dobieranym przez klienta w sklepie — dokladnie jak przy kazdym
+ *              pojedynczym plakacie.
+ *   packshot — te same wydruki oprawione, na czystym tle. Wizualizacja
+ *              efektu, NIE zawartosc paczki.
  *   salon    — ta sama kompozycja wklejona w prawdziwe zdjecie wnetrza
  *              (assets/set_rooms/), ten sam zasob co dyptyki i tryptyki.
- * Oba licza sie z centymetrow, wiec 50x70 obok 21x30 ma na obrazku te sama
- * proporcje co na scianie — logika w src/galleryVisuals.js.
+ * Wszystkie trzy licza sie z centymetrow, wiec 50x70 obok 21x30 ma na
+ * obrazku te sama proporcje co na scianie — logika w src/galleryVisuals.js.
  *
  * Galeria NICZEGO NIE GENERUJE do druku. Kazdy plakat skladowy ma juz komplet
  * PDF-ow we wszystkich rozmiarach — kopiujemy wlasciwy do podkatalogu druk/,
@@ -33,7 +37,7 @@ const fileExists = (p) => !!p && fs.existsSync(abs(p));
 
 const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieScienne');
 const { toPosterHandle } = require('../src/posterTitle');
-const { buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
+const { buildGalleryMaster, buildGalleryPackshot, buildGalleryInterior } = require('../src/galleryVisuals');
 const { buildGalleryDescription, findForbiddenTerms } = require('../src/galleryDescription');
 
 const plikDef = process.argv[2];
@@ -99,14 +103,18 @@ const items = pozycje.map((z) => {
 });
 
 (async () => {
+  const master = path.join(katalog, handle + '_master.jpg');
+  await buildGalleryMaster(items, master);
+
   const packshot = path.join(katalog, handle + '_packshot.jpg');
   await buildGalleryPackshot(items, packshot);
 
   const salon = path.join(katalog, handle + '_salon.jpg');
   await buildGalleryInterior(items, salon, { roomId: def.pokojId || undefined });
 
+  // Miniatura z MASTERA, nie z packshotu — to on jest zdjeciem produktu.
   const thumb = path.join(katalog, handle + '_thumb.jpg');
-  await sharp(packshot).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
+  await sharp(master).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);
 
   const manifest = { tytul: def.tytul, handle: handle, utworzono: new Date().toISOString(), pozycje: [] };
   const linie = ['ZESTAW SCIENNY: ' + def.tytul, 'handle: ' + handle, '', 'DO WYDRUKOWANIA:'];
@@ -133,7 +141,10 @@ const items = pozycje.map((z) => {
     artStyle: pozycje[0].poster.artStyle,
     wallColor: def.sciana || '',
     pieceCount: pozycje.length,
-    imagePath: rel(packshot),
+    // imagePath = MASTER (bez ramy) — to jest produkt. Packshot i salon sa
+    // wizualizacjami efektu, trzymanymi w mockups tak jak przy kazdym innym
+    // produkcie w katalogu.
+    imagePath: rel(master),
     imagePathThumb: rel(thumb),
     mockups: { frame: rel(packshot), interior: rel(salon), generatedAt: new Date().toISOString() },
     items: manifest.pozycje.map((p) => ({ title: p.tytul, size: p.rozmiar, pdf: p.pdfZrodlowy })),
@@ -151,8 +162,9 @@ const items = pozycje.map((z) => {
 
   console.log('');
   console.log('katalog:   posters/_galerie/' + handle);
+  console.log('master:    ' + path.basename(master));
   console.log('packshot:  ' + path.basename(packshot));
   console.log('salon:     ' + path.basename(salon));
   console.log('do druku:  ' + pozycje.length + ' PDF-ow w druk/');
-  console.log('rekord dodany, NIEZATWIERDZONY — obejrzyj packshot i salon, potem zatwierdz.');
+  console.log('rekord dodany, NIEZATWIERDZONY — obejrzyj master, packshot i salon, potem zatwierdz.');
 })().catch((e) => { console.error(e); process.exit(1); });
