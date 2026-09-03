@@ -8351,20 +8351,38 @@
           const cardImg = card.querySelector('figure img');
           if (cardImg) {
             const orientationBadge = card.querySelector('[data-orientation-badge]');
+            // Zestaw (panele obok siebie) i galeria (hero + kolumna) maja
+            // MINIATURE ktora jest kompozycja kilku elementow, wiec jej
+            // ksztalt w pikselach nie mowi nic o orientacji PRODUKTU — hero +
+            // dwa mniejsze obok daje zawsze szeroki, "landscape" ksztalt
+            // kadru, nawet gdy kazdy element w srodku jest pionowy i produkt
+            // ma wisiec jak pionowa kompozycja. Dla tych dwoch rodzajow
+            // ufamy zadeklarowanej orientacji (item.orientation), nie
+            // pikselom wczytanego obrazka.
+            const isComposite = isSet || item.kind === 'gallery';
             const applyOrientationClass = () => {
-              const nw = Number(cardImg.naturalWidth || 0);
-              const nh = Number(cardImg.naturalHeight || 0);
-              if (!nw || !nh) return;
-              const isLandscape = nw > nh;
+              let isLandscape;
+              if (isComposite) {
+                isLandscape = item.orientation === 'landscape';
+              } else {
+                const nw = Number(cardImg.naturalWidth || 0);
+                const nh = Number(cardImg.naturalHeight || 0);
+                if (!nw || !nh) return;
+                isLandscape = nw > nh;
+              }
               card.classList.toggle('poster-card--landscape', isLandscape);
               card.classList.toggle('poster-card--portrait', !isLandscape);
+              // Plakietka na zestawach pokazuje TRYPTYK/DYPTYK (setBadgeText
+              // wyzej), nie Pion/Poziom — to inna informacja, zostawiamy ja
+              // nietknieta. Dotyczy tylko ukladu karty, wiec galeria (ktora
+              // NIE ma takiej specjalnej plakiety) dostaje normalne Pion/Poziom.
               if (orientationBadge && !isSet) {
                 orientationBadge.textContent = isLandscape ? 'Poziom' : 'Pion';
                 orientationBadge.classList.toggle('poster-orientation-badge--landscape', isLandscape);
               }
             };
-            if (cardImg.complete) applyOrientationClass();
-            cardImg.addEventListener('load', applyOrientationClass, { once: true });
+            if (isComposite || cardImg.complete) applyOrientationClass();
+            if (!isComposite) cardImg.addEventListener('load', applyOrientationClass, { once: true });
           }
 
           card.addEventListener('click', (e) => {
