@@ -1091,8 +1091,12 @@ async function main() {
       'Option3 Name': '', 'Option3 Value': '', 'Option3 Linked To': '',
       'Variant SKU': handle,
       'Variant Grams': '',
-      'Variant Inventory Tracker': '',
-      'Variant Inventory Qty': '',
+      // Stan pobrany z zywego sklepu (scripts/pobierzStanRamek.js), juz
+      // pomniejszony o bufor 10 szt. na blad inwentaryzacji — bez trackera
+      // Shopify by w ogole nie pilnowal ilosci, wiec 'shopify' tu jest
+      // wymagane (inaczej Qty samo w sobie nic nie robi).
+      'Variant Inventory Tracker': 'shopify',
+      'Variant Inventory Qty': Number.isFinite(r.stock) ? String(r.stock) : '',
       'Variant Inventory Policy': 'deny',
       'Variant Fulfillment Service': 'manual',
       'Variant Price': cena.toFixed(2),

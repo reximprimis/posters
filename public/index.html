@@ -6039,6 +6039,7 @@
           '<td>' + escFr(r.frameMaterial) + '</td>' +
           '<td>' + escFr(r.size) + '</td>' +
           '<td>' + escFr(r.price) + ' zł</td>' +
+          '<td>' + (r.stock == null ? '<span style="opacity:.5">—</span>' : escFr(r.stock) + ' szt.') + '</td>' +
           '<td class="frames-img-status">front ' + dot(!!img.front) + ' &nbsp; tył ' + dot(!!img.back) + ' &nbsp; pokój ' + dot(!!img.room) + '</td>' +
           '<td><button type="button" class="frames-approve-btn" data-handle="' + escFr(r.handle) + '" data-approved="' + (r.approvedForPrint ? 'true' : 'false') + '"' +
             (mozeZatwierdzic ? '' : ' disabled title="brak frontu lub tylu"') + '>' +
@@ -6049,7 +6050,7 @@
       var wrap = framesPanel.querySelector('.frames-table-wrap');
       wrap.innerHTML =
         '<table class="frames-table"><thead><tr>' +
-        '<th>Produkt</th><th>Materiał</th><th>Rozmiar</th><th>Cena</th><th>Zdjęcia</th><th></th>' +
+        '<th>Produkt</th><th>Materiał</th><th>Rozmiar</th><th>Cena</th><th>Stan</th><th>Zdjęcia</th><th></th>' +
         '</tr></thead><tbody>' + body + '</tbody></table>';
       wrap.querySelectorAll('.frames-approve-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {

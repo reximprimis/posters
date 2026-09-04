@@ -135,6 +135,7 @@ for (const r of ramki.filter((x) => x.approvedForPrint)) {
   if (!img.back) dodaj('BLOKUJE', `${r.title}: brak zdjecia tylu dla rozmiaru ${r.size} (frames/products/_back/${r.size}.jpg)`);
   if (!img.room) dodaj('DROBNE', `${r.title}: brak zdjecia w pokoju (opcjonalne)`);
   if (!r.price || r.price <= 0) dodaj('BLOKUJE', `${r.title}: brak ceny`);
+  if (!Number.isFinite(r.stock)) dodaj('WAZNE', `${r.title}: brak stanu magazynowego — uruchom scripts/pobierzStanRamek.js`);
 }
 
 // ── 4. Zestawy: panele i komplet PDF-ow ─────────────────────────────────────

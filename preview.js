@@ -734,6 +734,7 @@ app.get('/api/frames', (req, res) => {
       frameMaterial: r.frameMaterial,
       size: r.size,
       price: r.price,
+      stock: Number.isFinite(r.stock) ? r.stock : null,
       approvedForPrint: r.approvedForPrint === true,
       images: resolveFrameImages(r),
     }))
