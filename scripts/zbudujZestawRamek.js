@@ -35,7 +35,7 @@ const fileExists = (p) => !!p && fs.existsSync(abs(p));
 
 const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieRamek');
 const { SIZE_PRICES } = require('../src/galerieScienne');
-const { cenaRamy, opisRamy } = require('../src/ramkiKatalog');
+const { cenaRamy, opisRamy, handleRamy } = require('../src/ramkiKatalog');
 const { toPosterHandle } = require('../src/posterTitle');
 const { buildFramedGridRaw } = require('../src/galleryFramedVisuals');
 const { buildFramedMasterAI } = require('../src/galleryFramedPackshotAI');
@@ -143,13 +143,13 @@ const items = pozycje.map((z) => {
     fs.copyFileSync(abs(zrodlo), path.join(katalogDruk, nazwa));
     manifest.pozycje.push({
       tytul: z.tytul, rozmiar: z.rozmiar, pdfZrodlowy: norm(zrodlo), plik: 'druk/' + nazwa,
-      ramaHandle: rama.handlePrefix + '-' + z.rozmiar + '-cm',
+      ramaHandle: handleRamy(rama.kolor, z.rozmiar),
     });
     linie.push('   ' + z.rozmiar.padEnd(8) + nazwa + '   (' + z.tytul + ')');
   }
   linie.push('', 'RAMY DO ZAPAKOWANIA (' + rama.material + ' / ' + rama.kolor + '):');
   for (const z of pozycje) {
-    linie.push('   ' + z.rozmiar.padEnd(8) + rama.handlePrefix + '-' + z.rozmiar + '-cm   (do: ' + z.tytul + ')');
+    linie.push('   ' + z.rozmiar.padEnd(8) + handleRamy(rama.kolor, z.rozmiar) + '   (do: ' + z.tytul + ')');
   }
   linie.push('', 'Sztuk w paczce: ' + pozycje.length + ' plakaty + ' + pozycje.length + ' ramy.', 'PDF-y w podkatalogu druk/, ramy pobrac z magazynu wg SKU powyzej.');
   fs.writeFileSync(path.join(katalog, 'produkcja.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf8');

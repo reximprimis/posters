@@ -29,7 +29,12 @@ const RAMKI = [
   { material: 'drewno', kolor: 'bialy', handlePrefix: 'ramka-drewniana-biala',
     ceny: { '13x18': 22, '21x30': 34, '30x40': 65, '40x50': 92, '50x70': 115 } },
   { material: 'drewno', kolor: 'czarny', handlePrefix: 'ramka-drewniana-czarna',
-    ceny: { '13x18': 22 } },
+    // Handle w zywym sklepie dla 50x70 lamie konwencje 'ramka-*' (jest
+    // 'black-wood-frame-50x70-cm', po angielsku) — zapisany osobno w
+    // handleOverride, zeby eksport/pobieranie stanu uzywaly PRAWDZIWEGO
+    // handle, a nie zgadywaly go z handlePrefix + rozmiar jak dla reszty.
+    ceny: { '13x18': 22, '50x70': 115 },
+    handleOverride: { '50x70': 'black-wood-frame-50x70-cm' } },
 ];
 
 /**
@@ -52,4 +57,22 @@ function opisRamy(kolor) {
   return { material: r.material, kolor: r.kolor, handlePrefix: r.handlePrefix };
 }
 
-module.exports = { RAMKI, cenaRamy, opisRamy };
+/**
+ * PRAWDZIWY handle Shopify dla danego koloru+rozmiaru — z handleOverride,
+ * jesli sklep akurat lamie konwencje 'handlePrefix-rozmiar-cm' (patrz
+ * czarny/drewno/50x70), inaczej wyliczony z handlePrefix. Kazdy skrypt,
+ * ktory buduje handle ramy, MA uzywac tej funkcji, nie sklejac stringa
+ * recznie — inaczej jeden nowy wyjatek jak ten trzeba bylo naprawiac
+ * w kilku miejscach naraz.
+ * @param {string} kolor
+ * @param {string} rozmiar
+ * @returns {string}
+ */
+function handleRamy(kolor, rozmiar) {
+  const r = RAMKI.find((x) => x.kolor === kolor);
+  if (!r) throw new Error('Nieznany kolor ramy: ' + kolor);
+  if (r.handleOverride && r.handleOverride[rozmiar]) return r.handleOverride[rozmiar];
+  return r.handlePrefix + '-' + rozmiar + '-cm';
+}
+
+module.exports = { RAMKI, cenaRamy, opisRamy, handleRamy };

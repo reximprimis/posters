@@ -1329,17 +1329,24 @@
       background: rgba(255, 255, 255, 0.16);
     }
 
-    .frames-table-wrap { overflow-x: auto; }
-    .frames-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .frames-table th, .frames-table td { padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.08); text-align: left; white-space: nowrap; }
-    .frames-table th { font-weight: 600; opacity: 0.7; }
-    .frames-img-status { display: inline-flex; gap: 4px; }
-    .frames-img-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: rgba(0,0,0,0.15); }
-    .frames-img-dot--ok { background: #2f9e5c; }
-    .frames-approve-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); background: #fff; cursor: pointer; font-size: 12.5px; }
+    .frames-table-wrap { overflow-x: visible; }
+    .frames-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+    .frames-card { border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .frames-card--approved { border-color: #2f9e5c; }
+    .frames-card-main { aspect-ratio: 4/5; background: #f3f2ee; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .frames-card-main img.frames-thumb { width: 100%; height: 100%; object-fit: contain; }
+    .frames-card-main .frames-thumb--empty { width: 100%; height: 100%; }
+    .frames-thumb--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.04em; text-align: center; }
+    .frames-card-strip { display: flex; gap: 4px; padding: 6px; background: #fafaf8; border-top: 1px solid rgba(0,0,0,0.06); }
+    .frames-card-strip .frames-thumb { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; background: #eee; }
+    .frames-card-strip .frames-thumb--empty { width: 40px; height: 40px; border-radius: 5px; font-size: 8px; background: #eee; }
+    .frames-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .frames-card-title { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .frames-card-meta { font-size: 12px; opacity: 0.65; }
+    .frames-approve-btn { padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); background: #fff; cursor: pointer; font-size: 12.5px; margin-top: 2px; }
     .frames-approve-btn[data-approved="true"] { background: #eafaf0; border-color: #2f9e5c; color: #1e7a44; }
     .frames-approve-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .frames-color-swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.2); vertical-align: -2px; margin-right: 6px; }
+    .frames-color-swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.2); vertical-align: 0px; margin-right: 5px; }
 
     .poster-orientation-badge--set {
       background: rgba(122, 78, 34, 0.78);
@@ -6027,31 +6034,36 @@
     function escFr(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     }); }
+    // Zdjecia sa serwowane pod /frames/<sciezka wzgledna>, patrz preview.js
+    // ("app.use('/frames', express.static(...frames)")). resolveFrameImages()
+    // zwraca sciezki jak "frames/products/<kolor>/front.jpg" — juz zaczynaja
+    // sie od "frames/", wiec doklejamy tylko wiodacy slash.
+    function frImgUrl(relPath) { return relPath ? '/' + relPath : ''; }
     function renderFramesTable(items) {
-      var body = items.map(function (r) {
+      var cards = items.map(function (r) {
         var img = r.images || {};
-        var dot = function (ok) { return '<span class="frames-img-dot' + (ok ? ' frames-img-dot--ok' : '') + '" title="' + (ok ? 'jest' : 'brak') + '"></span>'; };
-        var swatch = '<span class="frames-color-swatch" style="background:' + (KOLOR_HEX_RAMKI[r.frameColor] || '#ccc') + '"></span>';
         var mozeZatwierdzic = !!(img.front && img.back);
+        var thumb = function (relPath, etykieta) {
+          if (!relPath) return '<div class="frames-thumb frames-thumb--empty" title="brak: ' + etykieta + '">' + etykieta + '<br>brak</div>';
+          return '<img class="frames-thumb" src="' + frImgUrl(relPath) + '" alt="' + etykieta + '" title="' + etykieta + '" loading="lazy" />';
+        };
         return (
-          '<tr>' +
-          '<td>' + swatch + escFr(r.title) + '</td>' +
-          '<td>' + escFr(r.frameMaterial) + '</td>' +
-          '<td>' + escFr(r.size) + '</td>' +
-          '<td>' + escFr(r.price) + ' zł</td>' +
-          '<td>' + (r.stock == null ? '<span style="opacity:.5">—</span>' : escFr(r.stock) + ' szt.') + '</td>' +
-          '<td class="frames-img-status">front ' + dot(!!img.front) + ' &nbsp; tył ' + dot(!!img.back) + ' &nbsp; pokój ' + dot(!!img.room) + '</td>' +
-          '<td><button type="button" class="frames-approve-btn" data-handle="' + escFr(r.handle) + '" data-approved="' + (r.approvedForPrint ? 'true' : 'false') + '"' +
+          '<div class="frames-card' + (r.approvedForPrint ? ' frames-card--approved' : '') + '">' +
+          '<div class="frames-card-main">' + thumb(img.front, 'front') + '</div>' +
+          '<div class="frames-card-strip">' + thumb(img.back, 'tył') + thumb(img.room, 'pokój') + '</div>' +
+          '<div class="frames-card-body">' +
+          '<div class="frames-card-title"><span class="frames-color-swatch" style="background:' + (KOLOR_HEX_RAMKI[r.frameColor] || '#ccc') + '"></span>' + escFr(r.title) + '</div>' +
+          '<div class="frames-card-meta">' + escFr(r.frameMaterial) + ' · ' + escFr(r.price) + ' zł · ' +
+          (r.stock == null ? '<span style="opacity:.5">stan ?</span>' : escFr(r.stock) + ' szt.') + '</div>' +
+          '<button type="button" class="frames-approve-btn" data-handle="' + escFr(r.handle) + '" data-approved="' + (r.approvedForPrint ? 'true' : 'false') + '"' +
             (mozeZatwierdzic ? '' : ' disabled title="brak frontu lub tylu"') + '>' +
-            (r.approvedForPrint ? '✓ Zatwierdzona' : 'Zatwierdź') + '</button></td>' +
-          '</tr>'
+            (r.approvedForPrint ? '✓ Zatwierdzona' : 'Zatwierdź') + '</button>' +
+          '</div>' +
+          '</div>'
         );
       }).join('');
       var wrap = framesPanel.querySelector('.frames-table-wrap');
-      wrap.innerHTML =
-        '<table class="frames-table"><thead><tr>' +
-        '<th>Produkt</th><th>Materiał</th><th>Rozmiar</th><th>Cena</th><th>Stan</th><th>Zdjęcia</th><th></th>' +
-        '</tr></thead><tbody>' + body + '</tbody></table>';
+      wrap.innerHTML = '<div class="frames-grid">' + cards + '</div>';
       wrap.querySelectorAll('.frames-approve-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var handle = btn.dataset.handle;

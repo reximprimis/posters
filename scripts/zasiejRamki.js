@@ -18,7 +18,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
 
-const { RAMKI } = require('../src/ramkiKatalog');
+const { RAMKI, handleRamy } = require('../src/ramkiKatalog');
 const { buildFrameProductDescription } = require('../src/frameProductDescription');
 
 const zapis = process.argv.includes('--wykonaj');
@@ -46,7 +46,7 @@ const istniejaceHandle = new Set(
 const doDodania = [];
 for (const rama of RAMKI) {
   for (const rozmiar of Object.keys(rama.ceny)) {
-    const handle = rama.handlePrefix + '-' + rozmiar + '-cm';
+    const handle = handleRamy(rama.kolor, rozmiar);
     if (istniejaceHandle.has(handle)) continue;
     doDodania.push({
       handle,

@@ -2971,6 +2971,12 @@ app.use('/preview-staging', express.static(PREVIEW_STAGING_DIR, { index: false }
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'posters')));
+// frames/ NIE bylo dotad serwowane statycznie wcale — zakladka "Ramki"
+// zwracala poprawne sciezki z resolveFrameImages(), ale przegladarka nie
+// miala jak ich zaladowac, wiec widac bylo tylko puste kropki statusu,
+// zero miniatur. Montujemy pod prefiksem /frames, zgodnie z relatywnymi
+// sciezkami "frames/products/..." zwracanymi przez resolveFrameImages().
+app.use('/frames', express.static(path.join(__dirname, 'frames')));
 
 app.listen(PORT, () => {
   console.log(`\n✓ Preview server running at http://localhost:${PORT}`);
