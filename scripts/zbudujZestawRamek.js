@@ -37,7 +37,8 @@ const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieRam
 const { SIZE_PRICES } = require('../src/galerieScienne');
 const { cenaRamy, opisRamy } = require('../src/ramkiKatalog');
 const { toPosterHandle } = require('../src/posterTitle');
-const { buildFramedMaster } = require('../src/galleryFramedVisuals');
+const { buildFramedGridRaw } = require('../src/galleryFramedVisuals');
+const { buildFramedMasterAI } = require('../src/galleryFramedPackshotAI');
 const { buildFramedInteriorAI } = require('../src/galleryFramedInteriorAI');
 const { buildFramedDescription, findForbiddenTerms, NAZWY_MATERIALU, NAZWY_KOLORU } = require('../src/galleryFramedDescription');
 
@@ -112,16 +113,19 @@ const items = pozycje.map((z) => {
 });
 
 (async () => {
-  const master = path.join(katalog, handle + '_master.jpg');
-  await buildFramedMaster(items, def.kolorRamy, master);
-
-  // Salon jedzie przez GPT Image 2, z gotowym packshotem (master) jako
-  // referencja — nie sklejamy juz lokalnie w assets/set_rooms/*.png. Sklejacz
-  // sharp dawal fotomontaz nie do zaakceptowania jako zdjecie produktowe;
-  // patrz naglowek src/galleryFramedInteriorAI.js.
+  // Surowa siatka (realne ramy, bez cienia, przezroczyste tlo) — WSPOLNA
+  // referencja dla mastera i salonu, oba przez GPT Image 2. Ani lokalnie
+  // rysowany cien, ani lokalnie sklejany salon w assets/set_rooms/*.png nie
+  // wygladaly jak prawdziwe zdjecie produktowe; patrz naglowki
+  // src/galleryFramedPackshotAI.js i src/galleryFramedInteriorAI.js.
+  const raw = await buildFramedGridRaw(items, def.kolorRamy);
   const opisRamyEn = (NAZWY_KOLORU.en[def.kolorRamy] || def.kolorRamy) + ' ' + (NAZWY_MATERIALU.en[rama.material] || rama.material) + ' frame';
+
+  const master = path.join(katalog, handle + '_master.jpg');
+  await buildFramedMasterAI(raw.buffer, { pieceCount: pozycje.length, opisRamy: opisRamyEn }, master);
+
   const salon = path.join(katalog, handle + '_salon.jpg');
-  await buildFramedInteriorAI(master, { pieceCount: pozycje.length, opisRamy: opisRamyEn, roomSlug: def.pomieszczenie }, salon);
+  await buildFramedInteriorAI(raw.buffer, { pieceCount: pozycje.length, opisRamy: opisRamyEn, roomSlug: def.pomieszczenie }, salon);
 
   const thumb = path.join(katalog, handle + '_thumb.jpg');
   await sharp(master).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);

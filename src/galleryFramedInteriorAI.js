@@ -12,9 +12,11 @@
  * potrafi — dlatego jedzie tym samym modelem, ktory juz generuje wiarygodne
  * mockup_interior.jpg dla pojedynczych plakatow (src/mockupGenerator.js).
  *
- * Referencja wyslana do modelu to gotowy packshot (buildFramedMaster) — model
- * ma go POWIELIC na scianie, nie wymyslic ramki od nowa, zeby faktura drewna/
- * metalu i uklad elementow zgadzaly sie z tym, co klient faktycznie dostanie.
+ * Referencja wyslana do modelu to surowa siatka (buildFramedGridRaw z
+ * galleryFramedVisuals.js — realne ramy, bez cienia, przezroczyste tlo) —
+ * TA SAMA referencja, ktorej uzywa tez packshot (galleryFramedPackshotAI.js),
+ * zeby master i salon nie rozjezdzaly sie w interpretacji tej samej ramki.
+ * Model ma ja POWIELIC na scianie, nie wymyslic ramki od nowa.
  */
 
 'use strict';
@@ -70,12 +72,11 @@ Requirements:
 }
 
 /**
- * @param {string} masterPath  Sciezka do juz zbudowanego packshotu (buildFramedMaster) — referencja dla modelu.
- * @param {{ pieceCount: number, kolorRamy: string, opisRamy: string, roomSlug?: string }} opts
+ * @param {Buffer} referenceBuffer  Surowa siatka (buildFramedGridRaw) — realne ramy, bez cienia, przezroczyste tlo.
+ * @param {{ pieceCount: number, opisRamy: string, roomSlug?: string }} opts
  * @param {string} outputPath
  */
-async function buildFramedInteriorAI(masterPath, opts, outputPath) {
-  if (!fs.existsSync(masterPath)) throw new Error('buildFramedInteriorAI: brak pliku ' + masterPath);
+async function buildFramedInteriorAI(referenceBuffer, opts, outputPath) {
   const { pieceCount, opisRamy, roomSlug } = opts;
   if (!pieceCount) throw new Error('buildFramedInteriorAI: brak pieceCount');
   if (!opisRamy) throw new Error('buildFramedInteriorAI: brak opisRamy');
@@ -83,7 +84,8 @@ async function buildFramedInteriorAI(masterPath, opts, outputPath) {
   const scena = SCENY[roomSlug] || SCENY['living-room'];
   const prompt = budujPrompt(pieceCount, opisRamy, scena);
 
-  const refBuffer = await sharp(masterPath)
+  const refBuffer = await sharp(referenceBuffer)
+    .flatten({ background: '#ffffff' })
     .resize(1024, 1536, { fit: 'inside', withoutEnlargement: true })
     .png({ compressionLevel: 7 })
     .toBuffer();

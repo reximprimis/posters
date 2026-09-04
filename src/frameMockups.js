@@ -3,18 +3,30 @@
  * zestawu plakatow i ramek (kind: 'gallery-framed').
  *
  * Kazde zdjecie w frames/assets_frame/ to plaska rama sfotografowana/wygenerowana
- * na wprost, z jasnym (prawie bialym) otworem na wydruk i jasnym tlem dookola.
- * Pliki NIE MAJA kanalu alpha (sprawdzone: PNG colorType 2, bez przezroczystosci)
- * — otwor wycinamy sami z pikseli, nie odczytem alpha.
+ * na wprost, z jasnym (prawie bialym, czasem lekko zaszumionym/w szachownice)
+ * otworem na wydruk i jasnym tlem dookola.
  *
- * Segmentacja to FLOOD FILL od srodka (otwor) i od brzegow zdjecia (tlo) po
- * jasnych pikselach, nie prosty prog jasnosci na kazdym pikselu z osobna.
- * Powod: biala/jasna rama ma kolor niemal identyczny z tlem (~244-255, ten
- * sam zakres co otwor), wiec prog per-piksel dziurawil samo lico ramy —
- * zostawal tylko cien usoju i najciemniejsze slady slojow drewna. Flood fill
- * dziala inaczej: rama to piksele, do ktorych NIE da sie dojsc z centrum ani
- * z brzegu idac wylacznie po jasnych sasiadach — wiec liczy sie polozenie
- * (zamknietym pierscieniem), nie tylko wlasna jasnosc pixela.
+ * SEGMENTACJA JEST GEOMETRYCZNA, NIE KOLOROWA — i to jest kluczowe. Pierwsza
+ * proba (prog jasnosci / flood fill po kolorze) dzialala dobrze dla ciemnych
+ * i kolorowych ram, ale dla BIALEJ ramy byla cichym niewypalem: kolor ramy
+ * jest wizualnie nieodrozniny od otworu i tla (~243-250 wszedzie), wiec
+ * maska klasyfikowala PRAWIE CALA powierzchnie ramy jako "jasna" = "otwor/tlo"
+ * i zostawiala tylko cienkie linie sloju jako widoczna ramke. Na podgladzie
+ * (biale na bialym, plus checkerboard nieodroznialny od jasnej tresci w
+ * miniaturze) wygladalo to poprawnie — wykryto to dopiero przy kompozycji
+ * na czerwonym tle w pelnej rozdzielczosci.
+ *
+ * Zamiast tego: srodek obrazu ZAWSZE jest w otworze, a brzegi obrazu ZAWSZE
+ * sa tlem — to geometryczny fakt o KOMPOZYCJI zdjecia, nie o kolorze ramy.
+ * Skanujemy 1D wzdluz poziomej i pionowej osi przechodzacej przez srodek,
+ * szukajac krawedzi otworu (pierwsze przejscie jasny->nie-jasny od srodka)
+ * i krawedzi zewnetrznej ramy (kolejne przejscie z powrotem do jasnego).
+ * Maska to potem czysta geometria: kazdy piksel W PIERScieniu miedzy
+ * prostokatem zewnetrznym a prostokatem otworu jest RAMA (nieprzezroczysty),
+ * niezaleznie od tego, jaki ma kolor. Dziala identycznie dla bialej,
+ * czarnej czy zlotej ramy, bo nie polega na kontrascie koloru w ogole —
+ * jedyne zalozenie to plaskie, prostokatne, wyśrodkowane zdjecie ramy
+ * (a takie sa wszystkie pliki w tym katalogu).
  *
  * Kalibracja skali: nie znamy DPI/rozmiaru fizycznego zdjecia, wiec zakladamy,
  * ze widoczna grubosc lica ramy na zdjeciu odpowiada FRAME_CM (ta sama stala,
@@ -41,103 +53,105 @@ const PLIKI = {
   czarny: 'black_wood_frame_mockup.png',
   bialy: 'white_wood_frame_mockup.png',
   miedziany: 'copper_alu_frame_mockup.png',
+  zloty: 'gold_alu_frame_mockup.png',
+  srebrny: 'silver_alu_frame_mockup.png',
+  'czarny-mat': 'black_mat_alu_frame_mockup.png',
 };
 
 const cache = new Map();
 
 function jasny(r, g, b) {
-  return r > 235 && g > 235 && b > 235 && Math.abs(r - g) < 8 && Math.abs(g - b) < 8;
+  return r > 225 && g > 225 && b > 225 && Math.abs(r - g) < 10 && Math.abs(g - b) < 10;
 }
 
-/**
- * Flood fill (BFS, 4-sasiedztwo) po jasnych pikselach zaczynajac od punktow
- * zrodlowych. Zwraca Uint8Array (1 = nalezy do wypelnienia) i bounding box
- * odwiedzonych pikseli.
- */
-function floodFillJasne(jasnyMaska, w, h, seeds) {
-  const N = w * h;
-  const visited = new Uint8Array(N);
-  const qx = new Int32Array(N);
-  const qy = new Int32Array(N);
-  let qh = 0;
-  let qt = 0;
-  let minX = w, maxX = -1, minY = h, maxY = -1;
-
-  const wrzuc = (x, y) => {
-    if (x < 0 || y < 0 || x >= w || y >= h) return;
-    const id = y * w + x;
-    if (visited[id]) return;
-    if (!jasnyMaska[id]) return;
-    visited[id] = 1;
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
-    qx[qt] = x; qy[qt] = y; qt++;
-  };
-
-  for (const [sx, sy] of seeds) wrzuc(sx, sy);
-  while (qh < qt) {
-    const x = qx[qh], y = qy[qh]; qh++;
-    wrzuc(x + 1, y); wrzuc(x - 1, y); wrzuc(x, y + 1); wrzuc(x, y - 1);
-  }
-  return { visited, bbox: maxX >= minX ? { minX, maxX, minY, maxY } : null };
+function mediana(liczby) {
+  const s = [...liczby].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)];
 }
 
 async function analizujRamke(absPath) {
-  const { data, info } = await sharp(absPath).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(absPath).raw().ensureAlpha().toBuffer({ resolveWithObject: true });
   const w = info.width;
   const h = info.height;
-  const ch = info.channels;
-  const N = w * h;
-
-  const jasnyMaska = new Uint8Array(N);
-  for (let i = 0; i < N; i++) {
-    const p = i * ch;
-    jasnyMaska[i] = jasny(data[p], data[p + 1], data[p + 2]) ? 1 : 0;
-  }
+  const ch = info.channels; // zawsze 4 dzieki ensureAlpha
+  const px = (x, y) => {
+    const i = (y * w + x) * ch;
+    return [data[i], data[i + 1], data[i + 2]];
+  };
+  const swiatlo = (x, y) => jasny(...px(x, y));
 
   const cx = Math.floor(w / 2);
   const cy = Math.floor(h / 2);
-  if (!jasnyMaska[cy * w + cx]) {
+  if (!swiatlo(cx, cy)) {
     throw new Error('analizujRamke: srodek zdjecia nie jest jasny (nie znajde otworu na wydruk): ' + absPath);
   }
 
-  // Otwor: wszystko jasne, do czego da sie dojsc z centrum bez przejscia przez rame.
-  const otwor = floodFillJasne(jasnyMaska, w, h, [[cx, cy]]);
-  if (!otwor.bbox) throw new Error('analizujRamke: nie znalazlem otworu: ' + absPath);
+  // Niektore zdjecia maja delikatny szum/teksture (szachownica, zarysowania)
+  // nawet w otworze i tle — pojedyncza linia skanu moze trafic na jeden
+  // przypadkowy ciemny piksel i zatrzymac sie za wczesnie. Skanujemy WIELE
+  // rownoleglych linii (co 40px w promieniu 120px od srodka) i bierzemy
+  // MEDIANE znalezionych krawedzi — odporne na pojedyncze wybryki na
+  // jednej linii, o ile wiekszosc linii jest czysta w tym miejscu.
+  const OFFSETY = [-120, -80, -40, 0, 40, 80, 120];
 
-  // Tlo: wszystko jasne, do czego da sie dojsc z brzegow zdjecia.
-  const seedyBrzeg = [];
-  for (let x = 0; x < w; x += 4) { seedyBrzeg.push([x, 0]); seedyBrzeg.push([x, h - 1]); }
-  for (let y = 0; y < h; y += 4) { seedyBrzeg.push([0, y]); seedyBrzeg.push([w - 1, y]); }
-  const tlo = floodFillJasne(jasnyMaska, w, h, seedyBrzeg);
+  const skanPoziomo = (yBase, odSrodkaWLewo) => {
+    let x = cx;
+    if (odSrodkaWLewo) { while (x > 0 && swiatlo(x, yBase)) x--; return x + 1; }
+    while (x < w - 1 && swiatlo(x, yBase)) x++; return x - 1;
+  };
+  const skanPionowo = (xBase, odSrodkaWGore) => {
+    let y = cy;
+    if (odSrodkaWGore) { while (y > 0 && swiatlo(xBase, y)) y--; return y + 1; }
+    while (y < h - 1 && swiatlo(xBase, y)) y++; return y - 1;
+  };
 
-  const innerLeft = otwor.bbox.minX;
-  const innerTop = otwor.bbox.minY;
-  const innerW = otwor.bbox.maxX - otwor.bbox.minX;
-  const innerH = otwor.bbox.maxY - otwor.bbox.minY;
+  const innerLeft = mediana(OFFSETY.map((dy) => skanPoziomo(cy + dy, true)).filter((v) => v > 0));
+  const innerRight = mediana(OFFSETY.map((dy) => skanPoziomo(cy + dy, false)).filter((v) => v < w - 1));
+  const innerTop = mediana(OFFSETY.map((dx) => skanPionowo(cx + dx, true)).filter((v) => v > 0));
+  const innerBottom = mediana(OFFSETY.map((dx) => skanPionowo(cx + dx, false)).filter((v) => v < h - 1));
 
-  // Grubosc lica: odleglosc od krawedzi otworu do najblizszego piksela
-  // nalezacego do tla, mierzona z kazdej z czterech stron i usredniona.
-  // Tlo.bbox to najmniejszy prostokat obejmujacy odwiedzone tlo — jego
-  // krawedzie sa w przyblizeniu zewnetrzna krawedzia ramy.
-  const zewLeft = tlo.bbox ? tlo.bbox.minX : 0;
-  const zewRight = tlo.bbox ? tlo.bbox.maxX : w - 1;
-  const zewTop = tlo.bbox ? tlo.bbox.minY : 0;
-  const zewBottom = tlo.bbox ? tlo.bbox.maxY : h - 1;
-  const borderPx = (
-    (innerLeft - zewLeft) + (zewRight - (innerLeft + innerW)) +
-    (innerTop - zewTop) + (zewBottom - (innerTop + innerH))
-  ) / 4;
+  // Krawedz zewnetrzna ramy: dalej na zewnatrz od krawedzi otworu, az
+  // wrocimy na jasne tlo — ta sama technika (wiele linii + mediana).
+  const skanDalejPoziomo = (yBase, odX, wLewo) => {
+    let x = odX;
+    if (wLewo) { while (x > 0 && !jasny(...px(x, yBase))) x--; return x; }
+    while (x < w - 1 && !jasny(...px(x, yBase))) x++; return x;
+  };
+  const skanDalejPionowo = (xBase, odY, wGore) => {
+    let y = odY;
+    if (wGore) { while (y > 0 && !jasny(...px(xBase, y))) y--; return y; }
+    while (y < h - 1 && !jasny(...px(xBase, y))) y++; return y;
+  };
 
-  // Maska wycinajaca: przezroczyste tam, gdzie flood fill dotarl (otwor LUB
-  // tlo) — nieprzezroczyste na ramie, niezaleznie od jej wlasnego koloru.
-  const alphaBuf = Buffer.alloc(N);
-  for (let i = 0; i < N; i++) {
-    alphaBuf[i] = (otwor.visited[i] || tlo.visited[i]) ? 0 : 255;
+  // innerLeft/Right/Top/Bottom sa ostatnimi JASNYMI pikselami tuz przed
+  // rama (patrz skanPoziomo/skanPionowo) — skan "dalej" musi wystartowac
+  // JUZ W RAMIE (o 1px dalej), inaczej warunek "!jasny" jest falszywy od
+  // razu i petla nigdy sie nie wykonuje.
+  const outerLeft = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerLeft - 1, true)));
+  const outerRight = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerRight + 1, false)));
+  const outerTop = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerTop - 1, true)));
+  const outerBottom = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerBottom + 1, false)));
+
+  const innerW = innerRight - innerLeft;
+  const innerH = innerBottom - innerTop;
+  const borderPx = ((innerLeft - outerLeft) + (outerRight - innerRight) + (innerTop - outerTop) + (outerBottom - innerBottom)) / 4;
+
+  // Maska GEOMETRYCZNA: opaque w pierscieniu miedzy prostokatem zewnetrznym
+  // (outerLeft..outerRight, outerTop..outerBottom) a prostokatem otworu
+  // (innerLeft..innerRight, innerTop..innerBottom); wszystko poza tym
+  // pierscieniem (otwor w srodku, tlo na zewnatrz) jest przezroczyste.
+  // Zero zaleznosci od koloru ramy — dziala tak samo dla bialej i czarnej.
+  const alphaBuf = Buffer.alloc(w * h);
+  for (let y = outerTop; y <= outerBottom; y++) {
+    const wOtworze = y >= innerTop && y <= innerBottom;
+    for (let x = outerLeft; x <= outerRight; x++) {
+      if (wOtworze && x >= innerLeft && x <= innerRight) continue;
+      alphaBuf[y * w + x] = 255;
+    }
   }
+
   const cutoutBuffer = await sharp(absPath)
+    .flatten({ background: { r: 255, g: 255, b: 255 } })
     .joinChannel(alphaBuf, { raw: { width: w, height: h, channels: 1 } })
     .png()
     .toBuffer();
