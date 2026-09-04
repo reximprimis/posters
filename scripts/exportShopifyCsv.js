@@ -952,6 +952,10 @@ async function main() {
     const tags = [
       'framed-gallery-set',
       'framed-gallery-set:pieces-' + sztuk,
+      // Jedyny kind, ktory smie to powiedziec — rama tu faktycznie jest w
+      // cenie. Zwykly plakat/zestaw plakatow milczy o ramie celowo (patrz
+      // src/galleryDescription.js), wiec ten tag NIE moze trafic tam.
+      'badge:frame-included',
       g.frameColor ? 'frame-color:' + slugifyTag(g.frameColor) : '',
       g.frameMaterial ? 'frame-material:' + slugifyTag(g.frameMaterial) : '',
       zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
