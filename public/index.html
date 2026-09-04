@@ -1318,6 +1318,29 @@
       cursor: pointer;
     }
 
+    .figma-tab-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.12);
+      margin: 0 6px;
+      display: inline-block;
+    }
+    html[data-theme='dark'] .figma-tab-sep {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .frames-table-wrap { overflow-x: auto; }
+    .frames-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .frames-table th, .frames-table td { padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.08); text-align: left; white-space: nowrap; }
+    .frames-table th { font-weight: 600; opacity: 0.7; }
+    .frames-img-status { display: inline-flex; gap: 4px; }
+    .frames-img-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: rgba(0,0,0,0.15); }
+    .frames-img-dot--ok { background: #2f9e5c; }
+    .frames-approve-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); background: #fff; cursor: pointer; font-size: 12.5px; }
+    .frames-approve-btn[data-approved="true"] { background: #eafaf0; border-color: #2f9e5c; color: #1e7a44; }
+    .frames-approve-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .frames-color-swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.2); vertical-align: -2px; margin-right: 6px; }
+
     .poster-orientation-badge--set {
       background: rgba(122, 78, 34, 0.78);
       border-color: rgba(224, 164, 96, 0.6);
@@ -4720,6 +4743,10 @@
             '<span class="figma-tab-arrow" aria-hidden="true">→</span>' +
             '<button class="figma-tab" role="tab" aria-selected="false" data-tab="export"><span class="step-num">3</span>Eksport</button>' +
           '</div>' +
+          '<span class="figma-tab-sep" aria-hidden="true"></span>' +
+          '<div class="figma-tab-group" role="tablist">' +
+            '<button class="figma-tab" role="tab" aria-selected="false" data-tab="frames">Ramki</button>' +
+          '</div>' +
         '</div>' +
         '<div class="figma-nav-actions" id="figmaNavActions">' +
           '<button class="figma-settings-btn" id="btnOpenInfo" title="Jak to działa?" aria-label="Dokumentacja i flow">' +
@@ -5935,6 +5962,11 @@
     libPanel.dataset.tabPanel = 'library';
     libPanel.hidden = true;
 
+    var framesPanel = document.createElement('div');
+    framesPanel.className = 'figma-panel';
+    framesPanel.dataset.tabPanel = 'frames';
+    framesPanel.hidden = true;
+
     // 3. Move sections
     var studio = document.getElementById('studio');
     var statsRow = document.getElementById('statsRow');
@@ -5960,6 +5992,7 @@
     nav.after(dashPanel);
     dashPanel.after(exportPanel);
     exportPanel.after(libPanel);
+    libPanel.after(framesPanel);
 
     // 6. Tab switching logic
     nav.querySelectorAll('.figma-tab').forEach(function (btn) {
@@ -5974,8 +6007,91 @@
         dashPanel.hidden = (tab !== 'dashboard');
         exportPanel.hidden = (tab !== 'export');
         libPanel.hidden = (tab !== 'library');
+        framesPanel.hidden = (tab !== 'frames');
+        if (tab === 'frames') loadFramesTab();
       });
     });
+
+    // 6b. Zakladka "Ramki" — katalog ram jako WLASNYCH produktow (kind: 'frame').
+    // Zdjecia (front/tyl/pokoj) rozwiazuja sie po konwencji sciezek na dysku,
+    // nie po polu w rekordzie (patrz src/frameProductImages.js) — dlatego ta
+    // zakladka tylko POKAZUJE status (jest/brak), nie ma wgrywania plikow:
+    // pliki wklada sie recznie do frames/products/<kolor>/front.jpg (lub
+    // room.jpg) i frames/products/_back/<rozmiar>.jpg, a ta lista odswieza
+    // sie po kliknieciu "Odswiez".
+    var KOLOR_HEX_RAMKI = {
+      'czarny-mat': '#161616', zloty: '#b89454', srebrny: '#b7b9bb',
+      miedziany: '#a8623f', dab: '#b08654', bialy: '#f2efe9', czarny: '#1a1512',
+    };
+    var framesLoaded = false;
+    function escFr(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    }); }
+    function renderFramesTable(items) {
+      var body = items.map(function (r) {
+        var img = r.images || {};
+        var dot = function (ok) { return '<span class="frames-img-dot' + (ok ? ' frames-img-dot--ok' : '') + '" title="' + (ok ? 'jest' : 'brak') + '"></span>'; };
+        var swatch = '<span class="frames-color-swatch" style="background:' + (KOLOR_HEX_RAMKI[r.frameColor] || '#ccc') + '"></span>';
+        var mozeZatwierdzic = !!(img.front && img.back);
+        return (
+          '<tr>' +
+          '<td>' + swatch + escFr(r.title) + '</td>' +
+          '<td>' + escFr(r.frameMaterial) + '</td>' +
+          '<td>' + escFr(r.size) + '</td>' +
+          '<td>' + escFr(r.price) + ' zł</td>' +
+          '<td class="frames-img-status">front ' + dot(!!img.front) + ' &nbsp; tył ' + dot(!!img.back) + ' &nbsp; pokój ' + dot(!!img.room) + '</td>' +
+          '<td><button type="button" class="frames-approve-btn" data-handle="' + escFr(r.handle) + '" data-approved="' + (r.approvedForPrint ? 'true' : 'false') + '"' +
+            (mozeZatwierdzic ? '' : ' disabled title="brak frontu lub tylu"') + '>' +
+            (r.approvedForPrint ? '✓ Zatwierdzona' : 'Zatwierdź') + '</button></td>' +
+          '</tr>'
+        );
+      }).join('');
+      var wrap = framesPanel.querySelector('.frames-table-wrap');
+      wrap.innerHTML =
+        '<table class="frames-table"><thead><tr>' +
+        '<th>Produkt</th><th>Materiał</th><th>Rozmiar</th><th>Cena</th><th>Zdjęcia</th><th></th>' +
+        '</tr></thead><tbody>' + body + '</tbody></table>';
+      wrap.querySelectorAll('.frames-approve-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var handle = btn.dataset.handle;
+          var next = btn.dataset.approved !== 'true';
+          btn.disabled = true;
+          fetch('/api/frames/approval', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ handle: handle, approvedForPrint: next }),
+          }).then(function (r) { return r.json(); }).then(function () { loadFramesTab(true); });
+        });
+      });
+    }
+    function loadFramesTab(force) {
+      if (framesLoaded && !force) return;
+      framesLoaded = true;
+      var wrap = framesPanel.querySelector('.frames-table-wrap');
+      if (wrap) wrap.innerHTML = '<p style="padding:16px;opacity:.6">Wczytywanie…</p>';
+      fetch('/api/frames').then(function (r) { return r.json(); }).then(function (d) {
+        renderFramesTable(d.items || []);
+        var summary = framesPanel.querySelector('.frames-summary');
+        if (summary) {
+          var zatwierdzone = (d.items || []).filter(function (r) { return r.approvedForPrint; }).length;
+          summary.textContent = (d.items || []).length + ' produktów, ' + zatwierdzone + ' zatwierdzonych.';
+        }
+      }).catch(function (err) {
+        var wrap2 = framesPanel.querySelector('.frames-table-wrap');
+        if (wrap2) wrap2.innerHTML = '<p style="padding:16px;color:#c0392b">Błąd wczytywania: ' + escFr(err.message || err) + '</p>';
+      });
+    }
+    framesPanel.innerHTML =
+      '<div class="figma-page">' +
+      '<div style="padding:20px 24px 8px">' +
+      '<h2 style="margin:0 0 4px">Ramki jako produkty</h2>' +
+      '<p class="frames-summary" style="opacity:.6;margin:0 0 12px">Wczytywanie…</p>' +
+      '<p style="opacity:.6;font-size:13px;margin:0 0 16px">Zdjęcia wg konwencji: <code>frames/products/&lt;kolor&gt;/front.jpg</code> (i opcjonalnie <code>room.jpg</code>), <code>frames/products/_back/&lt;rozmiar&gt;.jpg</code> — wgraj plik i kliknij Odśwież.</p>' +
+      '<button type="button" class="btn" id="framesRefreshBtn">🔄 Odśwież</button>' +
+      '</div>' +
+      '<div class="frames-table-wrap" style="padding:0 24px 24px"></div>' +
+      '</div>';
+    framesPanel.querySelector('#framesRefreshBtn').addEventListener('click', function () { loadFramesTab(true); });
 
     // 7. If URL hash is #library, switch tab
     if (window.location.hash === '#library') {

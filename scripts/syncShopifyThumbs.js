@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { reconcileInventoryShopifyStates, evaluatePosterShopifyState, flattenPosterDir } = require('../src/shopifyState');
+const { resolveFrameImages } = require('../src/frameProductImages');
 
 const projectRoot = path.resolve(__dirname, '..');
 const inventoryPath = path.join(projectRoot, 'posters_inventory.json');
@@ -107,9 +108,26 @@ function main() {
     if (skopiowane) { galerieRamekPliki += skopiowane; galerieRamekSzt += 1; }
   }
 
+  // RAMKI JAKO PRODUKTY (kind: 'frame') — front i tyl sa WSPOLNE zasoby
+  // (front na kolor, tyl na rozmiar), rozwiazywane po konwencji sciezek,
+  // nie po polu w rekordzie. Ten sam plik front.jpg kopiuje sie wielokrotnie
+  // (raz na kazdy zatwierdzony rozmiar tego koloru) — copyIfExists nadpisuje
+  // to samo miejsce docelowe za kazdym razem, wiec to tanie i nieszkodliwe.
+  let ramkiPliki = 0;
+  let ramkiSzt = 0;
+  for (const r of posters) {
+    if (!r || r.kind !== 'frame' || r.approvedForPrint !== true) continue;
+    const img = resolveFrameImages(r);
+    let skopiowane = 0;
+    for (const rel of [img.front, img.room, img.back]) {
+      if (rel && copyIfExists(rel)) skopiowane += 1;
+    }
+    if (skopiowane) { ramkiPliki += skopiowane; ramkiSzt += 1; }
+  }
+
   for (const p of posters) {
     if (!p || p.approvedForPrint !== true) continue;
-    if (p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed') continue; // obsluzone wyzej
+    if (p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed' || p.kind === 'frame') continue; // obsluzone wyzej
     const evalState = evaluatePosterShopifyState(projectRoot, p);
     if (evalState.state !== 'ready') {
       skippedNotReady += 1;
@@ -161,6 +179,7 @@ function main() {
   console.log(`Zestawy: ${zestawySzt} (plikow: ${zestawyPliki})`);
   console.log(`Zestawy scienne: ${galerieSzt} (plikow: ${galeriePliki})`);
   console.log(`Zestawy plakatow i ramek: ${galerieRamekSzt} (plikow: ${galerieRamekPliki})`);
+  console.log(`Ramki jako produkty: ${ramkiSzt} (plikow: ${ramkiPliki})`);
   console.log(`Approved posters skipped (missing master thumb): ${skipped}`);
   console.log(`Approved posters skipped (not ready): ${skippedNotReady}`);
   console.log(

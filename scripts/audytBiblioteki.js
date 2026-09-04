@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const { toPosterHandle } = require('../src/posterTitle');
+const { resolveFrameImages } = require('../src/frameProductImages');
 
 const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
@@ -21,19 +22,24 @@ const norm = (p) => String(p || '').split('\\').join('/');
 const jest = (rel) => rel && fs.existsSync(path.join(ROOT, norm(rel)));
 
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
-// Galerie sa osobnym rodzajem produktu — nie maja wlasnych PDF-ow ani mockupow,
-// wiec petla plakatow musi je pomijac, inaczej audyt blokuje eksport na braku,
-// ktorego z zalozenia nie bedzie.
-const plakaty = inv.posters.filter((p) => p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed');
+// Galerie i ramki-jako-produkty sa osobnymi rodzajami produktu — nie maja
+// wlasnych PDF-ow, mockupow ani (ramki) nawet imagePath, wiec petla plakatow
+// musi je pomijac, inaczej audyt blokuje eksport na braku, ktorego z
+// zalozenia nie bedzie.
+const plakaty = inv.posters.filter((p) => p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed' && p.kind !== 'frame');
 const galerie = inv.posters.filter((p) => p.kind === 'gallery');
 const galerieRamek = inv.posters.filter((p) => p.kind === 'gallery-framed');
 const zestawy = inv.posters.filter((p) => p.kind === 'set');
+const ramki = inv.posters.filter((p) => p.kind === 'frame');
 
 const problemy = [];
 const dodaj = (waga, opis) => problemy.push({ waga, opis });
 
 // ── 1. Pliki obrazow ────────────────────────────────────────────────────────
-for (const p of inv.posters) {
+// Ramki (kind: 'frame') NIE MAJA pola imagePath — ich zdjecia rozwiazuja sie
+// po konwencji sciezek (src/frameProductImages.js), nie po polu w rekordzie;
+// sprawdzane osobno w sekcji 3d.
+for (const p of inv.posters.filter((x) => x.kind !== 'frame')) {
   if (!p.imagePath) dodaj('BLOKUJE', `${p.title}: brak imagePath`);
   else if (!jest(p.imagePath)) dodaj('BLOKUJE', `${p.title}: brak pliku ${p.imagePath}`);
 }
@@ -117,6 +123,20 @@ for (const g of galerieRamek.filter((x) => x.approvedForPrint)) {
   }
 }
 
+// ── 3d. Ramki jako produkty: front + tyl musza istniec na dysku ────────────
+//
+// Front jest WSPOLNY dla wszystkich rozmiarow tego koloru, tyl WSPOLNY dla
+// wszystkich kolorow tego rozmiaru (patrz src/frameProductImages.js) — wiec
+// jeden brakujacy plik blokuje od razu WIELE rekordow, nie jeden. Room jest
+// opcjonalny (nie blokuje), front i tyl sa wymagane do zatwierdzenia.
+for (const r of ramki.filter((x) => x.approvedForPrint)) {
+  const img = resolveFrameImages(r);
+  if (!img.front) dodaj('BLOKUJE', `${r.title}: brak zdjecia frontu (frames/products/${r.frameColor}/front.jpg)`);
+  if (!img.back) dodaj('BLOKUJE', `${r.title}: brak zdjecia tylu dla rozmiaru ${r.size} (frames/products/_back/${r.size}.jpg)`);
+  if (!img.room) dodaj('DROBNE', `${r.title}: brak zdjecia w pokoju (opcjonalne)`);
+  if (!r.price || r.price <= 0) dodaj('BLOKUJE', `${r.title}: brak ceny`);
+}
+
 // ── 4. Zestawy: panele i komplet PDF-ow ─────────────────────────────────────
 // Tylko ZATWIERDZONE: pozycja odrzucona po przegladzie nie idzie do sklepu,
 // wiec brak jej PDF-ow nie jest przeszkoda w eksporcie. Bez tego filtra jeden
@@ -138,14 +158,16 @@ for (const z of zestawy.filter((x) => x.approvedForPrint)) {
 }
 
 // ── 5. Pola potrzebne filtrom w sklepie ─────────────────────────────────────
-for (const p of inv.posters.filter((x) => x.approvedForPrint)) {
+// Ramki nie maja kategorii/kolorow/orientacji plakatu — to inny rodzaj
+// produktu, filtry plakatow ich nie dotycza.
+for (const p of inv.posters.filter((x) => x.approvedForPrint && x.kind !== 'frame')) {
   if (!p.category) dodaj('WAZNE', `${p.title}: brak kategorii`);
   if (!p.colors || !p.colors.length) dodaj('DROBNE', `${p.title}: brak kolorow (filtr koloru go pominie)`);
   if (!p.orientation) dodaj('DROBNE', `${p.title}: brak orientacji`);
 }
 
 // ── Raport ──────────────────────────────────────────────────────────────────
-console.log('BIBLIOTEKA: ' + inv.posters.length + ' pozycji  (' + plakaty.length + ' plakatow, ' + zestawy.length + ' zestawow)');
+console.log('BIBLIOTEKA: ' + inv.posters.length + ' pozycji  (' + plakaty.length + ' plakatow, ' + zestawy.length + ' zestawow, ' + ramki.length + ' ram jako produktow)');
 console.log('zatwierdzonych: ' + inv.posters.filter((p) => p.approvedForPrint).length);
 console.log('');
 

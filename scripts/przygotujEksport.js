@@ -69,7 +69,7 @@ for (let i = 1; i < w.length; i++) {
 
 const chude = [];
 for (const p of inv.posters) {
-  if (!p.approvedForPrint || p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed') continue;
+  if (!p.approvedForPrint || p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed' || p.kind === 'frame') continue;
   const n = (obrazy.get(toPosterHandle(p.title)) || new Set()).size;
   if (n < 4) chude.push(p.title + '  (' + n + ' obrazow)');
 }

@@ -39,7 +39,7 @@ const doNaprawy = [];
 const bezPlikow = [];
 
 for (const p of inv.posters) {
-  if (p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed' || !p.approvedForPrint) continue;
+  if (p.kind === 'set' || p.kind === 'gallery' || p.kind === 'gallery-framed' || p.kind === 'frame' || !p.approvedForPrint) continue;
   const m = p.mockups || {};
   const kompletny = m.frame && m.interior &&
     fs.existsSync(path.join(ROOT, norm(m.frame))) &&

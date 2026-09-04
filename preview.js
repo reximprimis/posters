@@ -8,6 +8,7 @@ const ContentGenerator = require('./src/contentGenerator');
 const DalleImageGenerator = require('./src/dalleImageGenerator');
 const MockupGenerator = require('./src/mockupGenerator');
 const { applyMatFrameFromBuffer } = require('./src/posterMatFrame');
+const { resolveFrameImages } = require('./src/frameProductImages');
 const {
   reconcileInventoryShopifyStates,
   evaluatePosterShopifyState,
@@ -713,6 +714,61 @@ function syncManualImageImports(inventory) {
   }
   return changed;
 }
+
+// Ramki jako WLASNE produkty (kind: 'frame') — zakladka "Ramki". Osobne
+// endpointy, nie rozszerzenie /api/posters: ten endpoint filtruje rekordy
+// bez imagePath (linia ponizej "if (!poster.imagePath...) continue"), wiec
+// ramka bez frontu/tylu nigdy by sie tam nie pojawila — a ta zakladka MA
+// pokazywac tez to, czego jeszcze brakuje, nie tylko gotowe pozycje.
+app.get('/api/frames', (req, res) => {
+  if (!fs.existsSync(INVENTORY_PATH)) {
+    return res.status(404).json({ error: 'missing_inventory', items: [] });
+  }
+  const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+  const items = (inventory.posters || [])
+    .filter((p) => p && p.kind === 'frame')
+    .map((r) => ({
+      handle: r.handle,
+      title: r.title,
+      frameColor: r.frameColor,
+      frameMaterial: r.frameMaterial,
+      size: r.size,
+      price: r.price,
+      approvedForPrint: r.approvedForPrint === true,
+      images: resolveFrameImages(r),
+    }))
+    .sort((a, b) => a.handle.localeCompare(b.handle));
+  res.json({ items });
+});
+
+app.patch('/api/frames/approval', (req, res) => {
+  try {
+    const body = req.body || {};
+    const ap = body.approvedForPrint;
+    if (typeof ap !== 'boolean') {
+      return res.status(400).json({ error: 'Pole approvedForPrint musi być true lub false' });
+    }
+    const handle = body.handle != null ? String(body.handle).trim() : '';
+    if (!handle) return res.status(400).json({ error: 'Podaj handle ramki' });
+    if (!fs.existsSync(INVENTORY_PATH)) return res.status(404).json({ error: 'missing_inventory' });
+
+    const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf-8'));
+    const rec = (inventory.posters || []).find((p) => p && p.kind === 'frame' && p.handle === handle);
+    if (!rec) return res.status(404).json({ error: 'Nie znaleziono ramki o tym handle' });
+
+    if (ap === true) {
+      const img = resolveFrameImages(rec);
+      if (!img.front || !img.back) {
+        return res.status(400).json({ error: 'Brak zdjęcia frontu lub tyłu — nie można zatwierdzić.' });
+      }
+    }
+    rec.approvedForPrint = ap;
+    fs.writeFileSync(INVENTORY_PATH, JSON.stringify(inventory, null, 2), 'utf-8');
+    res.json({ ok: true, handle, approvedForPrint: ap });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Błąd zapisu' });
+  }
+});
 
 // API — must be before static so /api/* is never shadowed by files
 app.get('/api/posters', (req, res) => {

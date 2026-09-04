@@ -178,6 +178,13 @@ function reconcileInventoryShopifyStates(projectRoot, inventory) {
   const nowIso = new Date().toISOString();
 
   for (const p of posters) {
+    // Ramki jako produkty (kind: 'frame') nie maja imagePath z zalozenia —
+    // ich zdjecia rozwiazuja sie po konwencji sciezek, nie po polu w
+    // rekordzie (patrz src/frameProductImages.js). Bez tego wykluczenia
+    // kazda z nich dostawalaby stan 'legacy_blocked' (brak imagePath =
+    // "zrodlowy plik zniknal"), co jest faktycznie nieprawda — po prostu
+    // ten kind nigdy nie mial go miec.
+    if (p && p.kind === 'frame') continue;
     const out = evaluatePosterShopifyState(projectRoot, p);
     summary.total += 1;
     summary[out.state] += 1;

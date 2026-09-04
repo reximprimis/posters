@@ -130,6 +130,7 @@ const {
   categoryName,
 } = require('../src/taxonomy');
 const { getRoomCollectionsForCategory } = require('../src/categoryStyles');
+const { resolveFrameImages } = require('../src/frameProductImages');
 
 /**
  * Rozmiary opisane pod orientacje plakatu. Klient kupujacy plakat poziomy
@@ -313,7 +314,11 @@ function toPublicUrl(relPath) {
 function dedupePosters(rows) {
   const map = new Map();
   for (const p of rows || []) {
-    const k = normalizeRelPath(p && p.imagePath).toLowerCase();
+    // Ramki jako produkty (kind: 'frame') nie maja imagePath (zdjecia po
+    // konwencji, patrz src/frameProductImages.js) — bez fallbacku na handle
+    // kazdy rekord ramki dostawalby pusty klucz i byl po cichu odrzucany tu,
+    // zanim jakikolwiek kod eksportu w ogole by go zobaczyl.
+    const k = (normalizeRelPath(p && p.imagePath).toLowerCase()) || (p && p.handle) || '';
     if (!k) continue;
     const prev = map.get(k);
     const t = Date.parse(p && p.createdAt ? p.createdAt : '') || 0;
@@ -477,10 +482,11 @@ async function main() {
   // Zestawy ida OSOBNA petla — maja wlasny cennik (mnoznik za uklad), brak
   // wariantu z passe-partout i inny zestaw zdjec. Trzymanie ich poza glowna
   // petla sprawia, ze wiersze plakatow pozostaja bajt w bajt niezmienione.
-  const posters = wszystkie.filter((p) => p && p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed');
+  const posters = wszystkie.filter((p) => p && p.kind !== 'set' && p.kind !== 'gallery' && p.kind !== 'gallery-framed' && p.kind !== 'frame');
   const zestawy = wszystkie.filter((p) => p && p.kind === 'set');
   const galerie = wszystkie.filter((p) => p && p.kind === 'gallery');
   const galerieRamek = wszystkie.filter((p) => p && p.kind === 'gallery-framed');
+  const ramki = wszystkie.filter((p) => p && p.kind === 'frame');
 
   // Siatka bezpieczenstwa: handle jest kluczem produktu w Shopify, wiec dwa plakaty
   // o tym samym handle zlalyby sie przy imporcie w jeden - jeden z nich przepadlby
@@ -1035,6 +1041,103 @@ async function main() {
     galeriiRamekWyeksportowanych += 1;
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // RAMKI JAKO WLASNE PRODUKTY (kind: 'frame')
+  //
+  // Kazdy rozmiar to OSOBNY produkt w Shopify — potwierdzone na zywym sklepie
+  // (reximprimis.com/collections/ramki: kazdy rozmiar ma wlasny handle, wlasny
+  // tytul z rozmiarem, wlasne zdjecia — nie warianty jednego produktu). Zdjecia
+  // rozwiazuja sie po konwencji sciezek (front wspolny dla koloru, tyl wspolny
+  // dla rozmiaru), nie po polu w rekordzie — patrz src/frameProductImages.js.
+  // ─────────────────────────────────────────────────────────────────────────
+  let ramekWyeksportowanych = 0;
+  let wierszyRamekTotal = 0;
+  const KATEGORIA_RAMKI = 'Home & Garden > Decor > Picture Frames & Albums > Picture Frames';
+  for (const r of ramki) {
+    const handle = r.handle;
+    if (cli.onlyNew && knownHandles.has(handle)) { skippedKnown += 1; continue; }
+    if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
+
+    const img = resolveFrameImages(r);
+    if (!img.front) { console.log(`⚠ Ramka "${r.title}" — brak zdjecia frontu, pomijam.`); continue; }
+    if (!img.back) { console.log(`⚠ Ramka "${r.title}" — brak zdjecia tylu, pomijam.`); continue; }
+    const ZDJECIA_RAMKI = [img.front, img.room, img.back].filter(Boolean).map((p) => toPublicUrl(p));
+
+    const cena = Number(r.price);
+    if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Ramka "${r.title}" — brak ceny, pomijam.`); continue; }
+
+    const title = r.title;
+    const tags = [
+      'frame-product',
+      r.frameColor ? 'frame-color:' + slugifyTag(r.frameColor) : '',
+      r.frameMaterial ? 'frame-material:' + slugifyTag(r.frameMaterial) : '',
+      r.size ? 'size:' + r.size : '',
+    ].filter(Boolean).join(', ');
+    const opis = htmlDescription(String(r.shopDescription || ''));
+
+    const row = {
+      Handle: handle,
+      Title: title,
+      'Body (HTML)': opis,
+      Vendor: 'REXIMPRIMIS',
+      'Product Category': KATEGORIA_RAMKI,
+      Type: 'frame',
+      Tags: tags,
+      Published: r.approvedForPrint ? 'true' : 'false',
+      'Option1 Name': 'Title',
+      'Option1 Value': 'Default Title',
+      'Option1 Linked To': '',
+      'Option2 Name': '', 'Option2 Value': '', 'Option2 Linked To': '',
+      'Option3 Name': '', 'Option3 Value': '', 'Option3 Linked To': '',
+      'Variant SKU': handle,
+      'Variant Grams': '',
+      'Variant Inventory Tracker': '',
+      'Variant Inventory Qty': '',
+      'Variant Inventory Policy': 'deny',
+      'Variant Fulfillment Service': 'manual',
+      'Variant Price': cena.toFixed(2),
+      'Variant Compare At Price': '',
+      'Variant Requires Shipping': 'true',
+      'Variant Taxable': 'true',
+      'Unit Price Total Measure': '', 'Unit Price Total Measure Unit': '',
+      'Unit Price Base Measure': '', 'Unit Price Base Measure Unit': '',
+      'Variant Barcode': '',
+      'Image Src': ZDJECIA_RAMKI[0],
+      'Image Position': '1',
+      'Image Alt Text': title,
+      'Gift Card': 'false',
+      'SEO Title': `${title} | REXIMPRIMIS`,
+      'SEO Description': String(r.shopDescription || '').slice(0, 160),
+      // Metapola shopify.* MUSZA zostac PUSTE — patrz komentarz przy
+      // gallery-framed powyzej, ten sam powod, ta sama zasada.
+      'Materiał ramy dzieła sztuki (product.metafields.shopify.artwork-frame-material)': '',
+      'Kolor (product.metafields.shopify.color-pattern)': '',
+      'Materiał dekoracyjny (product.metafields.shopify.decoration-material)': '',
+      'Obsługiwany format (product.metafields.shopify.format-supported)': '',
+      'Styl oprawki (product.metafields.shopify.frame-style)': '',
+      'Materiał (product.metafields.shopify.material)': '',
+      'Typ mocowania (product.metafields.shopify.mounting-type)': '',
+      'Orientacja (product.metafields.shopify.orientation)': '',
+      'Kształt (product.metafields.shopify.shape)': '',
+      'Motyw (product.metafields.shopify.theme)': '',
+      'Variant Image': ZDJECIA_RAMKI[0],
+      'Variant Weight Unit': 'kg',
+      'Variant Tax Code': '',
+      'Cost per item': '',
+      Status: r.approvedForPrint ? 'active' : 'draft',
+    };
+    lines.push(makeRow(headers, row));
+    wierszyRamekTotal += 1;
+
+    for (let i = 1; i < ZDJECIA_RAMKI.length; i++) {
+      lines.push(makeRow(headers, { Handle: handle, 'Image Src': ZDJECIA_RAMKI[i], 'Image Position': String(i + 1) }));
+      wierszyRamekTotal += 1;
+    }
+
+    exportedHandles.add(handle);
+    ramekWyeksportowanych += 1;
+  }
+
   const csvText = lines.join('\n') + '\n';
   fs.writeFileSync(outputCsvPath, csvText, 'utf8');
   let outputUsedPath = outputCsvPath;
@@ -1053,10 +1156,11 @@ async function main() {
   // zdjecie, nie na rozmiar) — trzeba je odjac tak samo, inaczej ich wiersze
   // zawyzalyby policzona liczbe zwyklych plakatow.
   const wierszyZestawow = zestawowWyeksportowanych * sizeDefs.length;
-  const wierszyPlakatow = lines.length - 1 - wierszyZestawow - wierszyGaleriiTotal - wierszyGaleriiRamekTotal;
+  const wierszyPlakatow = lines.length - 1 - wierszyZestawow - wierszyGaleriiTotal - wierszyGaleriiRamekTotal - wierszyRamekTotal;
   console.log(
     `Products exported: ${Math.max(0, Math.floor(wierszyPlakatow / (sizeDefs.length * PRINT_STYLES.length)))}` +
-      ` + ${zestawowWyeksportowanych} zestaw(ow) + ${galeriiWyeksportowanych} galeria(e) + ${galeriiRamekWyeksportowanych} zestaw(ow) z rama, rows: ${lines.length - 1}`
+      ` + ${zestawowWyeksportowanych} zestaw(ow) + ${galeriiWyeksportowanych} galeria(e) + ${galeriiRamekWyeksportowanych} zestaw(ow) z rama` +
+      ` + ${ramekWyeksportowanych} ramek jako produktow, rows: ${lines.length - 1}`
   );
   if (zestawowWyeksportowanych > 0) {
     const opis = Object.entries(settings.setMultipliers).map(([k, v]) => `${k} ×${v}`).join(', ');
