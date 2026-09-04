@@ -1326,6 +1326,17 @@
       font-weight: 700;
     }
 
+    /* Zestaw plakatow i ramek: rama jest w cenie, inny (drozszy) produkt niz
+       zwykly zestaw sciany — osobny kolor, zeby odroznic go od TRYPTYK/DYPTYK/
+       ZESTAW SCIENNY na pierwszy rzut oka, nie dopiero po przeczytaniu tekstu. */
+    .poster-orientation-badge--framed-set {
+      background: rgba(96, 79, 26, 0.85);
+      border-color: rgba(212, 175, 55, 0.7);
+      color: #fff6d8;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+
     .poster-card img {
       width: 100%;
       height: 100%;
@@ -6697,6 +6708,8 @@
                   <button type="button" class="filter-status-btn" data-kind="set" aria-pressed="false">Zestawy</button>
                   <button type="button" class="filter-status-btn" data-kind="duo" aria-pressed="false">Dyptyki</button>
                   <button type="button" class="filter-status-btn" data-kind="tryptyk" aria-pressed="false">Tryptyki</button>
+                  <button type="button" class="filter-status-btn" data-kind="gallery" aria-pressed="false">Zestawy ścienne</button>
+                  <button type="button" class="filter-status-btn" data-kind="gallery-framed" aria-pressed="false">Zestawy + ramki</button>
                 </div>
               </div>
             </details>
@@ -7666,6 +7679,8 @@
         set: 'Zestawy',
         duo: 'Dyptyki',
         tryptyk: 'Tryptyki',
+        gallery: 'Zestawy ścienne',
+        'gallery-framed': 'Zestawy + ramki',
       };
 
       function syncKindFilterButtons() {
@@ -7686,12 +7701,21 @@
         updatePendingHint();
       }
 
-      /** Czy pozycja przechodzi filtr typu. "set" lapie oba uklady naraz. */
+      /**
+       * Czy pozycja przechodzi filtr typu. "set" lapie oba uklady naraz
+       * (dyptyk+tryptyk). "single" to WYLACZNIE pojedynczy plakat — nie
+       * zestaw, nie galeria, nie zestaw z rama; bez tego wykluczenia
+       * 'gallery'/'gallery-framed' wpadaly cicho pod "Pojedyncze", bo nie
+       * sa kind==='set'.
+       */
       function itemMatchesKindFilter(item) {
         if (activeKindFilter === 'all') return true;
-        const jestZestawem = item && item.kind === 'set';
-        if (activeKindFilter === 'single') return !jestZestawem;
+        const kind = item && item.kind;
+        const jestZestawem = kind === 'set';
+        if (activeKindFilter === 'single') return !kind;
         if (activeKindFilter === 'set') return jestZestawem;
+        if (activeKindFilter === 'gallery') return kind === 'gallery';
+        if (activeKindFilter === 'gallery-framed') return kind === 'gallery-framed';
         return jestZestawem && item.layout === activeKindFilter;
       }
 
@@ -8296,6 +8320,8 @@
             : '';
 
           const isSet = item.kind === 'set';
+          const isGallery = item.kind === 'gallery';
+          const isGalleryFramed = item.kind === 'gallery-framed';
           // Zestaw pokazuje KASKADE — ten sam obraz, ktory jest pierwszym zdjeciem
           // produktu w sklepie, wiec biblioteka i sklep pokazuja to samo.
           // Dotyczy obu ukladow: dyptyku i tryptyku.
@@ -8303,19 +8329,32 @@
           const cardSrc = stackSrc || (isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath);
           const setBadgeText =
             item.layout === 'tryptyk' ? 'TRYPTYK' : item.layout === 'duo' ? 'DYPTYK' : 'ZESTAW';
+          // Bez tego 'gallery'/'gallery-framed' wygladaly na karcie identycznie
+          // jak zwykly plakat (tylko PION/POZIOM) — nie do odroznienia w gridzie
+          // ani po filtrze, dopoki ktos nie kliknal w srodek.
+          const kindBadgeText = isSet
+            ? setBadgeText
+            : isGalleryFramed
+              ? 'ZESTAW + RAMKA'
+              : isGallery
+                ? 'ZESTAW ŚCIENNY'
+                : item.orientation === 'landscape'
+                  ? 'Poziom'
+                  : 'Pion';
+          const kindBadgeClass = isGalleryFramed
+            ? 'poster-orientation-badge--framed-set'
+            : isSet || isGallery
+              ? 'poster-orientation-badge--set'
+              : item.orientation === 'landscape'
+                ? 'poster-orientation-badge--landscape'
+                : 'poster-orientation-badge--portrait';
 
           card.innerHTML = `
             <figure class="poster-card-figure">
               <img src="${escapeAttr(cardSrc)}" alt="${escapeAttr(item.title)}" loading="lazy" />
               <span class="poster-status-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
-              <span class="poster-orientation-badge ${
-                isSet
-                  ? 'poster-orientation-badge--set'
-                  : item.orientation === 'landscape'
-                    ? 'poster-orientation-badge--landscape'
-                    : 'poster-orientation-badge--portrait'
-              }" data-orientation-badge>${escapeHtml(
-                isSet ? setBadgeText : item.orientation === 'landscape' ? 'Poziom' : 'Pion'
+              <span class="poster-orientation-badge ${kindBadgeClass}" data-orientation-badge>${escapeHtml(
+                kindBadgeText
               )}</span>
               ${
                 item.framingWarning
@@ -8376,11 +8415,13 @@
               }
               card.classList.toggle('poster-card--landscape', isLandscape);
               card.classList.toggle('poster-card--portrait', !isLandscape);
-              // Plakietka na zestawach pokazuje TRYPTYK/DYPTYK (setBadgeText
-              // wyzej), nie Pion/Poziom — to inna informacja, zostawiamy ja
-              // nietknieta. Dotyczy tylko ukladu karty, wiec galeria (ktora
-              // NIE ma takiej specjalnej plakiety) dostaje normalne Pion/Poziom.
-              if (orientationBadge && !isSet) {
+              // Plakietka na zestawach/galeriach/zestawach z rama pokazuje
+              // wlasny tekst (kindBadgeText wyzej: TRYPTYK/DYPTYK/ZESTAW
+              // SCIENNY/ZESTAW + RAMKA), nie Pion/Poziom — to inna informacja,
+              // zostawiamy ja nietknieta. Bez tego wykluczenia ten sam kod,
+              // ktory dawniej cicho nadpisywal plakietke zestawow na Pion/
+              // Poziom, zrobilby to samo dla galerii i zestawow z rama.
+              if (orientationBadge && !isSet && !isGallery && !isGalleryFramed) {
                 orientationBadge.textContent = isLandscape ? 'Poziom' : 'Pion';
                 orientationBadge.classList.toggle('poster-orientation-badge--landscape', isLandscape);
               }
