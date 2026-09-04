@@ -1,0 +1,13 @@
+{
+  "tytul": "Garden Birds Specimen Grid",
+  "kategoria": "animals",
+  "kolorRamy": "zloty",
+  "pomieszczenie": "living-room",
+  "opis": "Cztery ryciny ptakow i owadow z ogrodowego atlasu przyrodniczego: szczygiel, biedronka, gniazdo strzyzyka z jajkami i wroblowy kapiel pyłowa. Rowna krata w cieplej beżowo-brazowej gamie, jak strony wyjete z tego samego zielnika.",
+  "pozycje": [
+    { "tytul": "Goldfinch on Thistle Head", "rozmiar": "13x18" },
+    { "tytul": "Ladybird Elytra", "rozmiar": "13x18" },
+    { "tytul": "Wren Nest Eggs", "rozmiar": "13x18" },
+    { "tytul": "Sparrow Dust Bath", "rozmiar": "13x18" }
+  ]
+}

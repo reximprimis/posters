@@ -1,0 +1,12 @@
+{
+  "tytul": "Coastal Shell Study Trio",
+  "kategoria": "sea-coast",
+  "sciana": "kremowa",
+  "pomieszczenie": "bathroom",
+  "opis": "Trzy rysunki morskich okazow z jednej serii przyrodniczej - muszla, nautilus, korale - w cieplej beżowo-brazowej gamie. Duzy arkusz 50x70 z nautilusem jako centrum kompozycji, obok dwa mniejsze 21x30. Spokojna, spa-like estetyka do lazienki lub sypialni.",
+  "pozycje": [
+    { "tytul": "Nautilus Chamber Section", "rozmiar": "50x70" },
+    { "tytul": "Scallop Shell Fan", "rozmiar": "21x30" },
+    { "tytul": "Coral Branch Specimen", "rozmiar": "21x30" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "tytul": "Karkonosze Summit Trio",
+  "kategoria": "mountains-hiking",
+  "sciana": "neutralna",
+  "pomieszczenie": "study",
+  "opis": "Trzy zdjecia z jednego pasma - Karkonoszy: wschod slonca nad Sniezka jako duzy arkusz 50x70, obok dwa mniejsze 21x30 z tej samej mglistej, niebiesko-brazowej palety. Wyglada jak jedna wyprawa udokumentowana trzema kadrami, nie przypadkowy zestaw gorskich widokow.",
+  "pozycje": [
+    { "tytul": "Sniezka Summit at Dawn", "rozmiar": "50x70" },
+    { "tytul": "Staniszow Grodna Hill", "rozmiar": "21x30" },
+    { "tytul": "Valley Fog Below", "rozmiar": "21x30" }
+  ]
+}

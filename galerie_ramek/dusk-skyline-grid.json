@@ -1,0 +1,13 @@
+{
+  "tytul": "Dusk Skyline Grid",
+  "kategoria": "cities-travel",
+  "kolorRamy": "czarny-mat",
+  "pomieszczenie": "home-office",
+  "opis": "Cztery zdjecia miast o zmierzchu - odbicia w szkle, sylwetki dachow, gwar ulicy i swiatla nad zatoka - polaczone jedna paleta blekitu i pomaranczu godziny modrej. Rowna krata do biura lub gabinetu.",
+  "pozycje": [
+    { "tytul": "Cityscape Reflections: Twilight Horizons", "rozmiar": "13x18" },
+    { "tytul": "Skyline Silhouettes at Dusk", "rozmiar": "13x18" },
+    { "tytul": "Urban Tapestry at Dusk", "rozmiar": "13x18" },
+    { "tytul": "City Lights at Dusk", "rozmiar": "13x18" }
+  ]
+}
