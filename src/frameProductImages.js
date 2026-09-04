@@ -12,21 +12,39 @@
  * rekordow je czyta.
  *
  * Konwencja:
- *   frames/products/<kolor>/front.jpg   — front na czystym tle, WSPOLNY dla
- *                                          wszystkich rozmiarow tego koloru
- *   frames/products/<kolor>/room.jpg    — front w pokoju (docelowo generowany
- *                                          jak salon zestawow), opcjonalny
- *   frames/products/_back/<rozmiar>.jpg — tyl z zaczepami/podpurka, WSPOLNY
- *                                          dla wszystkich kolorow tego rozmiaru
- *                                          (male 13x18/21x30 maja podpurke,
- *                                          duze tylko zaczepy — inne u kazdego
- *                                          rozmiaru, ale nie u kazdego koloru)
+ *   frames/products/<kolor>/front.jpg          — front na czystym tle,
+ *                                                 WSPOLNY dla wszystkich
+ *                                                 rozmiarow tego koloru (sama
+ *                                                 rama, bez kontekstu — nie ma
+ *                                                 czego rozniciowac po rozmiarze)
+ *   frames/products/<kolor>/room-<pasmo>.jpg   — aranzacja w pokoju, gdzie
+ *                                                 pasmo = 'small' (13x18,
+ *                                                 21x30 — rama STOI na
+ *                                                 podpurce) albo 'large'
+ *                                                 (30x40+, rama TYLKO wisi).
+ *                                                 NIE wspolny dla calego
+ *                                                 koloru — male ramy stojace
+ *                                                 na polce i duze wiszace na
+ *                                                 scianie to inna scena, wiec
+ *                                                 jedno zdjecie na caly kolor
+ *                                                 pasowaloby tylko czesci
+ *                                                 rozmiarow (zauwazone przez
+ *                                                 uzytkownika: "to samo
+ *                                                 zdjecie nie pasuje np. do
+ *                                                 50x70").
+ *   frames/products/_back/<rozmiar>.jpg        — tyl z zaczepami/podpurka,
+ *                                                 WSPOLNY dla wszystkich
+ *                                                 kolorow tego rozmiaru
+ *                                                 (mechanizm mocowania jest
+ *                                                 ten sam niezaleznie od
+ *                                                 koloru lica).
  */
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { jestMalyRozmiar } = require('./frameProductDescription');
 
 const ROOT = path.join(__dirname, '..');
 const PRODUCTS_DIR = path.join(ROOT, 'frames', 'products');
@@ -49,9 +67,10 @@ function znajdzPlik(dir, nazwaBezRozszerzenia) {
 function resolveFrameImages(rekord) {
   const kolorDir = path.join(PRODUCTS_DIR, rekord.frameColor);
   const backDir = path.join(PRODUCTS_DIR, '_back');
+  const pasmo = jestMalyRozmiar(rekord.size) ? 'small' : 'large';
   return {
     front: znajdzPlik(kolorDir, 'front'),
-    room: znajdzPlik(kolorDir, 'room'),
+    room: znajdzPlik(kolorDir, 'room-' + pasmo),
     back: znajdzPlik(backDir, rekord.size),
   };
 }

@@ -6024,8 +6024,10 @@
     // nie po polu w rekordzie (patrz src/frameProductImages.js) — dlatego ta
     // zakladka tylko POKAZUJE status (jest/brak), nie ma wgrywania plikow:
     // pliki wklada sie recznie do frames/products/<kolor>/front.jpg (lub
-    // room.jpg) i frames/products/_back/<rozmiar>.jpg, a ta lista odswieza
-    // sie po kliknieciu "Odswiez".
+    // room-small.jpg / room-large.jpg — male ramy stoja, duze tylko wisza,
+    // wiec to inna scena, nie jedno zdjecie na caly kolor) i
+    // frames/products/_back/<rozmiar>.jpg, a ta lista odswieza sie po
+    // kliknieciu "Odswiez".
     var KOLOR_HEX_RAMKI = {
       'czarny-mat': '#161616', zloty: '#b89454', srebrny: '#b7b9bb',
       miedziany: '#a8623f', dab: '#b08654', bialy: '#f2efe9', czarny: '#1a1512',
@@ -6099,7 +6101,7 @@
       '<div style="padding:20px 24px 8px">' +
       '<h2 style="margin:0 0 4px">Ramki jako produkty</h2>' +
       '<p class="frames-summary" style="opacity:.6;margin:0 0 12px">Wczytywanie…</p>' +
-      '<p style="opacity:.6;font-size:13px;margin:0 0 16px">Zdjęcia wg konwencji: <code>frames/products/&lt;kolor&gt;/front.jpg</code> (i opcjonalnie <code>room.jpg</code>), <code>frames/products/_back/&lt;rozmiar&gt;.jpg</code> — wgraj plik i kliknij Odśwież.</p>' +
+      '<p style="opacity:.6;font-size:13px;margin:0 0 16px">Zdjęcia wg konwencji: <code>frames/products/&lt;kolor&gt;/front.jpg</code>, <code>room-small.jpg</code> (13x18/21x30, stoi) lub <code>room-large.jpg</code> (30x40+, tylko wisi), <code>frames/products/_back/&lt;rozmiar&gt;.jpg</code> — wgraj plik i kliknij Odśwież.</p>' +
       '<button type="button" class="btn" id="framesRefreshBtn">🔄 Odśwież</button>' +
       '</div>' +
       '<div class="frames-table-wrap" style="padding:0 24px 24px"></div>' +
