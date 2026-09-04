@@ -21,6 +21,7 @@
 
 'use strict';
 
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
@@ -36,8 +37,9 @@ const { cenaOsobno, cenaZestawu, sprawdzDefinicje } = require('../src/galerieRam
 const { SIZE_PRICES } = require('../src/galerieScienne');
 const { cenaRamy, opisRamy } = require('../src/ramkiKatalog');
 const { toPosterHandle } = require('../src/posterTitle');
-const { buildFramedMaster, buildFramedInterior } = require('../src/galleryFramedVisuals');
-const { buildFramedDescription, findForbiddenTerms } = require('../src/galleryFramedDescription');
+const { buildFramedMaster } = require('../src/galleryFramedVisuals');
+const { buildFramedInteriorAI } = require('../src/galleryFramedInteriorAI');
+const { buildFramedDescription, findForbiddenTerms, NAZWY_MATERIALU, NAZWY_KOLORU } = require('../src/galleryFramedDescription');
 
 const plikDef = process.argv[2];
 const zapis = process.argv.includes('--wykonaj');
@@ -113,8 +115,13 @@ const items = pozycje.map((z) => {
   const master = path.join(katalog, handle + '_master.jpg');
   await buildFramedMaster(items, def.kolorRamy, master);
 
+  // Salon jedzie przez GPT Image 2, z gotowym packshotem (master) jako
+  // referencja — nie sklejamy juz lokalnie w assets/set_rooms/*.png. Sklejacz
+  // sharp dawal fotomontaz nie do zaakceptowania jako zdjecie produktowe;
+  // patrz naglowek src/galleryFramedInteriorAI.js.
+  const opisRamyEn = (NAZWY_KOLORU.en[def.kolorRamy] || def.kolorRamy) + ' ' + (NAZWY_MATERIALU.en[rama.material] || rama.material) + ' frame';
   const salon = path.join(katalog, handle + '_salon.jpg');
-  await buildFramedInterior(items, def.kolorRamy, salon, { roomId: def.pokojId || undefined });
+  await buildFramedInteriorAI(master, { pieceCount: pozycje.length, opisRamy: opisRamyEn, roomSlug: def.pomieszczenie }, salon);
 
   const thumb = path.join(katalog, handle + '_thumb.jpg');
   await sharp(master).resize(1200, null, { withoutEnlargement: true }).jpeg({ quality: 86 }).toFile(thumb);

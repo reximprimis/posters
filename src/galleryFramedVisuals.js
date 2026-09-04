@@ -13,7 +13,11 @@
  * Kolor ramy bierzemy z prawdziwego katalogu (src/ramkiKatalog.js) — nie
  * jest to dekoracja, tylko materia, ktora fizycznie jedzie w paczce.
  *
- * Skladane lokalnie przez sharp, bez modelu — deterministyczne i darmowe.
+ * Sama rama to PRAWDZIWE zdjecie (src/frameMockups.js), nie rysunek wektorowy —
+ * pierwsza wersja rysowala plaski kolorowy prostokat i wygladalo to sztucznie,
+ * nie do zaakceptowania jako packshot produktu. Sklad (siatka, cien, wstawienie
+ * do pokoju) nadal robi lokalnie sharp — tylko sama "rama" pochodzi teraz ze
+ * zdjecia zamiast z SVG.
  */
 
 'use strict';
@@ -21,18 +25,8 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const { FRAME_CM, getMockup } = require('./frameMockups');
 
-const KOLORY_RAM = {
-  'czarny-mat': '#161616',
-  'zloty': '#b89454',
-  'srebrny': '#b7b9bb',
-  'miedziany': '#a8623f',
-  'dab': '#b08654',
-  'bialy': '#f2efe9',
-  'czarny': '#1a1512',
-};
-
-const FRAME_CM = 1.3;
 const GAP_CM = 2.0;
 const MARGIN_CM = 3.5;
 const SHADOW_CM = 0.9;
@@ -46,15 +40,33 @@ async function zapisz(buf, outputPath, tloDlaJpeg) {
   return outputPath;
 }
 
-async function oprawObraz(absPath, innerW, innerH, frameJednostka, kolorRamy) {
-  const art = await sharp(absPath).resize(innerW, innerH, { fit: 'cover', position: 'centre' }).png().toBuffer();
-  const totalW = innerW + frameJednostka * 2;
-  const totalH = innerH + frameJednostka * 2;
-  const kolor = KOLORY_RAM[kolorRamy] || '#1a1a1a';
-  const svg = '<svg width="' + totalW + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">' +
-    '<rect width="100%" height="100%" fill="' + kolor + '"/></svg>';
-  const buf = await sharp(svgBuffer(svg))
-    .composite([{ input: art, left: frameJednostka, top: frameJednostka }])
+/**
+ * Wstawia wydruk w otwor prawdziwego zdjecia ramy, skalujac cale zdjecie tak,
+ * zeby otwor mial zadany rozmiar w pikselach (innerW x innerH). Zdjecie ma
+ * wlasne proporcje otworu, wiec przy niedopasowanym stosunku szerokosc/wysokosc
+ * skalujemy po srednioej z obu osi i docinamy tresc "cover" fitem — tak samo
+ * robi kazdy generator mockupow, ktoremu podajesz wlasna grafike do gotowej ramki.
+ */
+async function oprawObraz(absPath, innerW, innerH, kolorRamy) {
+  const mock = await getMockup(kolorRamy);
+  const skala = ((innerW / mock.innerW) + (innerH / mock.innerH)) / 2;
+  const totalW = Math.round(mock.width * skala);
+  const totalH = Math.round(mock.height * skala);
+  const openLeft = Math.round(mock.innerLeft * skala);
+  const openTop = Math.round(mock.innerTop * skala);
+  const openW = Math.round(mock.innerW * skala);
+  const openH = Math.round(mock.innerH * skala);
+
+  const [art, ramaSkalowana] = await Promise.all([
+    sharp(absPath).resize(openW, openH, { fit: 'cover', position: 'centre' }).png().toBuffer(),
+    sharp(mock.cutoutBuffer).resize(totalW, totalH).toBuffer(),
+  ]);
+
+  const buf = await sharp({ create: { width: totalW, height: totalH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite([
+      { input: art, left: openLeft, top: openTop },
+      { input: ramaSkalowana, left: 0, top: 0 },
+    ])
     .png()
     .toBuffer();
   return { buffer: buf, width: totalW, height: totalH };
@@ -82,7 +94,6 @@ async function skladajSiatke(items, kolorRamy, pxPerCm, background) {
   const kolumny = items.length >= 4 ? 2 : items.length;
   const wiersze = Math.ceil(items.length / kolumny);
 
-  const frameJednostka = Math.round(FRAME_CM * pxPerCm);
   const gap = Math.round(GAP_CM * pxPerCm);
   const margines = Math.round(MARGIN_CM * pxPerCm);
   const padCien = Math.round(SHADOW_CM * pxPerCm * 3);
@@ -90,7 +101,7 @@ async function skladajSiatke(items, kolorRamy, pxPerCm, background) {
   const kafle = [];
   for (const it of items) {
     kafle.push(await oprawObraz(
-      it.absPath, Math.round(w * pxPerCm), Math.round(h * pxPerCm), frameJednostka, kolorRamy
+      it.absPath, Math.round(w * pxPerCm), Math.round(h * pxPerCm), kolorRamy
     ));
   }
   const kw = kafle[0].width, kh = kafle[0].height;
@@ -167,4 +178,4 @@ async function buildFramedInterior(items, kolorRamy, outputPath, opts) {
   return outputPath;
 }
 
-module.exports = { KOLORY_RAM, buildFramedMaster, buildFramedInterior };
+module.exports = { buildFramedMaster, buildFramedInterior };

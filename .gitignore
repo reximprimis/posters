@@ -58,3 +58,8 @@ zestawy_robocze/
 # Blanket *.png powyzej blokowal tam przezroczyste packshoty, arkusze i kaskady —
 # w repo ladowaly tylko JPEG-i, a adresy PNG w CSV zwracaly 404.
 !shopify_thumbs/**/*.png
+
+# WYJATEK: prawdziwe zdjecia ram (src/frameMockups.js) sa malym, wlasnorecznie
+# dostarczonym zasobem kodu — nie wygenerowanym plakatem — wiec maja byc
+# wersjonowane, tak jak assets/set_rooms/*.png.
+!frames/assets_frame/*.png

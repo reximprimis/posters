@@ -99,4 +99,4 @@ function buildFramedDescription({ opisMotywu, pieceCount, kolorRamy, language } 
   return akapity.join('\n\n');
 }
 
-module.exports = { PAPIER_GRAMATURA, ZAKAZANE_OKRESLENIA, findForbiddenTerms, buildFramedDescription };
+module.exports = { PAPIER_GRAMATURA, ZAKAZANE_OKRESLENIA, findForbiddenTerms, buildFramedDescription, NAZWY_MATERIALU, NAZWY_KOLORU };
