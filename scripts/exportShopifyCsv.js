@@ -1083,7 +1083,7 @@ async function main() {
     const img = resolveFrameImages(r);
     if (!img.front) { console.log(`⚠ Ramka "${r.title}" — brak zdjecia frontu, pomijam.`); continue; }
     if (!img.back) { console.log(`⚠ Ramka "${r.title}" — brak zdjecia tylu, pomijam.`); continue; }
-    const ZDJECIA_RAMKI = [img.front, img.room, img.back].filter(Boolean).map((p) => toPublicUrl(p));
+    const ZDJECIA_RAMKI = [img.front, img.room, img.back, img.packaging].filter(Boolean).map((p) => toPublicUrl(p));
 
     const cena = Number(r.price);
     if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Ramka "${r.title}" — brak ceny, pomijam.`); continue; }

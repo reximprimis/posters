@@ -6052,7 +6052,7 @@
         return (
           '<div class="frames-card' + (r.approvedForPrint ? ' frames-card--approved' : '') + '">' +
           '<div class="frames-card-main">' + thumb(img.front, 'front') + '</div>' +
-          '<div class="frames-card-strip">' + thumb(img.back, 'tył') + thumb(img.room, 'pokój') + '</div>' +
+          '<div class="frames-card-strip">' + thumb(img.back, 'tył') + thumb(img.room, 'pokój') + thumb(img.packaging, 'pakowanie') + '</div>' +
           '<div class="frames-card-body">' +
           '<div class="frames-card-title"><span class="frames-color-swatch" style="background:' + (KOLOR_HEX_RAMKI[r.frameColor] || '#ccc') + '"></span>' + escFr(r.title) + '</div>' +
           '<div class="frames-card-meta">' + escFr(r.frameMaterial) + ' · ' + escFr(r.price) + ' zł · ' +

@@ -38,6 +38,22 @@
  *                                                 (mechanizm mocowania jest
  *                                                 ten sam niezaleznie od
  *                                                 koloru lica).
+ *   frames/products/_packaging/standard.jpg    — detal zabezpieczenia na
+ *                                                 transport (piankowy
+ *                                                 naroznik + folia).
+ *                                                 WSPOLNY dla 21x30-50x70
+ *                                                 (uzytkownik dostarczyl
+ *                                                 jedno zdjecie na caly ten
+ *                                                 zakres rozmiarow — detal
+ *                                                 narozny wyglada tak samo
+ *                                                 niezaleznie od rozmiaru
+ *                                                 ramy). BRAK dla 13x18 —
+ *                                                 ten rozmiar ma inne
+ *                                                 opakowanie i nie ma jeszcze
+ *                                                 zdjecia (celowo pominiete
+ *                                                 przez uzytkownika, nie
+ *                                                 przeoczenie). OPCJONALNE —
+ *                                                 nie blokuje zatwierdzenia.
  */
 
 'use strict';
@@ -61,17 +77,20 @@ function znajdzPlik(dir, nazwaBezRozszerzenia) {
 
 /**
  * @param {{ frameColor: string, size: string }} rekord
- * @returns {{ front: string, room: string, back: string }} sciezki wzgledne
- *   od katalogu projektu (puste jezeli plik jeszcze nie istnieje)
+ * @returns {{ front: string, room: string, back: string, packaging: string }}
+ *   sciezki wzgledne od katalogu projektu (puste jezeli plik jeszcze nie
+ *   istnieje)
  */
 function resolveFrameImages(rekord) {
   const kolorDir = path.join(PRODUCTS_DIR, rekord.frameColor);
   const backDir = path.join(PRODUCTS_DIR, '_back');
+  const packagingDir = path.join(PRODUCTS_DIR, '_packaging');
   const pasmo = jestMalyRozmiar(rekord.size) ? 'small' : 'large';
   return {
     front: znajdzPlik(kolorDir, 'front'),
     room: znajdzPlik(kolorDir, 'room-' + pasmo),
     back: znajdzPlik(backDir, rekord.size),
+    packaging: rekord.size === '13x18' ? '' : znajdzPlik(packagingDir, 'standard'),
   };
 }
 

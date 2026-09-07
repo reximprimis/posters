@@ -119,7 +119,7 @@ function main() {
     if (!r || r.kind !== 'frame' || r.approvedForPrint !== true) continue;
     const img = resolveFrameImages(r);
     let skopiowane = 0;
-    for (const rel of [img.front, img.room, img.back]) {
+    for (const rel of [img.front, img.room, img.back, img.packaging]) {
       if (rel && copyIfExists(rel)) skopiowane += 1;
     }
     if (skopiowane) { ramkiPliki += skopiowane; ramkiSzt += 1; }
