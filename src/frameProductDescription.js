@@ -19,9 +19,13 @@ function jestMalyRozmiar(rozmiar) {
   return MALE_ROZMIARY.has(rozmiar);
 }
 
+// en.aluminium = 'aluminum' (pisownia amerykanska, nie brytyjska
+// "aluminium") — dopasowane do 31 juz zywych produktow na sklepie, np.
+// realny tytul "Matte Black Aluminum Frame 13x18 cm" (sprawdzone w
+// products_export_1.csv, prawdziwym eksporcie z Shopify).
 const NAZWY_MATERIALU = {
   pl: { aluminium: 'aluminium', drewno: 'drewno' },
-  en: { aluminium: 'aluminium', drewno: 'wood' },
+  en: { aluminium: 'aluminum', drewno: 'wood' },
 };
 const NAZWY_KOLORU = {
   pl: { 'czarny-mat': 'czarny mat', zloty: 'złoty', srebrny: 'srebrny', miedziany: 'miedziany', dab: 'dąb', bialy: 'biały', czarny: 'czarny' },

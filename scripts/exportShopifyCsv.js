@@ -1107,6 +1107,15 @@ async function main() {
       legacyRamkiColorTag(r.frameColor),
       legacyRamkiMaterialTag(r.frameMaterial),
       r.size ? 'size_' + r.size : '',
+      // Stale tagi-boilerplate — sprawdzone w prawdziwym eksporcie z
+      // zywego sklepu (products_export_1.csv): WSZYSTKICH 31 juz zywych
+      // ramek ma dokladnie ten sam zestaw (style_minimal/modern/
+      // scandinavian, tier_premium, type_frame, use_photo, use_poster),
+      // wiec to nie cechy per-produkt tylko stale tagi calej kategorii
+      // "ramka". Bez nich nasz eksport nie trafialby do tych samych
+      // filtrow/kolekcji co juz istniejace 31 produktow.
+      'style_minimal', 'style_modern', 'style_scandinavian',
+      'tier_premium', 'type_frame', 'use_photo', 'use_poster',
     ].filter(Boolean).join(', ');
     const opis = htmlDescription(String(r.shopDescription || ''));
 
@@ -1116,7 +1125,10 @@ async function main() {
       'Body (HTML)': opis,
       Vendor: 'REXIMPRIMIS',
       'Product Category': KATEGORIA_RAMKI,
-      Type: 'frame',
+      // 'ramka', NIE 'frame' — dokladnie tak jak wszystkie 31 juz zywych
+      // produktow na sklepie (sprawdzone w products_export_1.csv). Inna
+      // wartosc Type utworzylaby drugi, rozlaczny koszyk typow.
+      Type: 'ramka',
       Tags: tags,
       Published: r.approvedForPrint ? 'true' : 'false',
       'Option1 Name': 'Title',
