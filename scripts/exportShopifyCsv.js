@@ -273,6 +273,28 @@ function slugifyTag(v) {
     .replace(/^-+|-+$/g, '');
 }
 
+// Mapowanie naszych kolorow/materialow ram (src/ramkiKatalog.js) na STARA
+// konwencje tagow, ktorej oczekuje juz istniejacy filtr kolekcji ramki na
+// stronie (site: src/lib/constants/collections.ts, COLORS_PL/MATERIALS_PL).
+// Strona ma tam TYLKO 6 kolorow — 'czarny' i 'czarny-mat' (dwa rozne SKU u
+// nas: drewno vs aluminium) mapuja sie na TEN SAM 'color_black', bo strona
+// nie rozroznia matowego/zwyklego czarnego jako osobnych kubelkow filtra.
+const LEGACY_RAMKI_COLOR = {
+  bialy: 'color_white',
+  czarny: 'color_black',
+  'czarny-mat': 'color_black',
+  dab: 'color_oak',
+  miedziany: 'color_copper',
+  srebrny: 'color_silver',
+  zloty: 'color_gold',
+};
+const LEGACY_RAMKI_MATERIAL = {
+  aluminium: 'material_aluminum', // US spelling po stronie strony, nie 'aluminium'
+  drewno: 'material_wood',
+};
+function legacyRamkiColorTag(kolor) { return LEGACY_RAMKI_COLOR[kolor] || ''; }
+function legacyRamkiMaterialTag(material) { return LEGACY_RAMKI_MATERIAL[material] || ''; }
+
 function withThumbSuffix(relPath) {
   const p = normalizeRelPath(relPath);
   if (!p) return '';
@@ -1072,6 +1094,19 @@ async function main() {
       r.frameColor ? 'frame-color:' + slugifyTag(r.frameColor) : '',
       r.frameMaterial ? 'frame-material:' + slugifyTag(r.frameMaterial) : '',
       r.size ? 'size:' + r.size : '',
+      // Tagi w STAREJ konwencji z podkreslnikiem (color_black, material_wood,
+      // size_13x18) — dokladnie te, ktorych oczekuje juz istniejacy filtr
+      // kolekcji /collections/ramki na stronie (src/lib/constants/
+      // collections.ts: COLORS/MATERIALS_PL/SIZES). Strona NIE zna jeszcze
+      // moich kolorowych tagow frame-color:/frame-material: (rozjazd
+      // konwencji, sprawdzone przez eksploracje kodu strony) — bez tych
+      // dodatkowych tagow 31 nowych produktow trafiloby na kolekcje, ale
+      // bylyby niewidoczne dla filtra po kolorze/materiale/rozmiarze.
+      // Docelowo strona powinna zaczac czytac tez frame-color:/frame-
+      // material: (osobna sesja), ale do tego czasu wysylamy oba naraz.
+      legacyRamkiColorTag(r.frameColor),
+      legacyRamkiMaterialTag(r.frameMaterial),
+      r.size ? 'size_' + r.size : '',
     ].filter(Boolean).join(', ');
     const opis = htmlDescription(String(r.shopDescription || ''));
 
