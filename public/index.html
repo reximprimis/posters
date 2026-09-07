@@ -1351,19 +1351,35 @@
        zdjecia + opis + cena/stan. */
     .frame-modal {
       max-width: min(760px, 100%);
+      max-height: min(88vh, 640px);
       grid-template-columns: 1fr;
       grid-template-rows: auto auto;
+      position: relative;
     }
     @media (min-width: 640px) {
-      .modal.frame-modal { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr; }
+      .modal.frame-modal { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr; align-items: stretch; }
     }
-    .frame-modal-visual { background: var(--modal-visual-bg); display: flex; flex-direction: column; gap: 10px; padding: 20px; }
-    .frame-modal-visual-img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #f3f2ee; border-radius: 8px; }
-    .frame-modal-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* Przycisk zamkniecia jest wyjety z ukladu grid (position:absolute) —
+       jako zwykly element grid bez wlasnej kolumny/wiersza dostawal
+       automatycznie wlasna komorke siatki (bo .frame-modal ma 2 kolumny
+       i 3 dzieci: close/visual/detail), co robilo pusty gorny pas nad
+       opisem. Poster-modal ma na to osobna regule grid-column:1/-1 — tu
+       prosciej po prostu wyjac go z przeplywu. */
+    /* !important + selektor po ID: w tym srodowisku podgladu (Browser pane)
+       jest wstrzykiwana globalna regula `.modal-close { !important }`
+       niezwiazana z nasza aplikacja (obce zmienne --f-md/--f-surface/--f-ink),
+       ktora koliduje z nazwa klasy uzywana tu tez przez reszte modali. Zeby
+       to nie zalezalo od przypadku (kolejnosc/orgin arkuszy), ID bije klase
+       nawet w warstwie !important — wiec celujemy w #frameModalClose. */
+    #frameModalClose { position: absolute !important; top: 12px !important; right: 12px !important; left: auto !important; bottom: auto !important; float: none !important; margin: 0 !important; }
+    .frame-modal-visual { background: var(--modal-visual-bg); display: flex; flex-direction: column; gap: 10px; padding: 20px; align-items: center; justify-content: center; }
+    .frame-modal-stage { width: 100%; height: min(46vh, 400px); display: flex; align-items: center; justify-content: center; background: #f3f2ee; border-radius: 8px; overflow: hidden; }
+    .frame-modal-visual-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .frame-modal-thumbs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
     .frame-modal-thumb { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 2px solid transparent; opacity: 0.6; background: #eee; }
     .frame-modal-thumb:hover { opacity: 0.9; }
     .frame-modal-thumb.is-active { border-color: var(--accent, #2f9e5c); opacity: 1; }
-    .frame-modal-detail { padding: 24px 24px 24px 4px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .frame-modal-detail { padding: 24px 44px 24px 24px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; justify-content: center; }
     .frame-modal-eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.55; }
     .frame-modal-title { font-size: 20px; font-weight: 700; margin: 0; }
     .frame-modal-meta { font-size: 13px; opacity: 0.75; display: flex; flex-wrap: wrap; gap: 4px 10px; }
@@ -6127,12 +6143,18 @@
     var frameModalApproveBtn = document.getElementById('frameModalApproveBtn');
     var frameModalClose = document.getElementById('frameModalClose');
     var FRAME_IMG_LABELS = { front: 'Front', room: 'Room', back: 'Back', packaging: 'Packaging' };
+    // Te same angielskie nazwy co src/frameProductDescription.js
+    // (NAZWY_KOLORU.en/NAZWY_MATERIALU.en) — modal ma pokazywac czytelna
+    // etykiete ("Matte Black · Aluminum"), nie surowy wewnetrzny slug
+    // ("czarny-mat · aluminium").
+    var FRAME_COLOR_LABEL = { 'czarny-mat': 'Matte Black', zloty: 'Gold', srebrny: 'Silver', miedziany: 'Copper', dab: 'Oak', bialy: 'White', czarny: 'Black' };
+    var FRAME_MATERIAL_LABEL = { aluminium: 'Aluminum', drewno: 'Wood' };
     function openFrameModal(handle) {
       var r = framesByHandle[handle];
       if (!r || !frameModal) return;
       var img = r.images || {};
       var slots = ['front', 'room', 'back', 'packaging'].filter(function (k) { return img[k]; });
-      frameModalEyebrow.textContent = escFr(r.frameColor) + ' · ' + escFr(r.frameMaterial) + ' · ' + escFr(r.size) + ' cm';
+      frameModalEyebrow.textContent = escFr(FRAME_COLOR_LABEL[r.frameColor] || r.frameColor) + ' · ' + escFr(FRAME_MATERIAL_LABEL[r.frameMaterial] || r.frameMaterial) + ' · ' + escFr(r.size) + ' cm';
       frameModalTitle.textContent = r.title || '';
       frameModalMeta.innerHTML =
         '<span>' + escFr(r.price) + ' zł</span>' +
@@ -7235,7 +7257,9 @@
     <div class="modal frame-modal" role="document">
       <button type="button" class="modal-close" id="frameModalClose" aria-label="Close">×</button>
       <div class="frame-modal-visual">
-        <img class="frame-modal-visual-img" id="frameModalImg" src="" alt="" />
+        <div class="frame-modal-stage">
+          <img class="frame-modal-visual-img" id="frameModalImg" src="" alt="" />
+        </div>
         <div class="frame-modal-thumbs" id="frameModalThumbs"></div>
       </div>
       <div class="frame-modal-detail">
