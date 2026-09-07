@@ -33,11 +33,24 @@
  *                                                 zdjecie nie pasuje np. do
  *                                                 50x70").
  *   frames/products/_back/<rozmiar>.jpg        — tyl z zaczepami/podpurka,
- *                                                 WSPOLNY dla wszystkich
- *                                                 kolorow tego rozmiaru
- *                                                 (mechanizm mocowania jest
- *                                                 ten sam niezaleznie od
- *                                                 koloru lica).
+ *                                                 domyslnie WSPOLNY dla
+ *                                                 wszystkich kolorow tego
+ *                                                 rozmiaru — ALE tylko gdy
+ *                                                 kadr jest prosto od tylu
+ *                                                 (nie widac profilu ramy,
+ *                                                 tylko plyta MDF + okucia).
+ *   frames/products/<kolor>/back-<rozmiar>.jpg — override PER KOLOR, gdy
+ *                                                 zdjecie tylu jest pod katem
+ *                                                 i widac kolor listwy (np.
+ *                                                 zlota ramka pod katem —
+ *                                                 zdjecie prosto-od-tylu
+ *                                                 czarnej ramki by tu nie
+ *                                                 pasowalo, ten sam blad co
+ *                                                 przy packaging). Sprawdzane
+ *                                                 PRZED wspolnym _back/, wiec
+ *                                                 kolor z wlasnym zdjeciem
+ *                                                 dostaje swoje, reszta dalej
+ *                                                 korzysta ze wspolnego.
  *   frames/products/<kolor>/packaging-<pasmo>.jpg — detal zabezpieczenia na
  *                                                 transport (piankowy
  *                                                 naroznik + folia), pasmo
@@ -95,7 +108,7 @@ function resolveFrameImages(rekord) {
   return {
     front: znajdzPlik(kolorDir, 'front'),
     room: znajdzPlik(kolorDir, 'room-' + pasmo),
-    back: znajdzPlik(backDir, rekord.size),
+    back: znajdzPlik(kolorDir, 'back-' + rekord.size) || znajdzPlik(backDir, rekord.size),
     packaging: znajdzPlik(kolorDir, 'packaging-' + pasmo),
   };
 }
