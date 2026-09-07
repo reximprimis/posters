@@ -38,21 +38,16 @@
  *                                                 (mechanizm mocowania jest
  *                                                 ten sam niezaleznie od
  *                                                 koloru lica).
- *   frames/products/_packaging/standard.jpg    — detal zabezpieczenia na
+ *   frames/products/_packaging/<pasmo>.jpg     — detal zabezpieczenia na
  *                                                 transport (piankowy
- *                                                 naroznik + folia).
- *                                                 WSPOLNY dla 21x30-50x70
- *                                                 (uzytkownik dostarczyl
- *                                                 jedno zdjecie na caly ten
- *                                                 zakres rozmiarow — detal
- *                                                 narozny wyglada tak samo
- *                                                 niezaleznie od rozmiaru
- *                                                 ramy). BRAK dla 13x18 —
- *                                                 ten rozmiar ma inne
- *                                                 opakowanie i nie ma jeszcze
- *                                                 zdjecia (celowo pominiete
- *                                                 przez uzytkownika, nie
- *                                                 przeoczenie). OPCJONALNE —
+ *                                                 naroznik + folia), to samo
+ *                                                 pasmo co dla room (small =
+ *                                                 13x18/21x30, large =
+ *                                                 30x40+) — male ramy maja
+ *                                                 inne opakowanie niz duze
+ *                                                 (rozne zaczepy/podpurka w
+ *                                                 srodku widoczne na zdjeciu
+ *                                                 tylu z folia). OPCJONALNE —
  *                                                 nie blokuje zatwierdzenia.
  */
 
@@ -90,7 +85,7 @@ function resolveFrameImages(rekord) {
     front: znajdzPlik(kolorDir, 'front'),
     room: znajdzPlik(kolorDir, 'room-' + pasmo),
     back: znajdzPlik(backDir, rekord.size),
-    packaging: rekord.size === '13x18' ? '' : znajdzPlik(packagingDir, 'standard'),
+    packaging: znajdzPlik(packagingDir, pasmo),
   };
 }
 

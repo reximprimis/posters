@@ -134,7 +134,7 @@ for (const r of ramki.filter((x) => x.approvedForPrint)) {
   if (!img.front) dodaj('BLOKUJE', `${r.title}: brak zdjecia frontu (frames/products/${r.frameColor}/front.jpg)`);
   if (!img.back) dodaj('BLOKUJE', `${r.title}: brak zdjecia tylu dla rozmiaru ${r.size} (frames/products/_back/${r.size}.jpg)`);
   if (!img.room) dodaj('DROBNE', `${r.title}: brak zdjecia w pokoju (opcjonalne)`);
-  if (!img.packaging && r.size !== '13x18') dodaj('DROBNE', `${r.title}: brak zdjecia opakowania (opcjonalne)`);
+  if (!img.packaging) dodaj('DROBNE', `${r.title}: brak zdjecia opakowania (opcjonalne)`);
   if (!r.price || r.price <= 0) dodaj('BLOKUJE', `${r.title}: brak ceny`);
   if (!Number.isFinite(r.stock)) dodaj('WAZNE', `${r.title}: brak stanu magazynowego — uruchom scripts/pobierzStanRamek.js`);
 }
