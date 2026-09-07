@@ -38,17 +38,29 @@
  *                                                 (mechanizm mocowania jest
  *                                                 ten sam niezaleznie od
  *                                                 koloru lica).
- *   frames/products/_packaging/<pasmo>.jpg     — detal zabezpieczenia na
+ *   frames/products/<kolor>/packaging-<pasmo>.jpg — detal zabezpieczenia na
  *                                                 transport (piankowy
- *                                                 naroznik + folia), to samo
- *                                                 pasmo co dla room (small =
+ *                                                 naroznik + folia), pasmo
+ *                                                 jak dla room (small =
  *                                                 13x18/21x30, large =
- *                                                 30x40+) — male ramy maja
- *                                                 inne opakowanie niz duze
- *                                                 (rozne zaczepy/podpurka w
- *                                                 srodku widoczne na zdjeciu
- *                                                 tylu z folia). OPCJONALNE —
- *                                                 nie blokuje zatwierdzenia.
+ *                                                 30x40+). PER KOLOR, NIE
+ *                                                 wspolny dla calego katalogu
+ *                                                 — zdjecie pokazuje profil i
+ *                                                 kolor listwy w rogu, wiec
+ *                                                 zdjecie czarnej ramki nie
+ *                                                 pasuje do zlotej czy
+ *                                                 srebrnej (bledny stan
+ *                                                 poprzednio: jeden folder
+ *                                                 _packaging/ dzielony przez
+ *                                                 wszystkie kolory pokazywal
+ *                                                 czarny naroznik na
+ *                                                 produktach zlotych/
+ *                                                 srebrnych/miedzianych —
+ *                                                 zauwazone przez
+ *                                                 uzytkownika). OPCJONALNE —
+ *                                                 nie blokuje zatwierdzenia,
+ *                                                 wiekszosc kolorow na razie
+ *                                                 nie ma tego zdjecia.
  */
 
 'use strict';
@@ -79,13 +91,12 @@ function znajdzPlik(dir, nazwaBezRozszerzenia) {
 function resolveFrameImages(rekord) {
   const kolorDir = path.join(PRODUCTS_DIR, rekord.frameColor);
   const backDir = path.join(PRODUCTS_DIR, '_back');
-  const packagingDir = path.join(PRODUCTS_DIR, '_packaging');
   const pasmo = jestMalyRozmiar(rekord.size) ? 'small' : 'large';
   return {
     front: znajdzPlik(kolorDir, 'front'),
     room: znajdzPlik(kolorDir, 'room-' + pasmo),
     back: znajdzPlik(backDir, rekord.size),
-    packaging: znajdzPlik(packagingDir, pasmo),
+    packaging: znajdzPlik(kolorDir, 'packaging-' + pasmo),
   };
 }
 
