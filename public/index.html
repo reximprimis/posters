@@ -1343,6 +1343,32 @@
     .frames-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
     .frames-card-title { font-size: 13px; font-weight: 600; line-height: 1.3; }
     .frames-card-meta { font-size: 12px; opacity: 0.65; }
+    .frames-card-main { cursor: pointer; }
+
+    /* Dedykowany modal podgladu ramki — celowo osobny i prosty (nie
+       poyzcza gigantycznego modal-poster z workflow/plikow/PDF), bo ramka
+       jako produkt nie ma promptow, wariantow druku ani mockupow — tylko
+       zdjecia + opis + cena/stan. */
+    .frame-modal {
+      max-width: min(760px, 100%);
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+    }
+    @media (min-width: 640px) {
+      .modal.frame-modal { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr; }
+    }
+    .frame-modal-visual { background: var(--modal-visual-bg); display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+    .frame-modal-visual-img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: #f3f2ee; border-radius: 8px; }
+    .frame-modal-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .frame-modal-thumb { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 2px solid transparent; opacity: 0.6; background: #eee; }
+    .frame-modal-thumb:hover { opacity: 0.9; }
+    .frame-modal-thumb.is-active { border-color: var(--accent, #2f9e5c); opacity: 1; }
+    .frame-modal-detail { padding: 24px 24px 24px 4px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .frame-modal-eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.55; }
+    .frame-modal-title { font-size: 20px; font-weight: 700; margin: 0; }
+    .frame-modal-meta { font-size: 13px; opacity: 0.75; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+    .frame-modal-desc { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; opacity: 0.85; }
+    .frame-modal-approve { align-self: flex-start; margin-top: 6px; }
     .frames-approve-btn { padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); background: #fff; cursor: pointer; font-size: 12.5px; margin-top: 2px; }
     .frames-approve-btn[data-approved="true"] { background: #eafaf0; border-color: #2f9e5c; color: #1e7a44; }
     .frames-approve-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -6041,7 +6067,10 @@
     // zwraca sciezki jak "frames/products/<kolor>/front.jpg" — juz zaczynaja
     // sie od "frames/", wiec doklejamy tylko wiodacy slash.
     function frImgUrl(relPath) { return relPath ? '/' + relPath : ''; }
+    var framesByHandle = {};
     function renderFramesTable(items) {
+      framesByHandle = {};
+      items.forEach(function (r) { framesByHandle[r.handle] = r; });
       var cards = items.map(function (r) {
         var img = r.images || {};
         var mozeZatwierdzic = !!(img.front && img.back);
@@ -6051,7 +6080,7 @@
         };
         return (
           '<div class="frames-card' + (r.approvedForPrint ? ' frames-card--approved' : '') + '">' +
-          '<div class="frames-card-main">' + thumb(img.front, 'front') + '</div>' +
+          '<div class="frames-card-main" data-handle="' + escFr(r.handle) + '" title="Kliknij, aby podejrzeć">' + thumb(img.front, 'front') + '</div>' +
           '<div class="frames-card-strip">' + thumb(img.back, 'tył') + thumb(img.room, 'pokój') + thumb(img.packaging, 'pakowanie') + '</div>' +
           '<div class="frames-card-body">' +
           '<div class="frames-card-title"><span class="frames-color-swatch" style="background:' + (KOLOR_HEX_RAMKI[r.frameColor] || '#ccc') + '"></span>' + escFr(r.title) + '</div>' +
@@ -6067,7 +6096,8 @@
       var wrap = framesPanel.querySelector('.frames-table-wrap');
       wrap.innerHTML = '<div class="frames-grid">' + cards + '</div>';
       wrap.querySelectorAll('.frames-approve-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (ev) {
+          ev.stopPropagation();
           var handle = btn.dataset.handle;
           var next = btn.dataset.approved !== 'true';
           btn.disabled = true;
@@ -6078,7 +6108,82 @@
           }).then(function (r) { return r.json(); }).then(function () { loadFramesTab(true); });
         });
       });
+      wrap.querySelectorAll('.frames-card-main').forEach(function (el) {
+        el.addEventListener('click', function () { openFrameModal(el.dataset.handle); });
+      });
     }
+
+    // Dedykowany modal podgladu ramki (klik na kafelek w zakladce Ramki).
+    // Osobny od modal-poster (plakatow) — ramka nie ma promptow, workflow,
+    // wariantow PDF ani mockupow GPT, tylko zdjecia wg konwencji + opis +
+    // cena/stan, wiec prosty modal ze zmiana zdjecia przez miniatury.
+    var frameModal = document.getElementById('frameModal');
+    var frameModalImg = document.getElementById('frameModalImg');
+    var frameModalThumbs = document.getElementById('frameModalThumbs');
+    var frameModalEyebrow = document.getElementById('frameModalEyebrow');
+    var frameModalTitle = document.getElementById('frameModalTitle');
+    var frameModalMeta = document.getElementById('frameModalMeta');
+    var frameModalDesc = document.getElementById('frameModalDesc');
+    var frameModalApproveBtn = document.getElementById('frameModalApproveBtn');
+    var frameModalClose = document.getElementById('frameModalClose');
+    var FRAME_IMG_LABELS = { front: 'Front', room: 'Room', back: 'Back', packaging: 'Packaging' };
+    function openFrameModal(handle) {
+      var r = framesByHandle[handle];
+      if (!r || !frameModal) return;
+      var img = r.images || {};
+      var slots = ['front', 'room', 'back', 'packaging'].filter(function (k) { return img[k]; });
+      frameModalEyebrow.textContent = escFr(r.frameColor) + ' · ' + escFr(r.frameMaterial) + ' · ' + escFr(r.size) + ' cm';
+      frameModalTitle.textContent = r.title || '';
+      frameModalMeta.innerHTML =
+        '<span>' + escFr(r.price) + ' zł</span>' +
+        '<span>' + (r.stock == null ? 'stan ?' : escFr(r.stock) + ' szt.') + '</span>' +
+        '<span>' + escFr(r.handle) + '</span>';
+      frameModalDesc.textContent = r.shopDescription || '(brak opisu)';
+      var mozeZatwierdzic = !!(img.front && img.back);
+      frameModalApproveBtn.textContent = r.approvedForPrint ? '✓ Zatwierdzona' : 'Zatwierdź';
+      frameModalApproveBtn.dataset.handle = r.handle;
+      frameModalApproveBtn.dataset.approved = r.approvedForPrint ? 'true' : 'false';
+      frameModalApproveBtn.disabled = !mozeZatwierdzic;
+      frameModalApproveBtn.title = mozeZatwierdzic ? '' : 'brak frontu lub tyłu';
+      function showSlot(key) {
+        frameModalImg.src = frImgUrl(img[key]);
+        frameModalImg.alt = FRAME_IMG_LABELS[key] || key;
+        frameModalThumbs.querySelectorAll('.frame-modal-thumb').forEach(function (t) {
+          t.classList.toggle('is-active', t.dataset.slot === key);
+        });
+      }
+      frameModalThumbs.innerHTML = slots.map(function (k) {
+        return '<img class="frame-modal-thumb" data-slot="' + k + '" src="' + frImgUrl(img[k]) + '" alt="' + FRAME_IMG_LABELS[k] + '" title="' + FRAME_IMG_LABELS[k] + '" />';
+      }).join('');
+      frameModalThumbs.querySelectorAll('.frame-modal-thumb').forEach(function (t) {
+        t.addEventListener('click', function () { showSlot(t.dataset.slot); });
+      });
+      showSlot(slots[0] || 'front');
+      frameModal.hidden = false;
+      requestAnimationFrame(function () { frameModal.classList.add('is-open'); });
+    }
+    function closeFrameModal() {
+      frameModal.classList.remove('is-open');
+      setTimeout(function () { frameModal.hidden = true; }, 200);
+    }
+    if (frameModalClose) frameModalClose.addEventListener('click', closeFrameModal);
+    if (frameModal) frameModal.addEventListener('click', function (ev) { if (ev.target === frameModal) closeFrameModal(); });
+    if (frameModalApproveBtn) frameModalApproveBtn.addEventListener('click', function () {
+      var handle = frameModalApproveBtn.dataset.handle;
+      var next = frameModalApproveBtn.dataset.approved !== 'true';
+      frameModalApproveBtn.disabled = true;
+      fetch('/api/frames/approval', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: handle, approvedForPrint: next }),
+      }).then(function (r) { return r.json(); }).then(function () {
+        loadFramesTab(true);
+        closeFrameModal();
+      });
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && frameModal && !frameModal.hidden) closeFrameModal();
+    });
     function loadFramesTab(force) {
       if (framesLoaded && !force) return;
       framesLoaded = true;
@@ -7123,6 +7228,23 @@
         </aside>
       </div>
       <button type="button" class="modal-lightbox-close" id="modalLightboxClose" aria-label="Zamknij podgląd" title="Zamknij">×</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="frameModal" role="dialog" aria-modal="true" aria-labelledby="frameModalTitle" hidden>
+    <div class="modal frame-modal" role="document">
+      <button type="button" class="modal-close" id="frameModalClose" aria-label="Close">×</button>
+      <div class="frame-modal-visual">
+        <img class="frame-modal-visual-img" id="frameModalImg" src="" alt="" />
+        <div class="frame-modal-thumbs" id="frameModalThumbs"></div>
+      </div>
+      <div class="frame-modal-detail">
+        <div class="frame-modal-eyebrow" id="frameModalEyebrow"></div>
+        <h2 class="frame-modal-title" id="frameModalTitle"></h2>
+        <div class="frame-modal-meta" id="frameModalMeta"></div>
+        <p class="frame-modal-desc" id="frameModalDesc"></p>
+        <button type="button" class="frames-approve-btn frame-modal-approve" id="frameModalApproveBtn"></button>
+      </div>
     </div>
   </div>
 
