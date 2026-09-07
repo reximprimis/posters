@@ -19,23 +19,22 @@ const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
 
 const { RAMKI, handleRamy } = require('../src/ramkiKatalog');
-const { buildFrameProductDescription } = require('../src/frameProductDescription');
+const { buildFrameProductDescription, NAZWY_KOLORU, NAZWY_MATERIALU } = require('../src/frameProductDescription');
 
 const zapis = process.argv.includes('--wykonaj');
 
-const KOLOR_PRZYM = {
-  'czarny-mat': 'Czarna Matowa',
-  zloty: 'Złota',
-  srebrny: 'Srebrna',
-  miedziany: 'Miedziana',
-  dab: 'Dębowa',
-  bialy: 'Biała',
-  czarny: 'Czarna',
-};
-const MATERIAL_PRZYM = { aluminium: 'Aluminiowa', drewno: 'Drewniana' };
-
+// Tytuly PO ANGIELSKU — spojne z reszta katalogu (plakaty, zestawy, galerie
+// sa wszystkie po angielsku; tylko ramki byly wyjatkiem po polsku, co
+// wygladalo na przypadek przy porownaniu z reszta bibioteki). Uzywa TYCH
+// SAMYCH map co opis produktu (src/frameProductDescription.js) — jedno
+// zrodlo nazw kolorow/materialow, nie osobny slownik tylko do tytulow.
+// Wzorzec sprawdzony na prawdziwym produkcie w sklepie: czarny/drewno/50x70
+// daje "Black Wood Frame 50x70 cm" — dokladnie taki tytul ma tam live.
+function capitalize(s) { return s.replace(/\b\w/g, (c) => c.toUpperCase()); }
 function tytul(kolor, material, rozmiar) {
-  return `${KOLOR_PRZYM[kolor]} Ramka ${MATERIAL_PRZYM[material]} ${rozmiar} cm`;
+  const kolorEn = capitalize(NAZWY_KOLORU.en[kolor] || kolor);
+  const materialEn = capitalize(NAZWY_MATERIALU.en[material] || material);
+  return `${kolorEn} ${materialEn} Frame ${rozmiar} cm`;
 }
 
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
