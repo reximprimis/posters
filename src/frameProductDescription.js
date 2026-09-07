@@ -66,7 +66,11 @@ const TEKSTY = {
  * @returns {string}
  */
 function buildFrameProductDescription({ frameColor, frameMaterial, size, language } = {}) {
-  const lang = language === 'en' ? 'en' : 'pl';
+  // Domyslnie angielski — to samo co setDescription.js/galleryDescription.js/
+  // galleryFramedDescription.js: wszystko, co idzie do Shopify, jest po
+  // angielsku, chyba ze ktos jawnie poprosi o 'pl'. Ten plik byl jedynym
+  // wyjatkiem (domyslny 'pl'), niespojnym z reszta katalogu.
+  const lang = language === 'pl' ? 'pl' : 'en';
   const t = TEKSTY[lang];
   if (!frameColor) throw new Error('buildFrameProductDescription: brak frameColor');
   if (!frameMaterial) throw new Error('buildFrameProductDescription: brak frameMaterial');
