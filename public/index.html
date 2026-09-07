@@ -6771,41 +6771,41 @@
 
           <div class="libbar">
             <div class="libbar-search">
-              <label class="visually-hidden" for="search">Szukaj</label>
-              <input type="search" id="search" class="libbar-search-input" placeholder="Szukaj: tytuł, kategoria, styl, prompt…" autocomplete="off" />
+              <label class="visually-hidden" for="search">Search</label>
+              <input type="search" id="search" class="libbar-search-input" placeholder="Search: title, category, style, prompt…" autocomplete="off" />
             </div>
 
             <details class="libpop" id="popCategory">
               <summary class="libpop-trigger">
-                <span class="libpop-label">Kategoria</span>
-                <span class="libpop-value" id="categoryFilterTriggerLabel">Wszystkie kategorie</span>
+                <span class="libpop-label">Category</span>
+                <span class="libpop-value" id="categoryFilterTriggerLabel">All categories</span>
                 <span class="libpop-count" id="categoryFilterTriggerCount">—</span>
               </summary>
               <div class="libpop-panel">
-                <ul class="filter-category-listbox libpop-list" id="categoryFilterListbox" role="listbox" aria-label="Kategorie plakatów"></ul>
+                <ul class="filter-category-listbox libpop-list" id="categoryFilterListbox" role="listbox" aria-label="Poster categories"></ul>
               </div>
             </details>
 
             <details class="libpop" id="popStyle">
               <summary class="libpop-trigger">
-                <span class="libpop-label">Styl</span>
-                <span class="libpop-value" id="styleFilterTriggerLabel">Wszystkie style</span>
+                <span class="libpop-label">Style</span>
+                <span class="libpop-value" id="styleFilterTriggerLabel">All styles</span>
               </summary>
               <div class="libpop-panel">
-                <ul class="filter-category-listbox libpop-list" id="libraryStyleFilterListbox" role="listbox" aria-label="Styl plakatu"></ul>
+                <ul class="filter-category-listbox libpop-list" id="libraryStyleFilterListbox" role="listbox" aria-label="Poster style"></ul>
               </div>
             </details>
 
             <details class="libpop" id="popStatus">
               <summary class="libpop-trigger">
                 <span class="libpop-label">Status</span>
-                <span class="libpop-value" id="statusFilterTriggerLabel">Wszystkie</span>
+                <span class="libpop-value" id="statusFilterTriggerLabel">All</span>
               </summary>
               <div class="libpop-panel">
-                <div class="libpop-seg" id="statusFilterGroup" role="group" aria-label="Status wydruku">
-                  <button type="button" class="filter-status-btn" data-status="all" aria-pressed="true">Wszystkie</button>
-                  <button type="button" class="filter-status-btn" data-status="new" aria-pressed="false">Nowy (niewybrany do druku)</button>
-                  <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Zatwierdzony (gotowy do druku)</button>
+                <div class="libpop-seg" id="statusFilterGroup" role="group" aria-label="Print status">
+                  <button type="button" class="filter-status-btn" data-status="all" aria-pressed="true">All</button>
+                  <button type="button" class="filter-status-btn" data-status="new" aria-pressed="false">New (not selected for print)</button>
+                  <button type="button" class="filter-status-btn" data-status="approved" aria-pressed="false">Approved (ready to print)</button>
                 </div>
               </div>
             </details>
@@ -6813,41 +6813,42 @@
             <details class="libpop" id="popMockup">
               <summary class="libpop-trigger">
                 <span class="libpop-label">Mockup</span>
-                <span class="libpop-value" id="mockupFilterTriggerLabel">Wszystkie</span>
+                <span class="libpop-value" id="mockupFilterTriggerLabel">All</span>
               </summary>
               <div class="libpop-panel">
-                <div class="libpop-seg" id="mockupFilterGroup" role="group" aria-label="Mockupy Shopify">
-                  <button type="button" class="filter-status-btn" data-mockup="all" aria-pressed="true">Wszystkie</button>
-                  <button type="button" class="filter-status-btn" data-mockup="missing" aria-pressed="false">Bez mockupu</button>
-                  <button type="button" class="filter-status-btn" data-mockup="has" aria-pressed="false">Z mockupem</button>
+                <div class="libpop-seg" id="mockupFilterGroup" role="group" aria-label="Shopify mockups">
+                  <button type="button" class="filter-status-btn" data-mockup="all" aria-pressed="true">All</button>
+                  <button type="button" class="filter-status-btn" data-mockup="missing" aria-pressed="false">No mockup</button>
+                  <button type="button" class="filter-status-btn" data-mockup="has" aria-pressed="false">Has mockup</button>
                 </div>
               </div>
             </details>
 
-            <!-- Typ produktu. To CZWARTA os obok kategorii, stylu i estetyki:
-                 bycie tryptykiem jest niezalezne od tematu, wiec japonski tryptyk
-                 zostaje w Japonii, a nie ląduje w osobnej kategorii "Zestawy". -->
+            <!-- Product type. This is a FOURTH axis alongside category, style and
+                 aesthetic: being a triptych is independent of subject, so a
+                 Japan-themed triptych stays in Japan, not in a separate "Sets"
+                 category. -->
             <details class="libpop" id="kindFilterPop">
               <summary class="libpop-trigger">
-                <span class="libpop-label">Typ</span>
-                <span class="libpop-value" id="kindFilterTriggerLabel">Wszystkie</span>
+                <span class="libpop-label">Type</span>
+                <span class="libpop-value" id="kindFilterTriggerLabel">All</span>
               </summary>
               <div class="libpop-panel">
-                <div class="libpop-seg" id="kindFilterGroup" role="group" aria-label="Typ produktu">
-                  <button type="button" class="filter-status-btn" data-kind="all" aria-pressed="true">Wszystkie</button>
-                  <button type="button" class="filter-status-btn" data-kind="single" aria-pressed="false">Pojedyncze</button>
-                  <button type="button" class="filter-status-btn" data-kind="set" aria-pressed="false">Zestawy</button>
-                  <button type="button" class="filter-status-btn" data-kind="duo" aria-pressed="false">Dyptyki</button>
-                  <button type="button" class="filter-status-btn" data-kind="tryptyk" aria-pressed="false">Tryptyki</button>
-                  <button type="button" class="filter-status-btn" data-kind="gallery" aria-pressed="false">Zestawy ścienne</button>
-                  <button type="button" class="filter-status-btn" data-kind="gallery-framed" aria-pressed="false">Zestawy + ramki</button>
+                <div class="libpop-seg" id="kindFilterGroup" role="group" aria-label="Product type">
+                  <button type="button" class="filter-status-btn" data-kind="all" aria-pressed="true">All</button>
+                  <button type="button" class="filter-status-btn" data-kind="single" aria-pressed="false">Single</button>
+                  <button type="button" class="filter-status-btn" data-kind="set" aria-pressed="false">Sets</button>
+                  <button type="button" class="filter-status-btn" data-kind="duo" aria-pressed="false">Diptychs</button>
+                  <button type="button" class="filter-status-btn" data-kind="tryptyk" aria-pressed="false">Triptychs</button>
+                  <button type="button" class="filter-status-btn" data-kind="gallery" aria-pressed="false">Wall sets</button>
+                  <button type="button" class="filter-status-btn" data-kind="gallery-framed" aria-pressed="false">Framed sets</button>
                 </div>
               </div>
             </details>
 
             <div class="libbar-actions">
-              <button type="button" class="btn btn-primary btn-filter-apply" id="filterApplyBtn">Zastosuj</button>
-              <button type="button" class="btn-filter-clear" id="filterClearBtn">Wyczyść</button>
+              <button type="button" class="btn btn-primary btn-filter-apply" id="filterApplyBtn">Apply</button>
+              <button type="button" class="btn-filter-clear" id="filterClearBtn">Clear</button>
             </div>
           </div>
 
@@ -7764,7 +7765,7 @@
 
       function syncCategoryFilterTrigger() {
         const counts = categoryCountMap;
-        const label = draftCategory === 'all' ? 'Wszystkie kategorie' : draftCategory;
+        const label = draftCategory === 'all' ? 'All categories' : draftCategory;
         els.categoryFilterTriggerLabel.textContent = label;
         const n = draftCategory === 'all' ? counts.__all || 0 : counts[draftCategory] || 0;
         if (draftCategory === 'all') {
@@ -7805,13 +7806,13 @@
       }
 
       const KIND_FILTER_LABELS = {
-        all: 'Wszystkie',
-        single: 'Pojedyncze',
-        set: 'Zestawy',
-        duo: 'Dyptyki',
-        tryptyk: 'Tryptyki',
-        gallery: 'Zestawy ścienne',
-        'gallery-framed': 'Zestawy + ramki',
+        all: 'All',
+        single: 'Single',
+        set: 'Sets',
+        duo: 'Diptychs',
+        tryptyk: 'Triptychs',
+        gallery: 'Wall sets',
+        'gallery-framed': 'Framed sets',
       };
 
       function syncKindFilterButtons() {
@@ -7927,7 +7928,7 @@
         const total = counts.__all || 0;
         const parts = [];
         parts.push(
-          `<li role="presentation"><button type="button" role="option" class="filter-category-option" data-cat="all" aria-selected="false"><span class="filter-category-option-name">Wszystkie kategorie</span><span class="filter-category-option-count">${total}</span></button></li>`
+          `<li role="presentation"><button type="button" role="option" class="filter-category-option" data-cat="all" aria-selected="false"><span class="filter-category-option-name">All categories</span><span class="filter-category-option-count">${total}</span></button></li>`
         );
         for (const c of sorted) {
           const n = counts[c] || 0;
@@ -7990,7 +7991,7 @@
         }
         ordered.sort((a, b) => a.localeCompare(b, 'pl'));
         const parts = [
-          `<li role="presentation"><button type="button" role="option" class="filter-category-option filter-style-option" data-style="all" aria-selected="false"><span class="filter-category-option-name">Wszystkie style</span><span class="filter-category-option-count">${total}</span></button></li>`,
+          `<li role="presentation"><button type="button" role="option" class="filter-category-option filter-style-option" data-style="all" aria-selected="false"><span class="filter-category-option-name">All styles</span><span class="filter-category-option-count">${total}</span></button></li>`,
         ];
         for (const s of ordered) {
           const n = counts[s] || 0;
@@ -10692,11 +10693,11 @@
         var label = document.getElementById(labelId);
         if (!g || !label) return;
         var on = g.querySelector('[aria-pressed="true"]');
-        label.textContent = on ? on.textContent.trim().replace(/\s*\(.*\)$/, '') : 'Wszystkie';
+        label.textContent = on ? on.textContent.trim().replace(/\s*\(.*\)$/, '') : 'All';
       }
 
       function syncAll() {
-        syncLabel('libraryStyleFilterListbox', 'styleFilterTriggerLabel', 'Wszystkie style');
+        syncLabel('libraryStyleFilterListbox', 'styleFilterTriggerLabel', 'All styles');
         syncSeg('statusFilterGroup', 'statusFilterTriggerLabel');
         syncSeg('mockupFilterGroup', 'mockupFilterTriggerLabel');
       }
