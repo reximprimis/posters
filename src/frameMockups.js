@@ -127,14 +127,37 @@ async function analizujRamke(absPath) {
   // rama (patrz skanPoziomo/skanPionowo) — skan "dalej" musi wystartowac
   // JUZ W RAMIE (o 1px dalej), inaczej warunek "!jasny" jest falszywy od
   // razu i petla nigdy sie nie wykonuje.
-  const outerLeft = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerLeft - 1, true)));
-  const outerRight = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerRight + 1, false)));
-  const outerTop = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerTop - 1, true)));
-  const outerBottom = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerBottom + 1, false)));
+  const outerLeftRaw = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerLeft - 1, true)));
+  const outerRightRaw = mediana(OFFSETY.map((dy) => skanDalejPoziomo(cy + dy, innerRight + 1, false)));
+  const outerTopRaw = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerTop - 1, true)));
+  const outerBottomRaw = mediana(OFFSETY.map((dx) => skanDalejPionowo(cx + dx, innerBottom + 1, false)));
+
+  // Dla jasnych/metalicznych ram (biala, zlota, srebrna) lico ramy bywa
+  // fragmentami tak jasne jak tlo (odblask/faktura), wiec skan "dalej"
+  // (patrz skanDalejPoziomo/Pionowo) trafia na fragment ramy uznany za
+  // "jasny" i zatrzymuje sie PRZEDWCZESNIE — wykryte empirycznie: zlota
+  // rama dawala L=44 R=11 T=46 B=10 w tym samym zdjeciu (fizycznie
+  // niemozliwe dla plaskiej, prostokatnej ramy fotografowanej na wprost).
+  // Zakladamy WIEC rame o SYMETRYCZNEJ grubosci lica — bierzemy NAJWIEKSZA
+  // z 4 niezaleznie zmierzonych stron jako najmniej podatna na przedwczesne
+  // zatrzymanie (krotsza strona = falszywie wczesne trafienie na jasny
+  // fragment ramy, nie prawdziwa krawedz tla) i stosujemy ja jednolicie do
+  // wszystkich 4 stron. Bez tego 3 z 7 kolorow mialy widocznie ciensza (albo
+  // brakujaca) krawedz ramy na packshocie — zauwazone przez uzytkownika
+  // przy porownaniu zlozonych packshotow miedzy kolorami.
+  const borderPx = Math.max(
+    innerLeft - outerLeftRaw,
+    outerRightRaw - innerRight,
+    innerTop - outerTopRaw,
+    outerBottomRaw - innerBottom
+  );
+  const outerLeft = Math.max(0, innerLeft - borderPx);
+  const outerRight = Math.min(w - 1, innerRight + borderPx);
+  const outerTop = Math.max(0, innerTop - borderPx);
+  const outerBottom = Math.min(h - 1, innerBottom + borderPx);
 
   const innerW = innerRight - innerLeft;
   const innerH = innerBottom - innerTop;
-  const borderPx = ((innerLeft - outerLeft) + (outerRight - innerRight) + (innerTop - outerTop) + (outerBottom - innerBottom)) / 4;
 
   // Maska GEOMETRYCZNA: opaque w pierscieniu miedzy prostokatem zewnetrznym
   // (outerLeft..outerRight, outerTop..outerBottom) a prostokatem otworu
