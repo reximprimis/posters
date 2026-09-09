@@ -881,7 +881,7 @@ async function main() {
     // dopisujemy oszczednosc w zlotowkach, bo ceny licza sie na eksporcie.
     const opis = htmlDescription(
       String(g.shopDescription || '') +
-      (g.priceSeparate ? '\n\nKupowane osobno kosztowalyby ' + g.priceSeparate + ' zl.' : '')
+      (g.priceSeparate ? '\n\nBought separately, these would cost ' + g.priceSeparate + ' zl.' : '')
     );
 
     const row = {
@@ -993,7 +993,7 @@ async function main() {
     // ktory ma do tego prawo, bo tu rama faktycznie jest w cenie.
     const opis = htmlDescription(
       String(g.shopDescription || '') +
-      (g.priceSeparate ? '\n\nKupowane osobno (wydruki + ramy) kosztowalyby ' + g.priceSeparate + ' zl.' : '')
+      (g.priceSeparate ? '\n\nBought separately (prints + frames), this would cost ' + g.priceSeparate + ' zl.' : '')
     );
 
     const row = {
