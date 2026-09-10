@@ -164,6 +164,16 @@ async function analizujRamke(absPath) {
   // (innerLeft..innerRight, innerTop..innerBottom); wszystko poza tym
   // pierscieniem (otwor w srodku, tlo na zewnatrz) jest przezroczyste.
   // Zero zaleznosci od koloru ramy — dziala tak samo dla bialej i czarnej.
+  //
+  // GEOMETRIA (ktore piksele sa opaque) zostaje NIETKNIETA — musi dokladnie
+  // pasowac do innerLeft/innerTop/innerW/innerH, bo oprawObraz()
+  // (src/galleryFramedVisuals.js) wkleja sztuke DOKLADNIE w te wspolrzedne.
+  // Pierwsza proba naprawy (erozja maski o 2px) zepsula to: skurczyla
+  // pierscien z dala od prawdziwego otworu, ale sztuka nadal siegala do
+  // starej (nieskurczonej) granicy — 2px szczelina odslaniala biale plotno
+  // pod spodem, WIDOCZNA jako jeszcze wyrazniejsza linia. Naprawiony fix
+  // (nizej) zostawia maske jak byla i podmienia tylko KOLOR skazonych
+  // pikseli.
   const alphaBuf = Buffer.alloc(w * h);
   for (let y = outerTop; y <= outerBottom; y++) {
     const wOtworze = y >= innerTop && y <= innerBottom;
@@ -173,8 +183,52 @@ async function analizujRamke(absPath) {
     }
   }
 
-  const cutoutBuffer = await sharp(absPath)
+  // KOLOR: zdjecia zrodlowe byly fotografowane na jasnym tle, wiec skrajny
+  // 2px pas pierscienia — zarowno przy zewnetrznej krawedzi (rama/tlo), jak
+  // i przy otworze (rama/wnetrze) — jest antyaliasowany (blend miedzy
+  // kolorem ramy a jasnym tlem zdjecia), mimo ze geometrycznie nalezy w
+  // calosci do ramy. Wykryte empirycznie: piksel TUZ przed przejsciem w
+  // przezroczystosc mial RGB (185,184,185) — jasny "upiorny" pasek,
+  // niewidoczny gdy tlo kompozycji jest biale (stąd przeszlo niezauwazone),
+  // ale rzucajacy sie w oczy na krawedzi ramy od strony sztuki, gdy sztuka
+  // jest ciemna (widoczne jako biala linia miedzy rama a plakatem —
+  // zauwazone przez uzytkownika). Zamiast kurczyc maske (ryzyko szczeliny,
+  // patrz wyzej), PODMIENIAMY KOLOR tego pasa na kolor sprzed EROZJA_PX w
+  // glab bezpiecznej strefy ramy — alpha (a wiec pokrycie/geometria)
+  // zostaje identyczna co do piksela.
+  const EROZJA_PX = 2;
+  const { data: rgba, info: rgbaInfo } = await sharp(absPath)
     .flatten({ background: { r: 255, g: 255, b: 255 } })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const rch = rgbaInfo.channels; // 3 (RGB) — flatten() usuwa alpha
+  const kopiujRGB = (yDst, xDst, ySrc, xSrc) => {
+    const iDst = (yDst * w + xDst) * rch;
+    const iSrc = (ySrc * w + xSrc) * rch;
+    rgba[iDst] = rgba[iSrc];
+    rgba[iDst + 1] = rgba[iSrc + 1];
+    rgba[iDst + 2] = rgba[iSrc + 2];
+  };
+  // Zewnetrzna krawedz pierscienia (4 pasy, w glab = w strone srodka ramy).
+  for (let x = outerLeft; x <= outerRight; x++) {
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(outerTop + d, x, outerTop + EROZJA_PX, x);
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(outerBottom - d, x, outerBottom - EROZJA_PX, x);
+  }
+  for (let y = outerTop; y <= outerBottom; y++) {
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(y, outerLeft + d, y, outerLeft + EROZJA_PX);
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(y, outerRight - d, y, outerRight - EROZJA_PX);
+  }
+  // Krawedz przy otworze (4 pasy, w glab = z dala od otworu).
+  for (let x = innerLeft; x <= innerRight; x++) {
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(innerTop - d, x, innerTop - EROZJA_PX, x);
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(innerBottom + d, x, innerBottom + EROZJA_PX, x);
+  }
+  for (let y = innerTop; y <= innerBottom; y++) {
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(y, innerLeft - d, y, innerLeft - EROZJA_PX);
+    for (let d = 0; d < EROZJA_PX; d++) kopiujRGB(y, innerRight + d, y, innerRight + EROZJA_PX);
+  }
+
+  const cutoutBuffer = await sharp(rgba, { raw: { width: w, height: h, channels: rch } })
     .joinChannel(alphaBuf, { raw: { width: w, height: h, channels: 1 } })
     .png()
     .toBuffer();

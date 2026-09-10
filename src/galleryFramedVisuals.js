@@ -42,6 +42,27 @@ const MARGIN_CM = 3.5;
  * skalujemy po srednioej z obu osi i docinamy tresc "cover" fitem — tak samo
  * robi kazdy generator mockupow, ktoremu podajesz wlasna grafike do gotowej ramki.
  */
+/**
+ * Skaluje wycietą ramke (RGBA, przezroczysty otwor) na docelowy rozmiar.
+ * RGB i alfa sa skalowane OSOBNO, z alfa przez 'nearest' (bez interpolacji) —
+ * inaczej standardowy resize() bez premultiplikacji alfa przecieka bialym
+ * kolorem otworu (post-flatten) w piksele brzegowe ramy przy skalowaniu,
+ * dajac widoczna jasna linie miedzy rama a wklejona sztuka (zauwazone przez
+ * uzytkownika na ciemnych plakatach — na jasnym tle bylo niewidoczne, wiec
+ * przeszlo niezauwazone wczesniej). RGB moze sie skalowac normalnie (lanczos)
+ * bez ryzyka, bo to juz nie miesza sie z alfa.
+ */
+async function skalujRamkeRGBA(cutoutBuffer, totalW, totalH) {
+  const [rgb, alpha] = await Promise.all([
+    sharp(cutoutBuffer).removeAlpha().resize(totalW, totalH).raw().toBuffer({ resolveWithObject: true }),
+    sharp(cutoutBuffer).extractChannel('alpha').resize(totalW, totalH, { kernel: 'nearest' }).raw().toBuffer(),
+  ]);
+  return sharp(rgb.data, { raw: { width: totalW, height: totalH, channels: rgb.info.channels } })
+    .joinChannel(alpha, { raw: { width: totalW, height: totalH, channels: 1 } })
+    .png()
+    .toBuffer();
+}
+
 async function oprawObraz(absPath, innerW, innerH, kolorRamy) {
   const mock = await getMockup(kolorRamy);
   const skala = ((innerW / mock.innerW) + (innerH / mock.innerH)) / 2;
@@ -52,14 +73,28 @@ async function oprawObraz(absPath, innerW, innerH, kolorRamy) {
   const openW = Math.round(mock.innerW * skala);
   const openH = Math.round(mock.innerH * skala);
 
+  // BLEED: art jest wklejana kilka pikseli WIEKSZA niz nominalny otwor (i o
+  // tyle samo przesunieta do tylu), zamiast dokladnie pasowac krawedz w
+  // krawedz. Powod: otwor i rama-po-skalowaniu licza sie DWOMA NIEZALEZNYMI
+  // operacjami resize (art przez sharp .resize(openW,openH), rama przez
+  // skalujRamkeRGBA na cala plansze) z osobnym zaokraglaniem w kazdej —
+  // przy pewnych skalach zostawia to 1px w pelni PRZEZROCZYSTA szczeline na
+  // styku (rama juz nieopaque, art jeszcze sie nie zaczyna), przez ktora
+  // przeswieca biale plotno pod spodem. Zauwazone przez uzytkownika jako
+  // jasna linia na stylu ramy przy ciemnym motywie (na jasnym bylo
+  // niewidoczne). Rama i tak rysuje sie NA WIERZCHU, wiec dodatkowy bleed
+  // artu nigdzie nie wystaje — po prostu gwarantuje, ze pod kazdym pikselem
+  // ramy (i tuz pod jej wewnetrzna krawedzia) zawsze jest tresc artu, nie
+  // przezroczystosc.
+  const BLEED_PX = 4;
   const [art, ramaSkalowana] = await Promise.all([
-    sharp(absPath).resize(openW, openH, { fit: 'cover', position: 'centre' }).png().toBuffer(),
-    sharp(mock.cutoutBuffer).resize(totalW, totalH).toBuffer(),
+    sharp(absPath).resize(openW + BLEED_PX * 2, openH + BLEED_PX * 2, { fit: 'cover', position: 'centre' }).png().toBuffer(),
+    skalujRamkeRGBA(mock.cutoutBuffer, totalW, totalH),
   ]);
 
   const buf = await sharp({ create: { width: totalW, height: totalH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([
-      { input: art, left: openLeft, top: openTop },
+      { input: art, left: openLeft - BLEED_PX, top: openTop - BLEED_PX },
       { input: ramaSkalowana, left: 0, top: 0 },
     ])
     .png()
