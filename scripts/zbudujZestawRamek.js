@@ -38,7 +38,7 @@ const { SIZE_PRICES } = require('../src/galerieScienne');
 const { cenaRamy, opisRamy, handleRamy } = require('../src/ramkiKatalog');
 const { toPosterHandle } = require('../src/posterTitle');
 const { buildFramedGridRaw } = require('../src/galleryFramedVisuals');
-const { buildFramedMasterLocal } = require('../src/galleryFramedMasterLocal');
+const { buildFramedMasterAI } = require('../src/galleryFramedPackshotAI');
 const { buildFramedInteriorAI } = require('../src/galleryFramedInteriorAI');
 const { buildFramedDescription, findForbiddenTerms, NAZWY_MATERIALU, NAZWY_KOLORU } = require('../src/galleryFramedDescription');
 
@@ -122,7 +122,7 @@ const items = pozycje.map((z) => {
   const opisRamyEn = (NAZWY_KOLORU.en[def.kolorRamy] || def.kolorRamy) + ' ' + (NAZWY_MATERIALU.en[rama.material] || rama.material) + ' frame';
 
   const master = path.join(katalog, handle + '_master.jpg');
-  await buildFramedMasterLocal(raw.buffer, { width: raw.width, height: raw.height }, master);
+  await buildFramedMasterAI(raw.buffer, { pieceCount: pozycje.length, opisRamy: opisRamyEn }, master);
 
   const salon = path.join(katalog, handle + '_salon.jpg');
   await buildFramedInteriorAI(raw.buffer, { pieceCount: pozycje.length, opisRamy: opisRamyEn, roomSlug: def.pomieszczenie }, salon);

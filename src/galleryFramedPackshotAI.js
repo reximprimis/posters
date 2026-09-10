@@ -74,8 +74,16 @@ async function buildFramedMasterAI(referenceBuffer, opts, outputPath) {
   const { toFile } = require('openai');
   const imageInput = await toFile(refResized, 'grid.png', { type: 'image/png' });
 
+  // gpt-image-2.5-sunburst (nie gpt-image-2) — wariant zoptymalizowany pod
+  // precyzyjna edycje/wiernosc referencji, dokladnie nasz przypadek (nie
+  // wymyslic scene od zera, tylko "sfotografowac" istniejaca siatke z
+  // realnymi ramami). Uzytkownik porownal oba na Canine Portrait Grid:
+  // sunburst dal spojny, "sfotografowany" wyglad calej siatki (jeden swiatlo/
+  // cien), lokalny sklejacz (src/galleryFramedMasterLocal.js) mial
+  // gwarantowany kolor, ale czytal sie jako 4 osobno wyciete prostokaty —
+  // uzytkownik jednoznacznie wybral wyglad AI (2026-09-10).
   const response = await client.images.edit({
-    model: 'gpt-image-2',
+    model: 'gpt-image-2.5-sunburst',
     image: imageInput,
     prompt,
     size: API_SIZE,
