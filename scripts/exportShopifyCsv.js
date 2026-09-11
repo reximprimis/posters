@@ -330,7 +330,20 @@ function toPublicUrl(relPath) {
   // inaczej adres wskazywalby katalog plakatu, ktorego tam nigdy nie bedzie.
   const surowa = p.startsWith('posters/') ? p.slice('posters/'.length) : p;
   const cleaned = shopRel || flattenPosterDir(surowa);
-  return `${base}/${encodeURI(cleaned)}`;
+  // Shopify'owy import CSV dedupuje zdjecia po URL — jesli sciezka jest
+  // identyczna jak przy poprzednim imporcie, NIE pobiera pliku ponownie,
+  // nawet gdy tresc pod tym adresem sie zmienila (np. nowy kolor ramy).
+  // Doklejamy ?v=<mtime pliku>, zeby kazda faktyczna zmiana tresci dawala
+  // inny URL i wymuszala ponowne pobranie — bez zmiany contentu URL zostaje
+  // taki sam (nie psuje istniejacego cache CDN bez powodu).
+  const shopAbs = path.join(projectRoot, 'shopify_thumbs', cleaned);
+  let wersja = '';
+  try {
+    wersja = '?v=' + Math.floor(fs.statSync(shopAbs).mtimeMs);
+  } catch (e) {
+    // plik jeszcze nie zsynchronizowany do shopify_thumbs — brak wersji, nic straconego
+  }
+  return `${base}/${encodeURI(cleaned)}${wersja}`;
 }
 
 function dedupePosters(rows) {
