@@ -123,7 +123,7 @@ function budujPrompt(pieceCount, scena, rama, zmienRame) {
   const ramaInstrukcja = zmienRame
     ? `Add a ${rama} around EACH piece individually (each print gets its own separate frame with real spacing between frames, not one shared frame).`
     : `Do not change the frame color or material (${rama}) — reproduce the frames exactly as shown.`;
-  return `Use the uploaded image as the EXACT reference for the artwork inside each of the ${pieceCount} pieces. Do not change the artwork, its arrangement, relative sizes, or spacing between the frames — reproduce this exact set pixel-accurately. ${ramaInstrukcja}
+  return `Use the uploaded image as the EXACT reference for the artwork inside each of the ${pieceCount} pieces AND for their exact arrangement (whether that is one large anchor piece with smaller pieces beside it, or a wall grid of similarly-sized pieces) — do not change the artwork, the arrangement, relative sizes, or spacing between the frames. Reproduce this exact set pixel-accurately. ${ramaInstrukcja}
 
 Photograph this exact framed arrangement hanging on a wall in a ${scena}
 
