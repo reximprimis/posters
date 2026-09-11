@@ -59,14 +59,14 @@ async function zapisz(buf, outputPath, tloDlaJpeg) {
  * czarna oprawe o grubosci frameJednostka; bez ramy zwraca sama grafike
  * w jej docelowym rozmiarze — nic wiecej.
  */
-async function ulozElement(absPath, innerW, innerH, frameJednostka, ramuj) {
+async function ulozElement(absPath, innerW, innerH, frameJednostka, ramuj, frameColor) {
   const art = await sharp(absPath).resize(innerW, innerH, { fit: 'cover', position: 'centre' }).png().toBuffer();
   if (!ramuj) return { buffer: art, width: innerW, height: innerH };
 
   const totalW = innerW + frameJednostka * 2;
   const totalH = innerH + frameJednostka * 2;
   const svg = '<svg width="' + totalW + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">' +
-    '<rect width="100%" height="100%" fill="' + FRAME_COLOR + '"/></svg>';
+    '<rect width="100%" height="100%" fill="' + (frameColor || FRAME_COLOR) + '"/></svg>';
   const buf = await sharp(svgBuffer(svg))
     .composite([{ input: art, left: frameJednostka, top: frameJednostka }])
     .png()
@@ -92,7 +92,7 @@ async function cienPod(w, h, padPx, sila) {
  * @param {boolean} [ramuj] domyslnie true — false daje gole arkusze (MASTER)
  * @returns {Promise<{buffer:Buffer, width:number, height:number}>}
  */
-async function skladajUklad(items, pxPerCm, background, ramuj) {
+async function skladajUklad(items, pxPerCm, background, ramuj, frameColor) {
   const oprawiony = ramuj !== false;
   const hero = items.reduce((a, b) => (b.heightCm > a.heightCm ? b : a));
   const reszta = items.filter((it) => it !== hero);
@@ -104,12 +104,12 @@ async function skladajUklad(items, pxPerCm, background, ramuj) {
   const silaCienia = oprawiony ? 0.28 : 0.16;
 
   const heroFrame = await ulozElement(
-    hero.absPath, Math.round(hero.widthCm * pxPerCm), Math.round(hero.heightCm * pxPerCm), frameJednostka, oprawiony
+    hero.absPath, Math.round(hero.widthCm * pxPerCm), Math.round(hero.heightCm * pxPerCm), frameJednostka, oprawiony, frameColor
   );
   const kolumna = [];
   for (const it of reszta) {
     kolumna.push(await ulozElement(
-      it.absPath, Math.round(it.widthCm * pxPerCm), Math.round(it.heightCm * pxPerCm), frameJednostka, oprawiony
+      it.absPath, Math.round(it.widthCm * pxPerCm), Math.round(it.heightCm * pxPerCm), frameJednostka, oprawiony, frameColor
     ));
   }
 
@@ -157,8 +157,8 @@ async function buildGalleryMaster(items, outputPath) {
  * Packshot: oprawione elementy na czystym, neutralnym tle. Wizualizacja
  * efektu w ramie — nie zawartosc paczki, patrz komentarz na gorze pliku.
  */
-async function buildGalleryPackshot(items, outputPath) {
-  const wynik = await skladajUklad(items, 26, null, true);
+async function buildGalleryPackshot(items, outputPath, frameColor) {
+  const wynik = await skladajUklad(items, 26, null, true, frameColor);
   return zapisz(wynik.buffer, outputPath, '#f4f2ee');
 }
 

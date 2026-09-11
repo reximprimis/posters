@@ -9,8 +9,13 @@
  * Zapisuje POD TA SAMA SCIEZKA co obecny plik (mockups.interior) — zaden
  * inny skrypt (sync, eksport CSV) nie musi sie zmieniac.
  *
- *   node scripts/przebudujSalonyGalerii.js              — wszystkie zatwierdzone
- *   node scripts/przebudujSalonyGalerii.js --handle=xyz  — jeden produkt
+ *   node scripts/przebudujSalonyGalerii.js                        — wszystkie zatwierdzone
+ *   node scripts/przebudujSalonyGalerii.js --handle=xyz            — jeden produkt
+ *   node scripts/przebudujSalonyGalerii.js --frame=srebrny          — inny kolor ramy
+ *
+ * --frame: klucz z FRAME_STYLES w src/galleryInteriorAI.js (czarny-mat
+ * [domyslny], srebrny, miedziany, zloty, dab, bialy, czarny — te same 7
+ * kolorow co realne SKU ramek w sklepie, src/ramkiKatalog.js).
  */
 
 'use strict';
@@ -27,6 +32,7 @@ const MODEL = process.env.SALON_MODEL || 'gpt-image-2.5-sunburst';
 const onlyHandle = (process.argv.find((a) => a.startsWith('--handle=')) || '').split('=')[1] || null;
 const skipArg = (process.argv.find((a) => a.startsWith('--skip=')) || '').split('=')[1] || '';
 const skipSet = new Set(skipArg.split(',').filter(Boolean));
+const frameColorSlug = (process.argv.find((a) => a.startsWith('--frame=')) || '').split('=')[1] || undefined;
 
 const inv = JSON.parse(fs.readFileSync(INVENTORY, 'utf8'));
 let lista = inv.posters.filter((p) => p.kind === 'gallery' && p.approvedForPrint);
@@ -52,7 +58,7 @@ console.log('Do przebudowy: ' + lista.length + ' zestawow, model: ' + MODEL);
 
     process.stdout.write('  ' + handle + ' (' + roomSlug + ', ' + p.pieceCount + ' szt.)... ');
     try {
-      await buildGalleryInteriorAI(refBuffer, { pieceCount: p.pieceCount, roomSlug, model: MODEL }, outAbs);
+      await buildGalleryInteriorAI(refBuffer, { pieceCount: p.pieceCount, roomSlug, model: MODEL, frameColorSlug, seed: handle }, outAbs);
       console.log('OK');
       ok += 1;
     } catch (e) {
