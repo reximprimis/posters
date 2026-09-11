@@ -885,9 +885,14 @@ async function main() {
 
     const sztuk = g.pieceCount || (g.items || []).length;
     const title = humanizePosterTitle(g.title);
+    // Rozmiary KAZDEGO elementu zestawu, w kolejnosci z definicji — bez tego
+    // strona zna tylko LICZBE sztuk, nie wie w jakich rozmiarach dobrac ramy
+    // (frame-pairing dziala per-rozmiar, a zestaw ma rozne rozmiary naraz).
+    const rozmiaryZestawu = (g.items || []).map((it) => it.size).filter(Boolean).join('_');
     const tags = [
       'gallery-set',
       'gallery-set:pieces-' + sztuk,
+      rozmiaryZestawu ? 'gallery-set:sizes-' + rozmiaryZestawu : '',
       g.wallColor ? 'wall:' + slugifyTag(g.wallColor) : '',
       zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
     ].filter(Boolean).join(', ');
