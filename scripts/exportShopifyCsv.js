@@ -893,6 +893,10 @@ async function main() {
       'gallery-set',
       'gallery-set:pieces-' + sztuk,
       rozmiaryZestawu ? 'gallery-set:sizes-' + rozmiaryZestawu : '',
+      // Kolor ramy widocznej na zdjeciu SALON tego produktu — strona uzywa
+      // tego, zeby przycisk "Dodaj z rama" sprzedawal DOKLADNIE ta rame,
+      // ktora klient wlasnie widzi na fotce, nie domyslny czarny.
+      'gallery-set:frame-' + (g.frameColorSlug || 'czarny-mat'),
       g.wallColor ? 'wall:' + slugifyTag(g.wallColor) : '',
       zbudujTagi(g, slugifyTag(g.category || ''), slugifyTag(g.artStyle || ''), sizeDefs),
     ].filter(Boolean).join(', ');

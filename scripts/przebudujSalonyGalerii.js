@@ -59,6 +59,10 @@ console.log('Do przebudowy: ' + lista.length + ' zestawow, model: ' + MODEL);
     process.stdout.write('  ' + handle + ' (' + roomSlug + ', ' + p.pieceCount + ' szt.)... ');
     try {
       await buildGalleryInteriorAI(refBuffer, { pieceCount: p.pieceCount, roomSlug, model: MODEL, frameColorSlug, seed: handle }, outAbs);
+      // Kolor ramy widocznej na TYM zdjeciu — strona go czyta (tag
+      // gallery-set:frame-<slug> w exportShopifyCsv.js), zeby wiedziec jaka
+      // rame faktycznie sprzedac w przycisku "Dodaj z rama".
+      p.frameColorSlug = frameColorSlug || 'czarny-mat';
       console.log('OK');
       ok += 1;
     } catch (e) {
@@ -66,6 +70,7 @@ console.log('Do przebudowy: ' + lista.length + ' zestawow, model: ' + MODEL);
       blad += 1;
     }
   }
+  fs.writeFileSync(INVENTORY, JSON.stringify(inv, null, 2) + '\n', 'utf8');
   console.log('');
-  console.log('Gotowe: ' + ok + ' OK, ' + blad + ' pominietych/bledow.');
+  console.log('Gotowe: ' + ok + ' OK, ' + blad + ' pominietych/bledow. Kartoteka zapisana.');
 })();

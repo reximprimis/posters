@@ -90,6 +90,7 @@ function znajdzObraz(tytul) {
         salonOut
       );
       p.mockups.frame = path.relative(ROOT, packshotOut).split(path.sep).join('/');
+      p.frameColorSlug = plan.frame;
       console.log('OK');
       ok += 1;
     } catch (e) {
