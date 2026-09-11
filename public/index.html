@@ -8604,7 +8604,13 @@
           // produktu w sklepie, wiec biblioteka i sklep pokazuja to samo.
           // Dotyczy obu ukladow: dyptyku i tryptyku.
           const stackSrc = isSet && item.mockups && item.mockups.stack ? item.mockups.stack : '';
-          const cardSrc = stackSrc || (isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath);
+          // Zestaw scienny (isGallery) pokazuje na karcie SALON (mockups.interior),
+          // nie goly master — to samo pierwsze zdjecie, ktore klient widzi w
+          // sklepie (patrz exportShopifyCsv.js: salon pierwszy, bo sprzedaje
+          // pomysl "tak to bedzie wygladac", nie tlumaczy zawartosc paczki).
+          const gallerySalonSrc = isGallery && item.mockups && item.mockups.interior ? item.mockups.interior : '';
+          const cardSrc =
+            stackSrc || gallerySalonSrc || (isSet && item.imagePathThumb ? item.imagePathThumb : item.imagePath);
           const setBadgeText =
             item.layout === 'tryptyk' ? 'TRYPTYK' : item.layout === 'duo' ? 'DYPTYK' : 'ZESTAW';
           // Bez tego 'gallery'/'gallery-framed' wygladaly na karcie identycznie
@@ -8750,7 +8756,13 @@
             });
           }
 
-          if (item.approvedForPrint && hasFramed) {
+          // Hover -> pokaz wariant z ramka, wraca na mouseleave: tylko dla
+          // pojedynczych plakatow. Zestaw scienny (isGallery) ma tez pole
+          // imagePathFramed (osobny, starszy kontekst — oprawiony master),
+          // ale karta ma stale pokazywac salon (cardSrc) — bez tego hover
+          // podmienial miniature na inny obrazek niz wybrany wyzej i NIE
+          // wracal do salonu po zjechaniu mysza, tylko do golego mastera.
+          if (item.approvedForPrint && hasFramed && !isGallery && !isGalleryFramed) {
             const img = card.querySelector('figure img');
             if (img) {
               const fullSrc = item.imagePath;
@@ -9434,6 +9446,18 @@
           }
         }
         if (thumbsEl) thumbsEl.hidden = false;
+
+        // Zestaw scienny (gallery/gallery-framed): kolejnosc miniatur w panelu
+        // ma byc Packshot -> Salon -> Master (nie domyslny porzadek z HTML:
+        // Master -> Packshot -> Salon) — ustalone wprost przez uzytkownika.
+        // Dotyczy TYLKO tego panelu roboczego, nie kolejnosci zdjec w CSV/
+        // Shopify (patrz scripts/exportShopifyCsv.js — tam zostaje osobna
+        // decyzja: salon pierwszy).
+        const isGalleryKind = item.kind === 'gallery' || item.kind === 'gallery-framed';
+        const fullBtn = document.getElementById('modalPreviewFullBtn');
+        if (fullBtn) fullBtn.style.order = isGalleryKind ? '3' : '';
+        if (mfBtn) mfBtn.style.order = isGalleryKind ? '1' : '';
+        if (miBtn) miBtn.style.order = isGalleryKind ? '2' : '';
 
         if (btn) btn.textContent = mkups.frame ? 'Regeneruj mockupy' : 'Generuj mockupy';
       }

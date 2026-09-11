@@ -849,21 +849,23 @@ async function main() {
     if (cli.onlyMissingOnStore && storeHandles && storeHandles.has(handle)) { skippedOnStore += 1; continue; }
 
     // Trzy zdjecia produktu, w kolejnosci, w jakiej klient ma je zobaczyc:
-    //   1. master   — same wydruki, BEZ ramy. To jest produkt.
-    //   2. packshot — te same wydruki oprawione, na czystym tle — wizualizacja
+    //   1. salon    — packshot na scianie prawdziwego wnetrza, dopasowanego
+    //                 do kategorii/stylu zestawu. Sprzedaje pomysl "tak to
+    //                 bedzie wygladac u Ciebie" — pierwsze zdjecie musi
+    //                 zachecac, nie tlumaczyc zawartosc paczki.
+    //   2. master   — same wydruki, BEZ ramy. To jest produkt — odpowiada na
+    //                 pytanie "co dostane", drugie w kolejnosci.
+    //   3. packshot — te same wydruki oprawione, na czystym tle — wizualizacja
     //                 efektu, NIE zawartosc paczki.
-    //   3. salon    — packshot na scianie prawdziwego wnetrza.
-    // Master pierwszy, bo to on ma odpowiadac na pytanie "co dostane" —
-    // dokladnie tak, jak przy kazdym pojedynczym plakacie w katalogu.
     const mk = g.mockups || {};
     const masterRel = g.imagePath && fileExists(g.imagePath) ? normalizeRelPath(g.imagePath) : '';
     const packshotRel = mk.frame && fileExists(mk.frame) ? normalizeRelPath(mk.frame) : '';
     const salonRel = mk.interior && fileExists(mk.interior) ? normalizeRelPath(mk.interior) : '';
     if (!masterRel) { console.log(`⚠ Zestaw scienny "${g.title}" — brak mastera, pomijam.`); continue; }
     const ZDJECIA_GALERII = [
+      salonRel ? toPublicUrl(salonRel) : '',
       toPublicUrl(masterRel),
       packshotRel ? toPublicUrl(packshotRel) : '',
-      salonRel ? toPublicUrl(salonRel) : '',
     ].filter(Boolean);
     const cena = Number(g.price);
     if (!Number.isFinite(cena) || cena <= 0) { console.log(`⚠ Zestaw scienny "${g.title}" — brak ceny, pomijam.`); continue; }
