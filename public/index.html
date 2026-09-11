@@ -9448,16 +9448,16 @@
         if (thumbsEl) thumbsEl.hidden = false;
 
         // Zestaw scienny (gallery/gallery-framed): kolejnosc miniatur w panelu
-        // ma byc Packshot -> Salon -> Master (nie domyslny porzadek z HTML:
-        // Master -> Packshot -> Salon) — ustalone wprost przez uzytkownika.
-        // Dotyczy TYLKO tego panelu roboczego, nie kolejnosci zdjec w CSV/
-        // Shopify (patrz scripts/exportShopifyCsv.js — tam zostaje osobna
-        // decyzja: salon pierwszy).
+        // ma byc Salon -> Packshot -> Master (nie domyslny porzadek z HTML:
+        // Master -> Packshot -> Salon) — spojnie z eksportem CSV/Shopify,
+        // gdzie salon tez jest pierwszym zdjeciem produktu (patrz
+        // scripts/exportShopifyCsv.js — sprzedaje efekt, nie tlumaczy
+        // zawartosc paczki).
         const isGalleryKind = item.kind === 'gallery' || item.kind === 'gallery-framed';
         const fullBtn = document.getElementById('modalPreviewFullBtn');
         if (fullBtn) fullBtn.style.order = isGalleryKind ? '3' : '';
-        if (mfBtn) mfBtn.style.order = isGalleryKind ? '1' : '';
-        if (miBtn) miBtn.style.order = isGalleryKind ? '2' : '';
+        if (mfBtn) mfBtn.style.order = isGalleryKind ? '2' : '';
+        if (miBtn) miBtn.style.order = isGalleryKind ? '1' : '';
 
         if (btn) btn.textContent = mkups.frame ? 'Regeneruj mockupy' : 'Generuj mockupy';
       }
