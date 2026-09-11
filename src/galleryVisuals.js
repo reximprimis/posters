@@ -145,20 +145,96 @@ async function skladajUklad(items, pxPerCm, background, ramuj, frameColor) {
 }
 
 /**
+ * Sklada uklad SIATKI (przeplyw wierszami, wyrownanie do srodka) — dla
+ * zestawow z WIELOMA drobnymi elementami (6-8 sztuk), gdzie hero+kolumna
+ * (skladajUklad) robilaby sie zbyt wysoka/waska. Kazdy wiersz wysrodkowany,
+ * wysokosc wiersza = najwyzszy element w nim — dziala tez z nierownymi
+ * rozmiarami (np. kilka 13x18 obok jednego 21x30), tak jak prawdziwa
+ * eklektyczna galeria scienna, nie sztywna siatka rownych kafli.
+ * @param {number} kolumny liczba elementow w wierszu
+ */
+async function skladajUkladSiatka(items, pxPerCm, background, ramuj, frameColor, kolumny) {
+  const oprawiony = ramuj !== false;
+  const frameJednostka = oprawiony ? Math.round(FRAME_CM * pxPerCm) : 0;
+  const gap = Math.round(GAP_STACK_CM * pxPerCm);
+  const margines = Math.round(MARGIN_CM * pxPerCm);
+  const padCien = oprawiony ? Math.round(frameJednostka * 2.2) : Math.round(SHADOW_BARE_CM * pxPerCm);
+  const silaCienia = oprawiony ? 0.28 : 0.16;
+
+  const cols = kolumny || (items.length <= 4 ? 2 : items.length <= 6 ? 3 : 4);
+  const wiersze = [];
+  for (let i = 0; i < items.length; i += cols) wiersze.push(items.slice(i, i + cols));
+
+  const ulozoneWiersze = [];
+  for (const wiersz of wiersze) {
+    const rzad = [];
+    for (const it of wiersz) {
+      rzad.push(await ulozElement(
+        it.absPath, Math.round(it.widthCm * pxPerCm), Math.round(it.heightCm * pxPerCm), frameJednostka, oprawiony, frameColor
+      ));
+    }
+    ulozoneWiersze.push(rzad);
+  }
+
+  const wysokosciWierszy = ulozoneWiersze.map((r) => Math.max.apply(null, r.map((e) => e.height)));
+  const szerokosciWierszy = ulozoneWiersze.map((r) => r.reduce((s, e) => s + e.width, 0) + gap * Math.max(0, r.length - 1));
+  const tresciW = Math.max.apply(null, szerokosciWierszy);
+  const tresciH = wysokosciWierszy.reduce((s, h) => s + h, 0) + gap * Math.max(0, wiersze.length - 1);
+
+  const canvasW = tresciW + margines * 2 + padCien * 2;
+  const canvasH = tresciH + margines * 2 + padCien * 2;
+
+  const podklad = background === null
+    ? await sharp({ create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).png().toBuffer()
+    : await sharp(svgBuffer('<svg width="' + canvasW + '" height="' + canvasH + '" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="' + background + '"/></svg>')).png().toBuffer();
+
+  const layers = [];
+  let y = margines + padCien;
+  for (let r = 0; r < ulozoneWiersze.length; r++) {
+    const rzad = ulozoneWiersze[r];
+    let x = margines + padCien + Math.round((tresciW - szerokosciWierszy[r]) / 2);
+    for (const el of rzad) {
+      layers.push({ input: await cienPod(el.width, el.height, padCien, silaCienia), left: x - padCien, top: y - padCien });
+      layers.push({ input: el.buffer, left: x, top: y });
+      x += el.width + gap;
+    }
+    y += wysokosciWierszy[r] + gap;
+  }
+
+  const buf = await sharp(podklad).composite(layers).png().toBuffer();
+  return { buffer: buf, width: canvasW, height: canvasH };
+}
+
+/**
+ * Wybiera uklad: 'hero' (domyslny, do 5 elementow) albo 'grid' (6+ drobnych
+ * elementow — siatka). 'auto' decyduje po liczbie elementow.
+ */
+async function skladaj(items, pxPerCm, background, ramuj, frameColor, layout) {
+  const wybrany = layout === 'auto' || !layout
+    ? (items.length > 5 ? 'grid' : 'hero')
+    : layout;
+  return wybrany === 'grid'
+    ? skladajUkladSiatka(items, pxPerCm, background, ramuj, frameColor)
+    : skladajUklad(items, pxPerCm, background, ramuj, frameColor);
+}
+
+/**
  * Master: same wydruki, BEZ ramy, na czystym tle. To jest GLOWNE zdjecie
  * produktu — pokazuje dokladnie to, co przyjedzie w paczce.
+ * @param {string} [layout] 'auto' (domyslnie) | 'hero' | 'grid'
  */
-async function buildGalleryMaster(items, outputPath) {
-  const wynik = await skladajUklad(items, 26, null, false);
+async function buildGalleryMaster(items, outputPath, layout) {
+  const wynik = await skladaj(items, 26, null, false, null, layout);
   return zapisz(wynik.buffer, outputPath, '#f4f2ee');
 }
 
 /**
  * Packshot: oprawione elementy na czystym, neutralnym tle. Wizualizacja
  * efektu w ramie — nie zawartosc paczki, patrz komentarz na gorze pliku.
+ * @param {string} [layout] 'auto' (domyslnie) | 'hero' | 'grid'
  */
-async function buildGalleryPackshot(items, outputPath, frameColor) {
-  const wynik = await skladajUklad(items, 26, null, true, frameColor);
+async function buildGalleryPackshot(items, outputPath, frameColor, layout) {
+  const wynik = await skladaj(items, 26, null, true, frameColor, layout);
   return zapisz(wynik.buffer, outputPath, '#f4f2ee');
 }
 
