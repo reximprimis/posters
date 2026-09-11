@@ -21,6 +21,20 @@ const ROOT = path.join(__dirname, '..');
 const INVENTORY = path.join(ROOT, 'posters_inventory.json');
 const MODEL = 'gpt-image-2.5-sunburst';
 
+// Przyblizone kolory realnych ram (frames/products/<kolor>/front.jpg) do
+// lokalnego (sharp) renderu packshotu — plaski prostokat, wiec nie oddaje
+// polysku metalu/usloju drewna, ale ma byc SPOJNY z kolorem, ktory salon
+// (AI) pokazuje, nie kontrastowac z nim.
+const FRAME_HEX = {
+  'czarny-mat': '#1a1a1a',
+  'srebrny': '#b8bcc0',
+  'miedziany': '#b8734f',
+  'zloty': '#b6924f',
+  'dab': '#c9a876',
+  'bialy': '#f0ece2',
+  'czarny': '#262220',
+};
+
 const PLAN = [
   { handle: 'architectural-sketch-wall-set', frame: 'dab' },
   { handle: 'garden-study-wall-set', frame: 'dab' },
@@ -68,7 +82,7 @@ function znajdzObraz(tytul) {
 
     process.stdout.write(plan.handle + ' (rama: ' + plan.frame + ', uklad: ' + layout + ')... ');
     try {
-      await buildGalleryPackshot(items, packshotOut, undefined, layout);
+      await buildGalleryPackshot(items, packshotOut, FRAME_HEX[plan.frame], layout);
       const refBuffer = fs.readFileSync(packshotOut);
       await buildGalleryInteriorAI(
         refBuffer,
