@@ -49,6 +49,18 @@ function svgBuffer(svg) {
   return Buffer.from(svg);
 }
 
+/** Rozjasnia/przyciemnia kolor hex o `amt` (-255..255) na kazdym kanale. */
+function shadeHex(hex, amt) {
+  const clean = String(hex || '').replace('#', '');
+  const num = parseInt(clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean, 16);
+  if (Number.isNaN(num)) return hex;
+  const clamp = (v) => Math.max(0, Math.min(255, v));
+  const r = clamp(((num >> 16) & 0xff) + amt);
+  const g = clamp(((num >> 8) & 0xff) + amt);
+  const b = clamp((num & 0xff) + amt);
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
 async function zapisz(buf, outputPath, tloDlaJpeg) {
   await sharp(buf).flatten({ background: tloDlaJpeg }).jpeg({ quality: 90 }).toFile(outputPath);
   return outputPath;
@@ -56,17 +68,42 @@ async function zapisz(buf, outputPath, tloDlaJpeg) {
 
 /**
  * Uklada jeden element w podanych wymiarach. Z rama (ramuj=true) dostaje
- * czarna oprawe o grubosci frameJednostka; bez ramy zwraca sama grafike
- * w jej docelowym rozmiarze — nic wiecej.
+ * oprawe o grubosci frameJednostka; bez ramy zwraca sama grafike w jej
+ * docelowym rozmiarze — nic wiecej.
+ *
+ * Rama nie jest juz plaskim jednolitym prostokatem — dla jasnych/metalicznych
+ * kolorow (zloty, srebrny, biala) plaski fill czytal sie jak nalepiona
+ * grafika z Photoshopa, kompletnie niespojnie z fotorealistycznym salonem AI
+ * (ten sam packshot jest jego referencja). Dwa proste, deterministyczne
+ * zabiegi bez AI wystarczaja, zeby czytac sie jako fizyczna, oprawiona
+ * listwa: przekatny gradient jasny->ciemny na calej szerokosci listwy
+ * (sugeruje zaokraglony profil, swiatlo z gory-lewej) i cienka ciemniejsza
+ * linia tuz przy grafice (cien rowka, w ktorym siedzi wydruk — obecny zawsze,
+ * niezaleznie od kierunku swiatla, bo to fizyczne wciecie, nie odbicie).
  */
 async function ulozElement(absPath, innerW, innerH, frameJednostka, ramuj, frameColor) {
   const art = await sharp(absPath).resize(innerW, innerH, { fit: 'cover', position: 'centre' }).png().toBuffer();
   if (!ramuj) return { buffer: art, width: innerW, height: innerH };
 
+  const kolor = frameColor || FRAME_COLOR;
+  const jasny = shadeHex(kolor, 34);
+  const ciemny = shadeHex(kolor, -34);
+  const rowek = shadeHex(kolor, -55);
+  const rowekGrubosc = Math.max(1, Math.round(frameJednostka * 0.09));
+
   const totalW = innerW + frameJednostka * 2;
   const totalH = innerH + frameJednostka * 2;
   const svg = '<svg width="' + totalW + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">' +
-    '<rect width="100%" height="100%" fill="' + (frameColor || FRAME_COLOR) + '"/></svg>';
+    '<defs><linearGradient id="rama" x1="0%" y1="0%" x2="100%" y2="100%">' +
+    '<stop offset="0%" stop-color="' + jasny + '"/>' +
+    '<stop offset="45%" stop-color="' + kolor + '"/>' +
+    '<stop offset="100%" stop-color="' + ciemny + '"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="100%" height="100%" fill="url(#rama)"/>' +
+    '<rect x="' + (frameJednostka - rowekGrubosc) + '" y="' + (frameJednostka - rowekGrubosc) + '" ' +
+    'width="' + (innerW + rowekGrubosc * 2) + '" height="' + (innerH + rowekGrubosc * 2) + '" ' +
+    'fill="none" stroke="' + rowek + '" stroke-width="' + rowekGrubosc + '"/>' +
+    '</svg>';
   const buf = await sharp(svgBuffer(svg))
     .composite([{ input: art, left: frameJednostka, top: frameJednostka }])
     .png()
