@@ -123,7 +123,11 @@ function budujPrompt(pieceCount, scena, rama, zmienRame) {
   const ramaInstrukcja = zmienRame
     ? `Add a ${rama} around EACH piece individually (each print gets its own separate frame with real spacing between frames, not one shared frame).`
     : `Do not change the frame color or material (${rama}) — reproduce the frames exactly as shown.`;
-  return `Use the uploaded image as the EXACT reference for the artwork inside each of the ${pieceCount} pieces AND for their exact arrangement (whether that is one large anchor piece with smaller pieces beside it, or a wall grid of similarly-sized pieces) — do not change the artwork, the arrangement, relative sizes, or spacing between the frames. Reproduce this exact set pixel-accurately. ${ramaInstrukcja}
+  return `Do not add a mat board. Do not add a passe-partout. Do not add any cream, white, off-white or paper-colored border strip between the artwork and the inside of the frame, on any of the ${pieceCount} pieces. This single rule matters more than anything else in this brief — read it twice before generating.
+
+Most stock photos of framed prints show a wide flat-colored paper margin between the art and the frame (a "mat") — picture that look clearly, and then do the opposite. Here the print is face-mounted flush to the glass, edge-to-edge, the way a photo print or a canvas gallery wrap sits in its frame: zero gap, zero visible paper, zero border of any color. Wherever the artwork's own background happens to be light or cream-colored near its edge, that is the ARTWORK, not a mat — it must still touch the frame's inner lip directly, with no additional strip of a different, flatter tone drawn around it.
+
+Use the uploaded image as the EXACT reference for the artwork inside each of the ${pieceCount} pieces AND for their exact arrangement (whether that is one large anchor piece with smaller pieces beside it, or a wall grid of similarly-sized pieces) — do not change the artwork, the arrangement, relative sizes, or spacing between the frames. Reproduce this exact set pixel-accurately, including how tightly the print fills its frame. ${ramaInstrukcja}
 
 Photograph this exact framed arrangement hanging on a wall in a ${scena}
 
@@ -131,6 +135,7 @@ Requirements:
 - Camera straight-on, eye level, correct perspective for a wall-mounted piece — not tilted, not angled.
 - Real photograph look: natural light, soft realistic contact shadow under each frame, subtle realistic reflections on glass if any — shot with professional camera equipment, not illustrated or painted.
 - Each frame is a separate physical object with real spacing between frames (3-5 cm), not touching, not merged into one shared frame.
+- Before finishing, check each of the ${pieceCount} pieces one more time for a mat/border you may have added out of habit, and remove it if present.
 - The arrangement is centered and straight, realistically sized relative to the room (medium scale, clearly visible but not oversized).
 - No text, no logo, no watermark, no other artwork or photos on the wall.
 - Photorealistic result suitable for a Shopify product image gallery.`;
