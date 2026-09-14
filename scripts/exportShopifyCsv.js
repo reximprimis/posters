@@ -771,8 +771,11 @@ async function main() {
     {
       for (const size of sizeDefs) {
         const pierwszy = rowIndex === 0;
-        // Cena rozmiaru × mnoznik ukladu, zaokraglona do peldnych groszy.
-        const cena = (Number(String(size.price).replace(',', '.')) * mnoznik).toFixed(2);
+        // Cena rozmiaru × mnoznik ukladu, zaokraglona do PELNYCH ZLOTYCH —
+        // bez tego 43 × 1.85 daje 79.55 zl (grosze w cenie bazowej, ktore
+        // dziedziczy tez compare-at ×2 ponizej). Ten sam wzorzec co
+        // cenaZestawu() w src/galerieScienne.js dla zestawow sciennych.
+        const cena = String(Math.round(Number(String(size.price).replace(',', '.')) * mnoznik)) + '.00';
         const imageSrcCell = rowIndex < ZDJECIA.length ? ZDJECIA[rowIndex] : '';
         const row = {
           Handle: handle,
