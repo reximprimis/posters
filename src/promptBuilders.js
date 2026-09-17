@@ -115,6 +115,12 @@ const STYLE_LOGIC_MAP = {
     'Refined illustration with controlled detail, clear shape hierarchy, and premium print finish.',
   'Line art':
     'Delicate line drawing with refined contours, elegant simplicity, and clean premium restraint.',
+  Impressionism:
+    'Impressionist oil painting with thick visible brushstrokes and textured canvas surface, broken color and dappled light, painterly not photographic, soft edges, rich but natural color harmony reminiscent of late-19th-century French impressionism. No text, no signature, no watermark within the artwork itself.',
+  Watercolor:
+    'Original watercolor painting on textured cold-press paper — transparent color washes, soft bleeding edges where pigment meets water, visible paper tooth, gentle color layering with occasional darker accents for depth. Loose and painterly rather than tight or photographic. No text, no signature, no watermark within the artwork itself.',
+  'Van Gogh Style':
+    'Original painting in the tradition of post-impressionist expressive brushwork — thick swirling impasto strokes that follow the movement of the subject (sky, wheat, water, foliage), bold confident outlines, vivid unmixed color placed side by side rather than blended, dynamic rhythmic energy across the whole canvas. An original composition inspired by this painterly technique, not a reproduction of any specific existing artwork. No text, no signature, no watermark within the artwork itself.',
 };
 
 function resolveCategoryLogic(category) {

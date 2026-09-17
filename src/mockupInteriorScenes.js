@@ -181,9 +181,9 @@ const INTERIOR_PROMPT_TEMPLATE = `Use the uploaded image as the exact poster art
 Create a premium lifestyle mockup: this poster artwork in a black gallery frame hanging on a wall in a {{ROOM_LABEL}}.
 - Black gallery frame: same thin matte black profile as a standard gallery frame. The artwork fills the inner area edge-to-edge, no mat border.
 - The framed poster hangs on a clean, smooth neutral wall (warm light gray or warm white). It is centered and straight.
-- The frame is in {{FRAME_ORIENTATION}} and realistically sized — medium to large scale, clearly visible.
+- The frame is in {{FRAME_ORIENTATION}}. CRITICAL SIZE CONSTRAINT: the artwork is only 50×70cm real-world size — deliberately SMALL and modest, clearly smaller than a typical large gallery centerpiece. On the wall it should occupy roughly 15-20% of the wall's visible height, leaving generous empty wall space above, below and around it — do not fill the wall. Compare it directly against nearby furniture: it must look narrower than a sofa backrest, roughly the width of a single sideboard drawer, comparable to a laptop screen held up twice — never a large statement piece spanning most of the wall.
 - Room: {{SCENE_DESCRIPTION}}
-- The framed poster is the clear focal point of the scene.
+- The framed poster is a tasteful, modestly sized accent on the wall — not an oversized dominant piece.
 - No text, no logo, no watermark, no other artwork or photos on the walls.
 - Photorealistic result suitable for a Shopify product image gallery.`;
 

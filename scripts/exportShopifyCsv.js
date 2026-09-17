@@ -182,6 +182,10 @@ function zbudujTagi(p, categoryTag, styleTag, rozmiary) {
   const t = ['poster'];
   if (categoryTag) t.push('category:' + categoryTag);
   if (styleTag) t.push('style:' + styleTag);
+  // Do 2026-09-17 estetyka nie byla nigdzie zapisywana poza tekstem promptu —
+  // zaden produkt w Shopify nigdy nie dostal taga aesthetic:X (patrz
+  // src/posterGenerator.js, addPosterToDb). Teraz jest polem `p.aesthetic`.
+  if (p.aesthetic) t.push('aesthetic:' + String(p.aesthetic).trim());
   t.push('orientation:' + (p.orientation === 'landscape' ? 'landscape' : 'portrait'));
 
   // Gdy rekord nie ma wlasnych pomieszczen — a 69 ze 158 zatwierdzonych nie

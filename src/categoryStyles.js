@@ -11,6 +11,9 @@ const GLOBAL_STYLES = [
   'Abstract',
   'Illustration',
   'Line art',
+  'Impressionism',
+  'Watercolor',
+  'Van Gogh Style',
 ];
 
 const CATEGORIES = [
@@ -47,6 +50,11 @@ const CATEGORIES = [
   'love-romance',
   // Kategoria lokalna, zamknieta na rynek polski — patrz markets w taxonomy.js.
   'club-orzel',
+  // Dekoracyjna kartografia — inna intencja zakupowa niz cities-travel
+  // (mapa jako obiekt dekoracyjny/pamiatka, nie krajobraz/zabytek).
+  // Potwierdzone u Desenio, Poster Store, Posterlounge i Artesty jako
+  // osobna kategoria nawigacyjna (patrz project_catalog_gap_analysis.md).
+  'maps',
   // Uwaga: to TEMATY, nie estetyki. Japandi, boho czy wabi-sabi to paleta
   // i nastroj — mieszkaja w src/aesthetics.js, nie tutaj.
 ];
@@ -118,22 +126,24 @@ const CATEGORY_DESCRIPTIONS = {
     'Orzel Myslakowice football club: the club crest as the hero element, stadium under floodlights, football on grass, goal net, corner flag, club scarf, terrace atmosphere — green and gold club colours throughout, community pride of a small-town club',
   'love-romance':
     'couples in embrace, intertwined hands, hearts used sparingly, shared everyday intimacy, anniversary and togetherness motifs — warm and tender rather than sentimental',
+  'maps':
+    'decorative cartography: city maps, world maps, coastline outlines, topographic contour lines, star charts of a place — stylized map-as-art, not real navigational data, no readable place names or labels',
 };
 
 const CATEGORY_STYLES = {
-  'botanical': ['Photography', 'Minimalism', 'Line art', 'Illustration'],
+  'botanical': ['Photography', 'Minimalism', 'Line art', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
   'abstract': ['Abstract', 'Minimalism'],
-  'nature-landscapes': ['Photography', 'Minimalism'],
+  'nature-landscapes': ['Photography', 'Minimalism', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
   'animals': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
   'cities-travel': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Line art'],
-  'kids-nursery': ['Illustration', 'Minimalism'],
+  'kids-nursery': ['Illustration', 'Minimalism', 'Watercolor'],
   'space-astronomy': ['Abstract', 'Illustration', 'Photography'],
   'retro-vintage': ['Photography', 'Abstract'],
   'vehicles': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
   'coffee-tea': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'kitchen-food': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'architecture': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
-  'sea-coast': ['Photography', 'Minimalism', 'Abstract', 'Illustration'],
+  'sea-coast': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
   'sports-hobbies': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
   'gaming-esports': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
   'ai-technology': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
@@ -151,6 +161,7 @@ const CATEGORY_STYLES = {
   'fashion-beauty': ['Illustration', 'Photography', 'Line art', 'Minimalism'],
   'love-romance': ['Line art', 'Minimalism', 'Illustration', 'Abstract'],
   'club-orzel': ['Illustration', 'Photography', 'Minimalism'],
+  'maps': ['Illustration', 'Minimalism', 'Line art', 'Abstract'],
 };
 
 /** Sales / room collections — tags only, never generator categories or output folders. */
@@ -198,13 +209,18 @@ const CATEGORY_ROOM_COLLECTIONS = {
   'fashion-beauty': ['Do sypialni', 'Do łazienki', 'Do salonu', 'Do gabinetu'],
   'love-romance': ['Do sypialni', 'Do salonu'],
   'club-orzel': ['Do pokoju młodzieżowego', 'Do salonu', 'Do biura', 'Do kawiarni'],
+  'maps': ['Do salonu', 'Do biura', 'Do gabinetu', 'Do pokoju młodzieżowego'],
 };
 
 // 71 par bazowych + 3 dolozone przy scaleniu (cities-travel dostalo Illustration
 // i Line art, botanical — Illustration). Poprzednie 83 zawieralo 12 par z trzech
 // kategorii dodanych 2026-08-03, ktore zostaly scalone: Japonia i "Podroze
 // i plakaty vintage" w cities-travel, "Grzyby i las" w botanical.
-const EXPECTED_ALLOWED_COMBINATIONS = 107;
+// 110 (stan po dodaniu stylu Impressionism, 2026-09-16) + 11 dolozone
+// 2026-09-17 po przegladzie katalogow konkurencji: Watercolor (botanical,
+// nature-landscapes, sea-coast, kids-nursery = 4), Van Gogh Style (botanical,
+// nature-landscapes, sea-coast = 3), nowa kategoria maps x 4 style = 4.
+const EXPECTED_ALLOWED_COMBINATIONS = 121;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).

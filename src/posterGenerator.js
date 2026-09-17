@@ -222,6 +222,13 @@ class PosterBatchGenerator {
       ...(layoutOpts.framingWarning ? { framingWarning: String(layoutOpts.framingWarning) } : {}),
       /** Okazje i pory roku — opcjonalne i wielokrotne, patrz src/taxonomy.js. */
       occasions: normalizeOccasions(layoutOpts.occasions || layoutOpts.occasion),
+      // Estetyka (src/aesthetics.js id, np. 'gold', 'japandi') — do dzisiaj byla
+      // uzywana TYLKO przy budowaniu promptu i nigdzie nie zapisywana, wiec jedynym
+      // sladem byl tekst "AESTHETIC OVERRIDE — X:" wewnatrz `prompt`. To znaczylo,
+      // ze zaden produkt w Shopify nigdy nie dostawal taga aesthetic:X (patrz
+      // project_aesthetic_tags_backfill.md) — teraz zapisujemy ja jawnie, zeby
+      // exportShopifyCsv.js mogl to wystawic jako prawdziwy tag przy publikacji.
+      ...(layoutOpts.aesthetic ? { aesthetic: String(layoutOpts.aesthetic).trim() } : {}),
       roomCollections,
       imagePath,
       pdfPaths,
@@ -457,7 +464,7 @@ class PosterBatchGenerator {
     const preDims = await this.readImageDimensions(tempAbs);
 
     if (framing.enabled && !skipEdgeValidation) {
-      const edge = await validateSafeEdges(tempAbs, style);
+      const edge = await validateSafeEdges(tempAbs, style, category);
       if (edge.status === 'FAIL') {
         const err = new Error(`Subject clipped at print margins: ${edge.reasons.join('; ')}`);
         err.code = 'SAFE_FRAMING_FAIL';
@@ -768,6 +775,7 @@ class PosterBatchGenerator {
       printLayout: pl,
       orientation,
       occasions,
+      aesthetic: options.aesthetic,
       ...(framingWarning ? { framingWarning } : {}),
       ...(shopDescription ? { shopDescription } : {}),
     });
@@ -959,6 +967,7 @@ class PosterBatchGenerator {
       this.addPosterToDb(categoryKey, title, style, imagePathForDb, pdfPaths, imagePrompt, promptLlm, {
         printLayout: pl,
         orientation,
+        aesthetic: usedAesthetic,
         occasions,
         ...(framingWarning ? { framingWarning } : {}),
         ...(shopDescription ? { shopDescription } : {}),

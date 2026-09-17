@@ -415,6 +415,15 @@ function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
       await gen.applyFramedPrintPdfsForPosterIds(posterIdsPlain);
       // Mockupy generowane na końcu (wymagają OpenAI API, ~30-60s/plakat)
       await generateMockupsForPosterIds(posterIdsPlain);
+      // UWAGA: tlumaczenia NIE sa juz wywolywane tutaj. Zatwierdzenie do druku
+      // (ten krok) dzieje sie ZAWSZE przed publikacja produktu w Shopify, a
+      // tlumaczKatalog.js wymaga, zeby produkt juz istnial tam (odczytuje go
+      // przez translatableResource po handle) — wywolanie w tym miejscu bylo
+      // po cichu no-opem (0 produktow) dla kazdego nowego plakatu, bo
+      // shopifyState nie byl jeszcze uzyteczny dla Shopify (patrz
+      // [[project-todo-auto-translations]]). Poprawne miejsce: tuz po
+      // publikacji w scripts/publishShopifyDirect.js, ktory teraz sam odpala
+      // tlumaczKatalog.js dla kazdego opublikowanego handle.
     } catch (e) {
       console.error('approval background generation failed:', e && e.message ? e.message : e);
     } finally {
@@ -425,6 +434,14 @@ function enqueueApprovalAssetGenerationByImageKeys(imageKeys) {
     }
   });
 }
+
+// Automatyczne tlumaczenia PRZY ZATWIERDZENIU do druku zostaly usuniete stad
+// (byly tu do 2026-09-17) — zatwierdzenie zawsze dzieje sie PRZED publikacja
+// produktu w Shopify, a tlumaczKatalog.js wymaga, zeby produkt juz tam
+// istnial (translatableResource po handle), wiec wywolanie w tym miejscu
+// bylo po cichu no-opem dla kazdego nowego plakatu. Poprawne miejsce:
+// scripts/publishShopifyDirect.js, ktory odpala tlumaczKatalog.js zaraz po
+// realnej publikacji kazdego produktu. Patrz [[project-todo-auto-translations]].
 
 /** Jedna seria CLI-like (generate / generate-all) naraz — długie żądanie HTTP. */
 let studioBatchRunning = false;

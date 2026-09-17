@@ -148,6 +148,25 @@ const AESTHETICS = [
     texture: 'flat screen-print color areas, slight print misregistration, matte finish',
     avoid: 'photorealism, gradients, digital gloss, cool pastels, fine detail',
   },
+  // Dopisana po przegladzie katalogow konkurencji (2026-09-17): Desenio ma
+  // "Gold and Silver", Posterimo "Zlote", Posterlounge kolekcje zlota jako
+  // stala nawigacje kolorystyczna. WAZNE: nasz druk jest zwyklym drukiem
+  // czterokolorowym na papierze satynowym (patrz project_product_spec.md),
+  // NIE zloceniem/foliowaniem — wiec "gold" tutaj znaczy CIEPLA ZLOCISTA
+  // PALETA (ochra, mosiadz, bursztyn) w plaskim druku, nigdy symulowany
+  // polysk/folia, ktorej i tak nie da sie wydrukowac.
+  {
+    id: 'gold',
+    label: 'Złoty akcent',
+    description: 'Ciepła bursztynowo-mosiężna paleta jako akcent — bez symulowanego połysku czy folii.',
+    badge: 'TOP 2026',
+    palette:
+      'warm gold ochre, brass, amber, deep mustard, antique bronze against a dark ink or soft cream ground — rich warm metallics rendered as flat color, not as a full-page wash',
+    mood:
+      'quiet opulence, warm glow, a single luxe accent against a calm ground, refined not gaudy',
+    texture: 'flat matte print with subtle warm sheen suggested by color alone, no faux foil, no glossy highlight',
+    avoid: 'cold silver or chrome, neon, full-canvas gold flood, glitter texture, plastic shine',
+  },
   {
     id: 'scandi',
     label: 'Skandynawski',

@@ -167,6 +167,17 @@ function isBotanicalCategory(category) {
   return String(category || '').trim() === 'botanical';
 }
 
+// Mapy wypelniaja cale platno krawedz-do-krawedzi (drogi, teren, linia brzegowa)
+// tak samo jak Abstract — nie maja izolowanego "bohatera" z marginesem wokol.
+// Odkryte 2026-09-17: "Harbor Town Street Grid" (maps/Illustration) dostawal
+// FAIL na pixel-level check (do 99% marginesu "zajetego"), bo domyslne
+// ramowanie GENERAL zaklada obiekt na tle, a mapa nie ma tla. To jest wlasciwosc
+// KATEGORII, nie stylu — dziala niezaleznie od tego czy styl to Illustration,
+// Line art, Minimalism czy Abstract.
+function isFullBleedCategory(category) {
+  return String(category || '').trim() === 'maps';
+}
+
 function normalizeArtStyle(style) {
   const s = String(style || '').trim().toLowerCase();
   if (s === 'abstract art' || s === 'abstract') return 'abstract';
@@ -174,6 +185,14 @@ function normalizeArtStyle(style) {
   if (s === 'illustration') return 'illustration';
   if (s === 'minimalism') return 'minimalism';
   if (s === 'line art' || s === 'lineart') return 'line_art';
+  // Impressionist oil painting fills the whole canvas edge-to-edge like an
+  // abstract color field — no isolated hero subject with margin around it.
+  // Reuse the abstract framing/composition/restrictions rules wholesale.
+  if (s === 'impressionism') return 'abstract';
+  // Watercolor i Van Gogh Style tak samo wypelniaja plotno krawedz-do-krawedzi
+  // jak Impressionism (pociagniecia pedzla/plamy koloru zamiast izolowanego
+  // obiektu z marginesem) — ten sam powod co przy Impressionism wyzej.
+  if (s === 'watercolor' || s === 'van gogh style') return 'abstract';
   return s || 'photography';
 }
 
@@ -226,7 +245,7 @@ function resolveSafePrintFramingForCategory(category, style) {
   if (isMinimalismArtStyle(style) && isNatureLandscapeCategory(category)) {
     return SAFE_PRINT_FRAMING_MINIMAL_LANDSCAPE;
   }
-  if (isAbstractArtStyle(style)) return SAFE_PRINT_FRAMING_ABSTRACT;
+  if (isAbstractArtStyle(style) || isFullBleedCategory(category)) return SAFE_PRINT_FRAMING_ABSTRACT;
   if (isBotanicalCategory(category)) return SAFE_PRINT_FRAMING_BOTANICAL;
   return SAFE_PRINT_FRAMING;
 }
@@ -242,7 +261,7 @@ Subject occupies around 60–75% of the canvas with generous breathing room on a
 function getCompositionBlock(category, style) {
   if (normalizeArtStyle(style) === 'line_art') return COMPOSITION_LINE_ART;
   if (isMinimalismArtStyle(style)) return COMPOSITION_MINIMAL;
-  if (isAbstractArtStyle(style)) return COMPOSITION_ABSTRACT;
+  if (isAbstractArtStyle(style) || isFullBleedCategory(category)) return COMPOSITION_ABSTRACT;
   if (isBotanicalCategory(category)) return COMPOSITION_BOTANICAL;
   return COMPOSITION_GENERAL;
 }
@@ -252,13 +271,13 @@ function getRestrictionsBlock(style, category) {
   if (isMinimalismArtStyle(style) && isNatureLandscapeCategory(category)) {
     return RESTRICTIONS_MINIMAL_LANDSCAPE;
   }
-  if (isAbstractArtStyle(style)) return RESTRICTIONS_ABSTRACT;
+  if (isAbstractArtStyle(style) || isFullBleedCategory(category)) return RESTRICTIONS_ABSTRACT;
   return RESTRICTIONS_BLOCK;
 }
 
 function getSafeFramingMeta(category, style) {
   const botanical = isBotanicalCategory(category) && !isAbstractArtStyle(style) && !isMinimalismArtStyle(style);
-  const abstractStyle = isAbstractArtStyle(style);
+  const abstractStyle = isAbstractArtStyle(style) || isFullBleedCategory(category);
   const minimalLandscape = isMinimalismArtStyle(style) && isNatureLandscapeCategory(category);
   const minimalStyle = isMinimalismArtStyle(style);
   const margin = getSafeMarginPercent();
@@ -318,7 +337,7 @@ function isExcludedLibraryImageFileName(fileName) {
  * the subject and caused false FAIL rates of 50–100% on still-life photography).
  * @returns {Promise<{ status: 'PASS'|'FAIL', reasons: string[], bands: object }>}
  */
-async function validateSafeEdges(imagePath, style) {
+async function validateSafeEdges(imagePath, style, category) {
   const meta = await sharp(imagePath).metadata();
   const W = Number(meta.width || 0);
   const H = Number(meta.height || 0);
@@ -331,7 +350,9 @@ async function validateSafeEdges(imagePath, style) {
   // Photography / soft full-bleed scenes (sand, sky, table texture) legitimately fill
   // the outer 5% — pixel "clean margin" checks are prompt-only for those styles.
   // Hard edge checks remain for line art / illustration on flat backgrounds.
-  if (styleNorm === 'photography' || styleNorm === 'abstract' || styleNorm === 'minimalism') {
+  // "maps" is a full-bleed CATEGORY regardless of style (see isFullBleedCategory) —
+  // same reasoning, checked here too since this function only saw style before.
+  if (styleNorm === 'photography' || styleNorm === 'abstract' || styleNorm === 'minimalism' || isFullBleedCategory(category)) {
     console.log(
       `    -> validateSafeEdges: ${W}x${H} — PASS (prompt-level only for ${styleNorm}; pixel border check skipped)`
     );

@@ -20,16 +20,16 @@
  * po kolei, wiec pierwsza jest najczestsza.
  */
 const ESTETYKI = {
-  'abstract': ['bauhaus', 'mid-century', 'exhibition', 'black-white'],
+  'abstract': ['bauhaus', 'mid-century', 'exhibition', 'black-white', 'gold'],
   'ai-technology': ['bauhaus', 'black-white', 'exhibition'],
   'animals': ['scandi', 'japandi', 'black-white', 'ukiyo-e', 'vintage-plate'],
   'architecture': ['bauhaus', 'black-white', 'exhibition', 'mid-century'],
-  'bar-cocktails': ['mid-century', 'quiet-luxury', 'exhibition'],
-  'botanical': ['japandi', 'scandi', 'wabi-sabi', 'black-white', 'ukiyo-e', 'vintage-plate'],
+  'bar-cocktails': ['mid-century', 'quiet-luxury', 'exhibition', 'gold'],
+  'botanical': ['japandi', 'scandi', 'wabi-sabi', 'black-white', 'ukiyo-e', 'vintage-plate', 'gold'],
   'cities-travel': ['exhibition', 'black-white', 'mid-century', 'bauhaus'],
   'coffee-tea': ['japandi', 'wabi-sabi', 'mid-century'],
   'cyberpunk-neon': ['', 'bauhaus'],
-  'fashion-beauty': ['quiet-luxury', 'black-white', 'exhibition'],
+  'fashion-beauty': ['quiet-luxury', 'black-white', 'exhibition', 'gold'],
   'fitness-gym': ['black-white', 'bauhaus', 'exhibition'],
   'gaming-esports': ['', 'bauhaus'],
   'humor-memes': ['mid-century', 'scandi', 'bauhaus'],
@@ -37,6 +37,7 @@ const ESTETYKI = {
   'kitchen-food': ['wabi-sabi', 'mid-century', 'japandi', 'vintage-plate'],
   'line-art-figures': ['black-white', 'japandi', 'exhibition'],
   'love-romance': ['japandi', 'ukiyo-e', 'quiet-luxury'],
+  'maps': ['exhibition', 'black-white', 'bauhaus', 'mid-century'],
   'mountains-hiking': ['exhibition', 'scandi', 'wabi-sabi', 'black-white'],
   'music-sound': ['mid-century', 'bauhaus', 'black-white'],
   'nature-landscapes': ['wabi-sabi', 'exhibition', 'scandi', 'japandi'],
@@ -44,7 +45,7 @@ const ESTETYKI = {
   'sea-coast': ['scandi', 'wabi-sabi', 'exhibition', 'japandi', 'vintage-plate'],
   'space-astronomy': ['exhibition', 'black-white', 'bauhaus'],
   'sports-hobbies': ['bauhaus', 'mid-century', 'black-white', 'exhibition'],
-  'symbols-sacred-geometry': ['black-white', 'bauhaus', 'exhibition'],
+  'symbols-sacred-geometry': ['black-white', 'bauhaus', 'exhibition', 'gold'],
   // BEZ ESTETYKI, i to nie jest przeoczenie.
   //
   // Tozsamoscia tej kategorii SA LITERY. Kazda estetyka opisuje ksztalty

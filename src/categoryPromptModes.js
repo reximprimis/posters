@@ -114,6 +114,12 @@ const CATEGORY_STYLE_DIRECTIONS = {
       'Editorial landscape photography, natural light, believable atmosphere, no HDR exaggeration.',
     Minimalism:
       'Simplified mountain, forest, or horizon forms — muted tones, large sky, Scandinavian calm.',
+    Impressionism:
+      'Impressionist oil painting with thick visible brushstrokes and textured canvas surface, broken color and dappled light, painterly not photographic, soft edges, rich but natural color harmony reminiscent of late-19th-century French impressionism.',
+    Watercolor:
+      'Original watercolor landscape — transparent washes of sky and horizon, soft bleeding edges, visible paper texture, loose painterly mountains, forests, or fields rather than photographic detail.',
+    'Van Gogh Style':
+      'Original painting of the landscape in swirling post-impressionist brushwork — thick rhythmic strokes in sky and fields, bold outlines on hills or trees, vivid unmixed color, dynamic movement across the whole canvas.',
   },
   'animals': {
     Photography:
@@ -164,6 +170,12 @@ const CATEGORY_STYLE_DIRECTIONS = {
       'Abstract coastal color fields — sea tones, sand texture, calm horizontal rhythm.',
     Illustration:
       'Gentle coastal illustration — shells, lighthouse, or soft waves, airy premium mood.',
+    Impressionism:
+      'Impressionist oil painting with thick visible brushstrokes and textured canvas surface, broken color and dappled light, painterly not photographic, soft edges, rich but natural color harmony reminiscent of late-19th-century French impressionism.',
+    Watercolor:
+      'Original watercolor seascape — transparent washes of sea and sky, soft bleeding edges, visible paper texture, loose painterly waves, dunes, or cliffs rather than photographic detail.',
+    'Van Gogh Style':
+      'Original painting of the coastline in swirling post-impressionist brushwork — thick rhythmic strokes in sea and sky, bold outlines on cliffs or boats, vivid unmixed color, dynamic movement across the whole canvas.',
   },
   'sports-hobbies': {
     Photography:
@@ -200,7 +212,13 @@ function buildCategoryStylePrompt({ title, category, style }) {
     style: styleKey,
     categoryMode: `${categoryMode}\n${COMMERCIAL_SAFETY}`,
     styleDirection: resolveCategoryStyleDirection(categoryKey, styleKey),
-    useAbstractFraming: styleKey === 'Abstract',
+    // Impressionism/Watercolor/Van Gogh Style all paint edge-to-edge like
+    // Abstract — same full-bleed framing, no isolated hero subject margin.
+    useAbstractFraming:
+      styleKey === 'Abstract' ||
+      styleKey === 'Impressionism' ||
+      styleKey === 'Watercolor' ||
+      styleKey === 'Van Gogh Style',
   });
 }
 
