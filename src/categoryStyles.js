@@ -14,6 +14,14 @@ const GLOBAL_STYLES = [
   'Impressionism',
   'Watercolor',
   'Van Gogh Style',
+  // Dopisane 2026-09-17 wieczorem: najwiekszy pojedynczy brak wg badania
+  // konkurencji (project_catalog_gap_analysis.md) — reprodukcje/homage
+  // slynnych malarzy obecne u WSZYSTKICH 8 zbadanych konkurentow. Ten sam
+  // wzorzec bezpieczenstwa co Van Gogh Style: oryginalna kompozycja
+  // inspirowana technika, NIE reprodukcja konkretnego dziela.
+  'Monet Style',
+  'Klimt Style',
+  'Matisse Style',
 ];
 
 const CATEGORIES = [
@@ -131,9 +139,9 @@ const CATEGORY_DESCRIPTIONS = {
 };
 
 const CATEGORY_STYLES = {
-  'botanical': ['Photography', 'Minimalism', 'Line art', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
+  'botanical': ['Photography', 'Minimalism', 'Line art', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style', 'Monet Style', 'Klimt Style', 'Matisse Style'],
   'abstract': ['Abstract', 'Minimalism'],
-  'nature-landscapes': ['Photography', 'Minimalism', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
+  'nature-landscapes': ['Photography', 'Minimalism', 'Impressionism', 'Watercolor', 'Van Gogh Style', 'Monet Style', 'Matisse Style'],
   'animals': ['Photography', 'Illustration', 'Line art', 'Minimalism'],
   'cities-travel': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Line art'],
   'kids-nursery': ['Illustration', 'Minimalism', 'Watercolor'],
@@ -143,7 +151,7 @@ const CATEGORY_STYLES = {
   'coffee-tea': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'kitchen-food': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'architecture': ['Photography', 'Minimalism', 'Abstract', 'Line art'],
-  'sea-coast': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style'],
+  'sea-coast': ['Photography', 'Minimalism', 'Abstract', 'Illustration', 'Impressionism', 'Watercolor', 'Van Gogh Style', 'Monet Style'],
   'sports-hobbies': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
   'gaming-esports': ['Illustration', 'Minimalism', 'Abstract', 'Line art'],
   'ai-technology': ['Abstract', 'Minimalism', 'Illustration', 'Line art'],
@@ -153,7 +161,7 @@ const CATEGORY_STYLES = {
   'wellness-yoga': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
   'symbols-sacred-geometry': ['Minimalism', 'Abstract', 'Illustration', 'Line art'],
   'typography-quotes': ['Minimalism', 'Abstract', 'Line art'],
-  'mountains-hiking': ['Photography', 'Minimalism', 'Illustration', 'Line art'],
+  'mountains-hiking': ['Photography', 'Minimalism', 'Illustration', 'Line art', 'Monet Style'],
   'line-art-figures': ['Line art', 'Minimalism', 'Abstract'],
   'bar-cocktails': ['Photography', 'Illustration', 'Minimalism', 'Line art'],
   'zodiac-astrology': ['Illustration', 'Minimalism', 'Line art', 'Abstract'],
@@ -220,7 +228,7 @@ const CATEGORY_ROOM_COLLECTIONS = {
 // 2026-09-17 po przegladzie katalogow konkurencji: Watercolor (botanical,
 // nature-landscapes, sea-coast, kids-nursery = 4), Van Gogh Style (botanical,
 // nature-landscapes, sea-coast = 3), nowa kategoria maps x 4 style = 4.
-const EXPECTED_ALLOWED_COMBINATIONS = 121;
+const EXPECTED_ALLOWED_COMBINATIONS = 128;
 
 /**
  * KATEGORIE UZYTKOWNIKA (opcja C — poziom roboczy).

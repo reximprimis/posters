@@ -120,6 +120,10 @@ const CATEGORY_STYLE_DIRECTIONS = {
       'Original watercolor landscape — transparent washes of sky and horizon, soft bleeding edges, visible paper texture, loose painterly mountains, forests, or fields rather than photographic detail.',
     'Van Gogh Style':
       'Original painting of the landscape in swirling post-impressionist brushwork — thick rhythmic strokes in sky and fields, bold outlines on hills or trees, vivid unmixed color, dynamic movement across the whole canvas.',
+    'Monet Style':
+      'Original impressionist landscape in soft feathery brushwork — dissolved edges, shimmering reflected light on a lake or river, hazy broken-color atmosphere, tranquil water-garden mood.',
+    'Matisse Style':
+      'Original Fauvist landscape in flat bold non-naturalistic color — simplified hills, trees, or fields as confident decorative shapes, vivid color pairs placed directly against each other, joyful rhythmic pattern.',
   },
   'animals': {
     Photography:
@@ -176,6 +180,8 @@ const CATEGORY_STYLE_DIRECTIONS = {
       'Original watercolor seascape — transparent washes of sea and sky, soft bleeding edges, visible paper texture, loose painterly waves, dunes, or cliffs rather than photographic detail.',
     'Van Gogh Style':
       'Original painting of the coastline in swirling post-impressionist brushwork — thick rhythmic strokes in sea and sky, bold outlines on cliffs or boats, vivid unmixed color, dynamic movement across the whole canvas.',
+    'Monet Style':
+      'Original impressionist seascape in soft feathery brushwork — dissolved edges, shimmering reflected light on the water, hazy broken-color atmosphere, tranquil harbor or shoreline mood.',
   },
   'sports-hobbies': {
     Photography:
@@ -212,13 +218,17 @@ function buildCategoryStylePrompt({ title, category, style }) {
     style: styleKey,
     categoryMode: `${categoryMode}\n${COMMERCIAL_SAFETY}`,
     styleDirection: resolveCategoryStyleDirection(categoryKey, styleKey),
-    // Impressionism/Watercolor/Van Gogh Style all paint edge-to-edge like
-    // Abstract — same full-bleed framing, no isolated hero subject margin.
+    // Impressionism/Watercolor/Van Gogh Style/Monet Style/Klimt Style/
+    // Matisse Style all paint edge-to-edge like Abstract — same full-bleed
+    // framing, no isolated hero subject margin.
     useAbstractFraming:
       styleKey === 'Abstract' ||
       styleKey === 'Impressionism' ||
       styleKey === 'Watercolor' ||
-      styleKey === 'Van Gogh Style',
+      styleKey === 'Van Gogh Style' ||
+      styleKey === 'Monet Style' ||
+      styleKey === 'Klimt Style' ||
+      styleKey === 'Matisse Style',
   });
 }
 

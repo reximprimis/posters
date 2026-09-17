@@ -192,7 +192,7 @@ function normalizeArtStyle(style) {
   // Watercolor i Van Gogh Style tak samo wypelniaja plotno krawedz-do-krawedzi
   // jak Impressionism (pociagniecia pedzla/plamy koloru zamiast izolowanego
   // obiektu z marginesem) — ten sam powod co przy Impressionism wyzej.
-  if (s === 'watercolor' || s === 'van gogh style') return 'abstract';
+  if (s === 'watercolor' || s === 'van gogh style' || s === 'monet style' || s === 'klimt style' || s === 'matisse style') return 'abstract';
   return s || 'photography';
 }
 
