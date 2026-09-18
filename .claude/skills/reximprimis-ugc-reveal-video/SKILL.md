@@ -80,3 +80,13 @@ Dwie opcje na przyszłość, gdy trzeba wiernie odtworzyć konkretny plakat:
    ZAWSZE stylizowana aproksymacja tekstowa, nie wierna reprodukcja — OK dla
    "inspired by" contentu, ale NIE prezentować jako dokładne zdjęcie
    konkretnego SKU bez wyraźnego zastrzeżenia.
+
+## TRWAŁA ZASADA #3 — model obrazu: GPT Image 2.5, NIE Nano Banana (2026-09-18)
+
+Higgsfield Elements/generate_image domyślnie podstawia `nano_banana_pro`/
+`nano_banana_2` nawet gdy prosisz o co innego. **Dla REXIMPRIMIS zawsze
+wymuszaj `model: 'gpt_image_2'`** (ta sama rodzina co `gpt-image-2.5-sunburst`
+używana w głównym pipeline generowania plakatów, `src/posterGenerator.js`)
+— spójność jakości/stylu z resztą katalogu, nie Nano Banana. Sprawdź w
+wyniku `job_display`, jakiego modelu FAKTYCZNIE użyto (pole `model` w
+odpowiedzi) — Higgsfield potrafi po cichu podstawić inny.
