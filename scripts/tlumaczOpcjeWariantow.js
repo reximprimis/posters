@@ -34,29 +34,41 @@ const limit = limitArg ? Number(limitArg) : 0;
 
 const PROGRESS_PATH = path.join(ROOT, 'tlumaczenia_opcje_progress.json');
 
-// ── Slownik: angielski tekst -> {sv, cs, da} ────────────────────────────────
+// ── Slownik: angielski tekst -> {sv, cs, da, pl, de} ────────────────────────
+// pl/de dopisane 2026-09-17 wieczorem: bulk run pokrywal tylko sv/cs/da, wiec
+// PL i DE nadal pokazywaly surowe angielskie etykiety opcji ("(Small)" itd.)
+// mimo w pelni przetlumaczonych tytulow/opisow produktow — inny typ zasobu
+// tlumaczen (ProductOption/ProductOptionValue), patrz komentarz na gorze pliku.
 const DICT = {
-  'Size': { sv: 'Storlek', cs: 'Velikost', da: 'Størrelse' },
-  'Print Style': { sv: 'Trycktyp', cs: 'Styl tisku', da: 'Trykstil' },
-  'Material': { sv: 'Material', cs: 'Materiál', da: 'Materiale' },
-  'Paper': { sv: 'Papper', cs: 'Papír', da: 'Papir' },
-  'Full Bleed': { sv: 'Kant till kant', cs: 'Tisk do krajů', da: 'Kant til kant' },
-  'White Border': { sv: 'Vit kant', cs: 'Bílý okraj', da: 'Hvid kant' },
-  '13 × 18 cm (Small)': { sv: '13 × 18 cm (Liten)', cs: '13 × 18 cm (Malý)', da: '13 × 18 cm (Lille)' },
-  '21 × 30 cm (A4)': { sv: '21 × 30 cm (A4)', cs: '21 × 30 cm (A4)', da: '21 × 30 cm (A4)' },
-  '30 × 40 cm (Medium)': { sv: '30 × 40 cm (Mellan)', cs: '30 × 40 cm (Střední)', da: '30 × 40 cm (Mellem)' },
-  '40 × 50 cm (Large)': { sv: '40 × 50 cm (Stor)', cs: '40 × 50 cm (Velký)', da: '40 × 50 cm (Stor)' },
-  '50 × 70 cm (Large)': { sv: '50 × 70 cm (Stor)', cs: '50 × 70 cm (Velký)', da: '50 × 70 cm (Stor)' },
+  'Size': { sv: 'Storlek', cs: 'Velikost', da: 'Størrelse', pl: 'Rozmiar', de: 'Größe' },
+  'Print Style': { sv: 'Trycktyp', cs: 'Styl tisku', da: 'Trykstil', pl: 'Styl wydruku', de: 'Druckstil' },
+  'Material': { sv: 'Material', cs: 'Materiál', da: 'Materiale', pl: 'Materiał', de: 'Material' },
+  'Paper': { sv: 'Papper', cs: 'Papír', da: 'Papir', pl: 'Papier', de: 'Papier' },
+  'Full Bleed': { sv: 'Kant till kant', cs: 'Tisk do krajů', da: 'Kant til kant', pl: 'Pełny nadruk', de: 'Randlos' },
+  'White Border': { sv: 'Vit kant', cs: 'Bílý okraj', da: 'Hvid kant', pl: 'Biały margines', de: 'Weißer Rand' },
+  '13 × 18 cm (Small)': { sv: '13 × 18 cm (Liten)', cs: '13 × 18 cm (Malý)', da: '13 × 18 cm (Lille)', pl: '13 × 18 cm (Mały)', de: '13 × 18 cm (Klein)' },
+  '21 × 30 cm (A4)': { sv: '21 × 30 cm (A4)', cs: '21 × 30 cm (A4)', da: '21 × 30 cm (A4)', pl: '21 × 30 cm (A4)', de: '21 × 30 cm (A4)' },
+  '30 × 40 cm (Medium)': { sv: '30 × 40 cm (Mellan)', cs: '30 × 40 cm (Střední)', da: '30 × 40 cm (Mellem)', pl: '30 × 40 cm (Średni)', de: '30 × 40 cm (Mittel)' },
+  '40 × 50 cm (Large)': { sv: '40 × 50 cm (Stor)', cs: '40 × 50 cm (Velký)', da: '40 × 50 cm (Stor)', pl: '40 × 50 cm (Duży)', de: '40 × 50 cm (Groß)' },
+  '50 × 70 cm (Large)': { sv: '50 × 70 cm (Stor)', cs: '50 × 70 cm (Velký)', da: '50 × 70 cm (Stor)', pl: '50 × 70 cm (Duży)', de: '50 × 70 cm (Groß)' },
   // Some products store the same sizes with height×width swapped (e.g. portrait-first
   // products list "18 × 13" instead of "13 × 18") — the bulk run left every one of
   // these as UNKNOWN because only the width×height spelling was in this dictionary.
-  '18 × 13 cm (Small)': { sv: '18 × 13 cm (Liten)', cs: '18 × 13 cm (Malý)', da: '18 × 13 cm (Lille)' },
-  '30 × 21 cm (A4)': { sv: '30 × 21 cm (A4)', cs: '30 × 21 cm (A4)', da: '30 × 21 cm (A4)' },
-  '40 × 30 cm (Medium)': { sv: '40 × 30 cm (Mellan)', cs: '40 × 30 cm (Střední)', da: '40 × 30 cm (Mellem)' },
-  '50 × 40 cm (Large)': { sv: '50 × 40 cm (Stor)', cs: '50 × 40 cm (Velký)', da: '50 × 40 cm (Stor)' },
-  '70 × 50 cm (Large)': { sv: '70 × 50 cm (Stor)', cs: '70 × 50 cm (Velký)', da: '70 × 50 cm (Stor)' },
+  '18 × 13 cm (Small)': { sv: '18 × 13 cm (Liten)', cs: '18 × 13 cm (Malý)', da: '18 × 13 cm (Lille)', pl: '18 × 13 cm (Mały)', de: '18 × 13 cm (Klein)' },
+  '30 × 21 cm (A4)': { sv: '30 × 21 cm (A4)', cs: '30 × 21 cm (A4)', da: '30 × 21 cm (A4)', pl: '30 × 21 cm (A4)', de: '30 × 21 cm (A4)' },
+  '40 × 30 cm (Medium)': { sv: '40 × 30 cm (Mellan)', cs: '40 × 30 cm (Střední)', da: '40 × 30 cm (Mellem)', pl: '40 × 30 cm (Średni)', de: '40 × 30 cm (Mittel)' },
+  '50 × 40 cm (Large)': { sv: '50 × 40 cm (Stor)', cs: '50 × 40 cm (Velký)', da: '50 × 40 cm (Stor)', pl: '50 × 40 cm (Duży)', de: '50 × 40 cm (Groß)' },
+  '70 × 50 cm (Large)': { sv: '70 × 50 cm (Stor)', cs: '70 × 50 cm (Velký)', da: '70 × 50 cm (Stor)', pl: '70 × 50 cm (Duży)', de: '70 × 50 cm (Groß)' },
+  // "Create your own photo poster" uses its own plain "W x H cm" values with no
+  // (Small)/(Medium)/(Large) suffix and a lowercase ascii "x" — a different
+  // format from every other product, so it never matched the dict above.
+  '13 x 18 cm': { sv: '13 x 18 cm', cs: '13 x 18 cm', da: '13 x 18 cm', pl: '13 x 18 cm', de: '13 x 18 cm' },
+  '21 x 30 cm': { sv: '21 x 30 cm', cs: '21 x 30 cm', da: '21 x 30 cm', pl: '21 x 30 cm', de: '21 x 30 cm' },
+  '30 x 40 cm': { sv: '30 x 40 cm', cs: '30 x 40 cm', da: '30 x 40 cm', pl: '30 x 40 cm', de: '30 x 40 cm' },
+  '40 x 50 cm': { sv: '40 x 50 cm', cs: '40 x 50 cm', da: '40 x 50 cm', pl: '40 x 50 cm', de: '40 x 50 cm' },
+  '50 x 70 cm': { sv: '50 x 70 cm', cs: '50 x 70 cm', da: '50 x 70 cm', pl: '50 x 70 cm', de: '50 x 70 cm' },
 };
-const LOCALES = ['sv', 'cs', 'da'];
+const LOCALES = ['sv', 'cs', 'da', 'pl', 'de'];
 
 async function adminGraphql(query, variables) {
   const r = await fetch(`https://${domain}/admin/api/${apiVersion}/graphql.json`, {
@@ -130,17 +142,31 @@ const REGISTER_MUTATION = `
   }
 `;
 
+function doneLocalesFor(progress, resourceId) {
+  const entry = progress[resourceId];
+  if (!entry) return [];
+  // Old progress entries (pre pl/de) only recorded a flat `done: true` for
+  // whatever LOCALES existed at the time (sv/cs/da) — treat those as done for
+  // exactly that set, not for locales added since.
+  if (Array.isArray(entry.doneLocales)) return entry.doneLocales;
+  if (entry.done) return ['sv', 'cs', 'da'];
+  return [];
+}
+
 async function translateResource(resourceId, englishText, progress) {
-  if (progress[resourceId] && progress[resourceId].done) return { skipped: true };
   const entry = DICT[englishText];
   if (!entry) return { unknown: true, text: englishText };
+
+  const already = doneLocalesFor(progress, resourceId);
+  const pending = LOCALES.filter((loc) => !already.includes(loc));
+  if (pending.length === 0) return { skipped: true };
 
   const { json: tj, cost: tc } = await adminGraphql(TRANSLATABLE_QUERY, { id: resourceId });
   await throttleGuard(tc);
   const nameField = tj.data && tj.data.translatableResource && tj.data.translatableResource.translatableContent.find((c) => c.key === 'name');
   if (!nameField) return { noDigest: true };
 
-  const translations = LOCALES.map((loc) => ({
+  const translations = pending.map((loc) => ({
     locale: loc,
     key: 'name',
     value: entry[loc],
@@ -148,7 +174,7 @@ async function translateResource(resourceId, englishText, progress) {
   }));
 
   if (isDryRun) {
-    console.log(`[dry-run] ${resourceId} "${englishText}" ->`, entry);
+    console.log(`[dry-run] ${resourceId} "${englishText}" -> locales ${pending.join(',')}`, entry);
     return { ok: true, dryRun: true };
   }
 
@@ -156,7 +182,7 @@ async function translateResource(resourceId, englishText, progress) {
   await throttleGuard(rc);
   const errors = rj.data && rj.data.translationsRegister && rj.data.translationsRegister.userErrors;
   if (errors && errors.length) return { error: errors };
-  progress[resourceId] = { done: true, text: englishText };
+  progress[resourceId] = { doneLocales: [...already, ...pending], text: englishText };
   return { ok: true };
 }
 

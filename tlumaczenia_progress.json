@@ -4912,5 +4912,1139 @@
     "sv": true,
     "cs": true,
     "da": true
+  },
+  "raw-concrete-stairwell": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "steel-beam-loft-interior": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "concrete-warehouse-facade": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "brick-warehouse-district": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "rusted-steel-composition": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "concrete-slab-geometry": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "motorcycle-in-concrete-garage": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "riverside-grain-elevators": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "willow-branches-over-still-water": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "morning-mist-on-the-lake": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "reflections-of-an-autumn-garden": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "poplar-row-at-dusk": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "water-garden-in-bloom": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "sunlight-through-the-orchard": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "harbor-at-low-tide": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "sailboats-in-soft-light": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "cliffside-garden-by-the-sea": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "morning-haze-over-the-bay": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "fishing-boats-at-rest": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "alpine-lake-at-dawn": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "mountain-meadow-in-bloom": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "snowmelt-stream-reflections": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "pine-ridge-in-morning-light": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "valley-mist-at-sunrise": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-birch-grove": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gilded-sunflower-field": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ornamental-fern-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-poppy-meadow": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "autumn-leaves-in-gold": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gilded-olive-branch": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-wheat-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ornamental-rose-garden": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gilded-chestnut-branch": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-lavender-rows": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ornamental-vine-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gilded-magnolia-bloom": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-willow-branch": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ornamental-orchard-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bold-leaf-composition": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "paper-cut-garden-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "vivid-fern-arrangement": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "decorative-flower-bouquet": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bold-botanical-rhythm": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "cut-paper-palm-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bold-hillside-composition": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "decorative-orchard-rhythm": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "vivid-coastal-fields": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bold-vineyard-pattern": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "decorative-forest-edge": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "vivid-meadow-composition": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "cypress-grove-at-twilight": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "wheat-field-under-storm-clouds": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "almond-branch-in-spring-wind": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "olive-trees-at-midday": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "starry-harbor-reflections": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "fishing-boats-in-the-wind": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "coastal-cliffs-at-dusk": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "moonlit-waves": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "world-map-muted-tones": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "vintage-nautical-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "antique-world-map-sepia": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ocean-currents-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ancient-trade-routes-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "historic-empire-territories-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "constellation-sky-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "topographic-contour-lines": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-paris": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-berlin": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-rome": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-new-york": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-london": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-barcelona": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-vienna": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "city-grid-amsterdam": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "mountain-range-elevation-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "coastal-survey-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "river-basin-cartography": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "star-chart-northern-sky": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "continental-drift-diagram": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "wind-rose-compass": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "harbor-depth-soundings": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "railway-network-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "medieval-trade-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "explorer-s-route-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "archipelago-survey-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "desert-expedition-map": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "polar-ice-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "vintage-globe-gores": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "quantum-computer-core": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "data-center-corridor": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "sensor-array-grid": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "machine-vision-eye": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "algorithm-flow-diagram": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "processor-die-macro": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "cloud-server-farm": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "encryption-key-pattern": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "voice-wave-spectrum": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "drone-swarm-formation": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "exoskeleton-frame-detail": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "satellite-dish-array": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "biometric-scan-lines": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "autonomous-vehicle-sensor": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "deep-learning-layers": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "dream-big-script": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "simple-living-words": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "breathe-in-breathe-out": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gather-here-lettering": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "warm-light-words": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "stay-curious-type": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "slow-down-script": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gentle-reminder-words": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "make-it-happen-type": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "present-moment-lettering": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "soft-focus-words": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "trust-the-process-type": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-hour-lettering": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "hand-on-chin": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "two-bodies-overlap": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "standing-figure-line": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "curled-sleeping-form": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "arm-raised-curve": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "mirror-pose-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "less-is-more-type": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "today-is-enough": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "twisted-pose-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "rum-and-lime-still": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "absinthe-spoon-ritual": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bar-cart-vintage": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "smoked-glass-cocktail": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "tiki-mug-detail": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "wine-glass-silhouette": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bitters-dash-motion": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "copper-mule-mug": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "sherry-cask-pour": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bartender-hands-motion": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "ophiuchus-serpent-bearer": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "moon-phases-circle": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "solar-eclipse-diagram": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "natal-chart-wheel": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "eclipse-path-diagram": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "rising-sign-chart": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "cosmic-calendar-wheel": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "gilded-peony-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-fern-frond": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "bold-palm-leaf-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "decorative-citrus-branch": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "wildflower-meadow-light": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "lakeside-willows-at-noon": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "sunset-orchard-fields": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "twilight-vineyard-rhythm": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "rocky-cove-at-dawn": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "quiet-bay-reflections": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "misty-orchard-at-dawn": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "misty-lakeside-at-dawn": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "wheat-field-under-swirling-sky": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "abstract-city-grid-lines": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "golden-mandala-bloom": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "concrete-stairwell-study": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "autumn-wall-set": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "spring-wall-set": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "summer-wall-set": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
+  },
+  "winter-wall-set": {
+    "pl": true,
+    "de": true,
+    "sv": true,
+    "cs": true,
+    "da": true
   }
 }

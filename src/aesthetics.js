@@ -167,6 +167,22 @@ const AESTHETICS = [
     texture: 'flat matte print with subtle warm sheen suggested by color alone, no faux foil, no glossy highlight',
     avoid: 'cold silver or chrome, neon, full-canvas gold flood, glitter texture, plastic shine',
   },
+  // Dopisana po przegladzie katalogow konkurencji (2026-09-17), jako test
+  // pojedynczego plakatu przed decyzja o pelnej serii — patrz
+  // project_catalog_gap_analysis.md ("Industrial" dopisek). Gatunkowo
+  // pokrewna Bauhausowi/mid-century (surowa architektura/przemyslowe
+  // wnetrza), nie osobna kategoria tematyczna.
+  {
+    id: 'industrial',
+    label: 'Industrialny',
+    description: 'Surowy beton, czarny metal i cegła — loftowa, przemysłowa surowość.',
+    badge: '',
+    palette: 'raw concrete grey, charcoal black, rust orange, oxidized steel, exposed red-brown brick, cool graphite',
+    mood:
+      'raw loft honesty, exposed structure, factory-turned-living-space confidence, stripped-back materiality, no ornament',
+    texture: 'matte concrete grain, brushed matte metal, uneven brick texture, no gloss, no soft fabric sheen',
+    avoid: 'pastel colors, ornate detail, glossy or metallic-foil finish, soft rounded forms, floral or organic motifs',
+  },
   {
     id: 'scandi',
     label: 'Skandynawski',

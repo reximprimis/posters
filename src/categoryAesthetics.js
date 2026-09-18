@@ -20,13 +20,13 @@
  * po kolei, wiec pierwsza jest najczestsza.
  */
 const ESTETYKI = {
-  'abstract': ['bauhaus', 'mid-century', 'exhibition', 'black-white', 'gold'],
+  'abstract': ['bauhaus', 'mid-century', 'exhibition', 'black-white', 'gold', 'industrial'],
   'ai-technology': ['bauhaus', 'black-white', 'exhibition'],
   'animals': ['scandi', 'japandi', 'black-white', 'ukiyo-e', 'vintage-plate'],
-  'architecture': ['bauhaus', 'black-white', 'exhibition', 'mid-century'],
+  'architecture': ['bauhaus', 'black-white', 'exhibition', 'mid-century', 'industrial'],
   'bar-cocktails': ['mid-century', 'quiet-luxury', 'exhibition', 'gold'],
   'botanical': ['japandi', 'scandi', 'wabi-sabi', 'black-white', 'ukiyo-e', 'vintage-plate', 'gold'],
-  'cities-travel': ['exhibition', 'black-white', 'mid-century', 'bauhaus'],
+  'cities-travel': ['exhibition', 'black-white', 'mid-century', 'bauhaus', 'industrial'],
   'coffee-tea': ['japandi', 'wabi-sabi', 'mid-century'],
   'cyberpunk-neon': ['', 'bauhaus'],
   'fashion-beauty': ['quiet-luxury', 'black-white', 'exhibition', 'gold'],
@@ -55,7 +55,7 @@ const ESTETYKI = {
   // Ani jednej litery. Te same tytuly bez estetyki daja poprawny napis.
   // Zdanie "SUBJECT STAYS" w promcie tego nie ratuje.
   'typography-quotes': [''],
-  'vehicles': ['mid-century', 'black-white', 'exhibition'],
+  'vehicles': ['mid-century', 'black-white', 'exhibition', 'industrial'],
   'wellness-yoga': ['japandi', 'wabi-sabi', 'scandi'],
   'zodiac-astrology': ['exhibition', 'ukiyo-e', 'black-white'],
 };
