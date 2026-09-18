@@ -1,30 +1,32 @@
 ---
 name: reximprimis-ugc-reveal-video
-description: Use when generating an AI Before/After or UGC-style reveal video for REXIMPRIMIS social content — a poster appearing on a wall, being unboxed, or hung — via fal.ai or Higgsfield. NOT YET A PROVEN TECHNIQUE — read the failure log before attempting.
+description: Use when generating an AI UGC-style still photo (person holding/showing a REXIMPRIMIS poster) for social content, via Higgsfield. PROVEN technique for stills as of 2026-09-18 — see the recipe below. Video (reveal/transition) is still unsolved — read the failure log before attempting that.
 ---
 
-# REXIMPRIMIS Before/After & UGC reveal video
+# REXIMPRIMIS UGC content: persona + product photo
 
-## Status: promising candidate found, NOT yet finally accepted (last updated 2026-09-18)
+## Status: STILL IMAGES SOLVED (2026-09-18) — video still unsolved
 
-Best result so far (2026-09-18, session end): Higgsfield GPT Image 2.5
-Sunburst, two reference images (real product thumb + Lena persona), prompt
-per "Dokładny przepis" section below. First variant (left, in a 1/4 batch)
-matched our real "Winter Forest in Snow" product closely — mountain peak,
-cool winter light, stream composition all correct; full-bleed, no
-passe-partout, rigid paper. **User has NOT yet given final explicit
-acceptance** — paused mid-review ("potestujemy inny dzień" / "to jest coś co
-możemy wykorzystać bez budowania od nowa może", also raised SimpliGen local
-app — UGC Studio / Product Studio — as a possible alternative worth testing).
+User explicitly accepted a result on 2026-09-18: "super wyszło dobrze".
+Recipe: **Higgsfield, model "GPT Image 2.5 Sunburst"**, two reference
+images uploaded via `mcp__claude-in-chrome__file_upload` (real product
+`_thumb.jpg` + a `soul_cast`-generated persona image), prompt built from
+the three permanent rules (full-bleed/no-passe-partout, exact real artwork,
+this model). Matched the real "Winter Forest in Snow" product closely —
+mountain peak, cool winter light, stream composition all correct; full
+bleed, no mat, rigid 220gsm-looking paper. **Use this exact recipe for
+future UGC still-photo requests — see "Dokładny przepis" below for the
+full step-by-step.**
 
-**Next session: pick up here** — show the saved result again, get explicit
-accept/reject, and/or evaluate SimpliGen (`mcp__simpligen__*` tools) as an
-alternative to Higgsfield for this workflow before declaring anything final.
-Do not present a new attempt as "the" solution until the user has explicitly
-signed off — show every result before assuming it's usable. Full context
-and every attempt so far lives in `docs/wiedza/marketing.md` under
-"Before/After / UGC wideo" — read that section before starting a new
-attempt, and add your attempt to that log regardless of outcome.
+Video (a still turning into a reveal/transition/unboxing clip) is a
+SEPARATE, still-unsolved problem — see "Why this is hard" below. Don't
+assume solving stills also solved video; the failure modes were different.
+
+Also worth evaluating before assuming Higgsfield is the only option: the
+user has a local **SimpliGen** app (`mcp__simpligen__*` tools) with a
+dedicated UGC Studio / Product Studio — flagged by the user as a possible
+ready-made alternative ("to jest coś co możemy wykorzystać bez budowania od
+nowa"), not yet tested for this workflow.
 
 ## Why this is hard
 
