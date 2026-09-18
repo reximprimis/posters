@@ -88,6 +88,33 @@ Higgsfield MCP nie ma działającego `media_upload`/`media_import_url` w tym
 To zastępuje wcześniejsze "brak rozwiązania" — nie proponuj już userowi
 ręcznego wgrywania przez widget Higgsfield, rób to sam tą ścieżką.
 
+**Dlaczego to ważne dla przyszłości**: `GPT Image 2.5 Sunburst` w Higgsfield
+to ten sam model OpenAI (`gpt-image-2.5-sunburst`) co w naszym własnym
+pipelinie generowania plakatów (`src/posterGenerator.js`, wywoływany wprost
+przez `OPENAI_API_KEY` z `.env`). Higgsfield tu jest tylko wygodną warstwą UI
++ referencje (Elements) — **gdy ta technika się sprawdzi, można ją
+odtworzyć bezpośrednio przez OpenAI Images API (`images.edit` z wieloma
+obrazami referencyjnymi) i pominąć kredyty Higgsfield całkowicie.** Dlatego
+dokumentuj TU dokładny kształt promptu i który obraz pełni jaką rolę (persona
+vs produkt) — to przenosi się wprost na `images.edit(image: [ref1, ref2],
+prompt: "...")`.
+
+### Dokładny przepis z sesji 2026-09-18 (do powtórzenia/przeniesienia na własne API)
+
+1. Referencja #1 (rola: produkt) — `<Tytul>_thumb.jpg` naszego prawdziwego
+   plakatu (NIE master PNG — za duży, >10MB; thumb ~200-300KB wystarcza).
+2. Referencja #2 (rola: persona) — wygenerowany portret postaci (np.
+   `soul_cast` multi-view sheet).
+3. Prompt (pełna wersja użyta, sprawdzona pod kątem 3 trwałych zasad —
+   full-bleed, prawdziwy produkt, model): zaczynaj od "Photorealistic
+   UGC-style selfie of the woman from the second reference image... holding
+   up the exact framed poster from the first reference image... Reproduce
+   the artwork inside the frame exactly as in the first reference image —
+   [opisz konkretne cechy: scena, paleta, oświetlenie] — do not invent a
+   different scene." Potem PEŁEN cytat anti-passe-partout (patrz wyżej), potem
+   opis papieru 220gsm.
+4. Model: GPT Image 2.5 Sunburst. Rozdzielczość 2K, jakość High.
+
 ## TRWAŁA ZASADA #3 — model obrazu: WYŁĄCZNIE GPT Image 2.5 Sunburst/Flare (2026-09-18, ZAMKNIĘTE — nie dyskutować ponownie)
 
 Higgsfield domyślnie podstawia Nano Banana nawet gdy prosisz o co innego.
