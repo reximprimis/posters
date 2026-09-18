@@ -78,3 +78,12 @@ nie dojrzeje.
 - Wnioski strategiczne z analizy konkurencji (gap analysis katalogu vs
   konkurenci) — obecnie tylko w pamięci sesji, warto skondensować tutaj.
 - Plan wzrostu FB/IG — osobne strategie per platforma.
+
+## Decyzja architektoniczna: osobna aplikacja, NIE zakładka w Plakaty (2026-09-18)
+
+System marketingowy (biblioteka assetów: postacie/Soul, sceny, gotowe posty,
+log technik, wielo-platformowe publikowanie FB/IG/TikTok/YouTube/Pinterest)
+**będzie osobną web-aplikacją**, nie nową zakładką w istniejącej apce Plakaty
+(`public/index.html` ma już 10 895 linii — zbyt duża, żeby dokładać kolejny
+duży podsystem). Decyzja usera, nie zaczynamy budowy "na już" — to osobny,
+przyszły projekt (spec → plan → implementacja jak każdy większy feature).
