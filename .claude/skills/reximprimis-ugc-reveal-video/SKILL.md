@@ -61,3 +61,22 @@ Replace this whole file's pipeline section with the exact accepted
 configuration (model, full prompt text, parameters) and remove the
 "unsolved" framing — this skill should describe the proven method once one
 exists, not the search for one.
+
+## Ograniczenie środowiska: brak upload_file do Higgsfield (2026-09-18)
+
+Nie mam w tym środowisku działającego `media_upload`/`media_import_url` dla
+Higgsfield (opisane w dokumentacji narzędzi, ale niedostępne jako
+faktyczne MCP tool). Skutek: nie da się wstrzyknąć naszego PRAWDZIWEGO
+zdjęcia produktu jako referencji do `show_reference_elements`/`generate_image`
+— tylko opis tekstowy w promptcie, co daje PODOBNY, ale nie identyczny obraz
+(potwierdzone: wygenerowany "Winter Forest" miał ciepłe złote światło i brak
+góry w tle, podczas gdy prawdziwy produkt ma chłodne zimowe światło i górski
+szczyt).
+
+Dwie opcje na przyszłość, gdy trzeba wiernie odtworzyć konkretny plakat:
+1. `mcp__claude-in-chrome` + `media_upload_widget` — user ręcznie wybiera
+   plik w przeglądarce (działa, ale wymaga jego interakcji za każdym razem).
+2. Zaakceptować, że UGC/lifestyle content z osobą trzymającą plakat to
+   ZAWSZE stylizowana aproksymacja tekstowa, nie wierna reprodukcja — OK dla
+   "inspired by" contentu, ale NIE prezentować jako dokładne zdjęcie
+   konkretnego SKU bez wyraźnego zastrzeżenia.
