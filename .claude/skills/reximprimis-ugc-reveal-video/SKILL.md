@@ -190,6 +190,27 @@ dokumentuj TU dokładny kształt promptu i który obraz pełni jaką rolę (pers
 vs produkt) — to przenosi się wprost na `images.edit(image: [ref1, ref2],
 prompt: "...")`.
 
+## POTWIERDZONE: bezpośrednie OpenAI API — PREFEROWANA metoda dla stilli (2026-09-18)
+
+Przetestowane wprost 2026-09-18 (seria Golden Autumn Forest Path, 3 ujęcia) —
+`client.images.edit({model: 'gpt-image-2.5-sunburst', image: [productFile,
+personaFile], prompt, size: '1024x1536', quality: 'high', n: 1})` z pakietu
+`openai` (SDK v6.34.0+) daje wynik **identycznej lub lepszej jakości** niż
+przez Higgsfield UI, bez limitu 10MB na referencję, bez flakiness przeglądarki
+(timeouty typing, zgubione uploady), bez kredytów Higgsfield, i szybciej
+(jeden request, brak pollingu UI). `images.edit` przyjmuje `image` jako
+TABLICĘ plików (`toFile(buffer, name, {type})` per obraz) — dwie referencje
+(produkt + persona) działają dokładnie tak jak w Higgsfield, kolejność w
+tablicy = kolejność "first/second reference image" w promptcie.
+
+**Od teraz: dla NOWYCH stilli w tym stylu, użyj bezpośrednio tego API,
+NIE Higgsfield przeglądarki** — Higgsfield zostaje jako opcja zapasowa (np.
+gdy trzeba coś wizualnie sprawdzić z userem krok po kroku) albo do wideo
+(Kling 3.0/Seedance — te NIE są dostępne przez to samo OpenAI API, video
+nadal wymaga Higgsfield albo fal.ai). Wzorcowy skrypt jednorazowy:
+`scratchpad/social_weekend/gen_ugc_direct2.js` (2026-09-18) — kopiuj i
+podmieniaj `PRODUCT_PATH`/`ART_DESC`/prompty dla kolejnych plakatów/póz.
+
 ### Dokładny przepis z sesji 2026-09-18 — FINALNIE ZAAKCEPTOWANY ("super")
 
 1. Referencja #1 (rola: produkt) — `<Tytul>_thumb.jpg` naszego prawdziwego
