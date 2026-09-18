@@ -16,13 +16,17 @@ from the permanent rules (full-bleed/no-passe-partout, exact real artwork,
 this model, correct 30x40cm scale). Full recipes below under "Dokładny
 przepis" (framed) and "Wariant BEZ ramy" (unframed).
 
-**For future pieces, vary ONLY**: the surface/background (rug type, table,
-floor, room), the camera angle/crop, and how much of the hand(s) is shown
-— user confirmed this 2026-09-18 ("możemy robić i podłoże i kadr tylko
-zmieniać... kąt kamery i osoby więcej ręki"). Keep the model, the two
-reference images, the size (30x40cm), and the full-bleed/no-passe-partout/
-real-artwork language IDENTICAL across variations — those are the parts
-that took multiple rejected iterations to get right, don't re-litigate them.
+**For future pieces, vary**: the surface/background (rug type, table, floor,
+room), the camera angle/crop, how much of the hand(s) is shown, AND —
+important addition — **the pose and the persona itself should NOT repeat
+too often** ("dobra ale już nie za dużo tej samej pozycji i osoby",
+2026-09-18). Don't default every single piece to "Lena, hands close to
+chest, straight-on selfie" — rotate poses (angled, over-shoulder, close-up
+crop on just hands+frame, etc.) and consider a second/third persona for
+variety across a content batch. Keep the model, the size (30x40cm), and the
+full-bleed/no-passe-partout/real-artwork language IDENTICAL across
+variations — those are the parts that took multiple rejected iterations to
+get right, don't re-litigate them.
 
 Video (a still turning into a reveal/transition/unboxing clip) is a
 SEPARATE, still-unsolved problem — see "Why this is hard" below. Don't
