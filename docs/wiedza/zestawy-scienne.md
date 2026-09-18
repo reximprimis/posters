@@ -96,6 +96,17 @@ ramy w dół dla mniejszych formatów.
 5. Cennik: `src/galerieScienne.js` — `cenaZestawu = suma(cen pojedynczych) ×
    0.88` (rabat 12%, tyle co przy tryptyku).
 
+## "missing_framed_thumb" po zatwierdzeniu — kosmetyczne, nie blokuje
+
+Po `bulk-approval` + `npm run shopify:reconcile`, zestawy typu `gallery`
+często dostają `shopifyIssues: ['missing_framed_thumb']` mimo
+`shopifyState: 'ready'`. Przyczyna: `src/shopifyState.js` sprawdza
+`imagePathFramed`/`imagePathFramedThumb` (konwencja pojedynczego plakatu) —
+ale `zbudujGalerie.js` zapisuje framed-view jako `mockups.frame` (packshot),
+inna konwencja nazewnictwa. **Nie blokuje `ready`** — `state` liczy się
+wyłącznie z `masterThumbRel` (patrz `evaluatePosterShopifyState`). Bezpieczne
+do zignorowania dla `kind: 'gallery'`.
+
 ## Wzorzec: "N wariantów, każdy z inną porą/motywem jako hero"
 
 Potwierdzone 2026-09-18: z 4 niezależnych plakatów da się zbudować 4 osobne
