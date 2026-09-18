@@ -252,6 +252,18 @@ mają być użyte razem w jednej sekwencji/karuzeli/wideo — **rozmiar (np.
 generowane niezależnie za każdym razem. Ustal rozmiar i styl ramy raz, wpisz
 identyczne wartości w każdy kolejny prompt tej samej serii.
 
+**Złapane na żywo (2026-09-19)**: seria 3 zdjęć (Golden Autumn Forest Path,
+ta sama persona) — dwa ujęcia z ramą wygenerowane osobnymi promptami dostały
+RÓŻNY kolor ramy (jedno drewniane, jedno czarne), mimo że żaden prompt nie
+podawał koloru ramy wprost — model sam wymyślił kolor za każdym razem.
+User złapał to od razu: "Dwie różne ramki". **Fix: zawsze wpisuj DOKŁADNY
+kolor/materiał ramy explicite w promptcie** (np. "a plain, thin, matte
+BLACK frame — same black frame color and thin profile as a standard modern
+poster frame, NOT wood, NOT brown, NOT any other color"), nie polegaj na
+domyślnym zachowaniu modelu, nawet przy tym samym produkcie/personie w tej
+samej serii. Ustal kolor ramy PRZED pierwszym promptem serii, wpisz go
+identycznie w każdy kolejny.
+
 ### Wariant BEZ ramy — FINALNIE ZAAKCEPTOWANY ("to jest ok zaakceptowane przezemnie")
 
 Iteracje po drodze i co odrzucono:
