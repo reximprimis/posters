@@ -28,6 +28,20 @@ dedicated UGC Studio / Product Studio — flagged by the user as a possible
 ready-made alternative ("to jest coś co możemy wykorzystać bez budowania od
 nowa"), not yet tested for this workflow.
 
+## REJECTED: unframed poster "leaning against a wall" (2026-09-18)
+
+Asked for a poster-only shot with NO frame, propped standing against a wall
+(same pose as the framed version). User rejected on physical plausibility:
+**"to nie wygląda naturalnie, plakat tak sam od siebie nie ustoi"** — a real
+unframed sheet of paper cannot stand rigid on its own edge like a framed/
+rigid panel would. Obvious in hindsight, missed because the framed version's
+pose was reused without rethinking physics for the unframed case.
+
+Fix for next attempt: an unframed print must be shown either (a) lying flat
+on a table/floor, (b) held by a person (hands provide the support), or
+(c) pinned/clipped to something. Never "self-standing" unless it's actually
+framed/rigid-backed.
+
 ## Why this is hard
 
 Every attempt so far has failed for a DIFFERENT specific reason — not one
