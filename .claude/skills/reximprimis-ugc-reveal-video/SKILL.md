@@ -140,6 +140,25 @@ a longer piece is needed.
 asking each time — the Generate button shows the credit cost, read it back
 to the user or just state it plainly before clicking.
 
+## Seedance 2.5 — blokuje twarze (content policy), Kling 3.0 nie (2026-09-19)
+
+Test: ten sam typ obrazu startowego (persona z twarzą trzymająca plakat),
+identyczna technika co działająca w Kling 3.0, wysłane do
+`bytedance/seedance-2.5/image-to-video` przez fal.ai. Job status pokazał
+`COMPLETED`, ale `get_job_result` zwrócił 422: **"The images or videos
+provided may contain likenesses of real people or other private
+information that cannot be processed."** — filtr bytedance dotyczący
+podobizn twarzy, którego Kling 3.0 (Higgsfield) nie ma lub jest mniej
+restrykcyjny. Wcześniejszy sukces Seedance tego samego dnia (mandala
+flat-lay) użył obrazu BEZ twarzy (tylko dłoń) — to prawdopodobnie dlatego
+przeszło.
+
+**Wniosek: dla UGC z widoczną twarzą persony, używaj Kling 3.0 (Higgsfield),
+NIE Seedance.** Seedance zostaje opcją tylko dla ujęć bez twarzy (produkt,
+dłonie, martwa natura) albo dla dłuższych, bardziej "cinematic" ujęć gdzie
+twarz nie jest głównym elementem/nie jest widoczna wprost — do zweryfikowania
+przy kolejnej próbie, nie zakładać że zadziała.
+
 ## Why earlier video attempts failed (kept for reference — don't repeat)
 
 Every attempt before 2026-09-18 tried to generate a STORY/transition, and
