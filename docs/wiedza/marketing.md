@@ -136,3 +136,11 @@ punkt odniesienia UX dla naszej przyszłej osobnej apki marketingowej (patrz
 "Decyzja architektoniczna" wyżej) — biblioteka referencji (postacie/sceny),
 prosty flow wyboru + promptu + generowania. Nie kopiować 1:1, ale warto
 review przy projektowaniu.
+
+## Before/After / UGC stills — ZAAKCEPTOWANE (2026-09-18)
+
+Po testach z tego dnia: user potwierdził wynik jako "super wyszło dobrze",
+w tym konkretnie ramę/full-bleed jako OK. Pełny przepis (model, referencje,
+prompt) w `.claude/skills/reximprimis-ugc-reveal-video/SKILL.md` — status
+zmieniony z "unsolved" na "PROVEN dla zdjęć statycznych". Wideo (przejście/
+reveal) NADAL nierozwiązane, osobny problem.
