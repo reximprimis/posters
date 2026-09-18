@@ -1,22 +1,28 @@
 ---
 name: reximprimis-ugc-reveal-video
-description: Use when generating an AI UGC-style still photo (person holding/showing a REXIMPRIMIS poster) for social content, via Higgsfield. PROVEN technique for stills as of 2026-09-18 — see the recipe below. Video (reveal/transition) is still unsolved — read the failure log before attempting that.
+description: Use when generating an AI UGC-style still photo (person holding/showing a REXIMPRIMIS poster, framed or unframed) for social content, via Higgsfield. TWO PROVEN recipes as of 2026-09-18 — see below. Video (reveal/transition) is still unsolved — read the failure log before attempting that.
 ---
 
 # REXIMPRIMIS UGC content: persona + product photo
 
-## Status: STILL IMAGES SOLVED (2026-09-18) — video still unsolved
+## Status: STILL IMAGES SOLVED, 2 recipes (2026-09-18) — video still unsolved
 
-User explicitly accepted a result on 2026-09-18: "super wyszło dobrze".
-Recipe: **Higgsfield, model "GPT Image 2.5 Sunburst"**, two reference
-images uploaded via `mcp__claude-in-chrome__file_upload` (real product
-`_thumb.jpg` + a `soul_cast`-generated persona image), prompt built from
-the three permanent rules (full-bleed/no-passe-partout, exact real artwork,
-this model). Matched the real "Winter Forest in Snow" product closely —
-mountain peak, cool winter light, stream composition all correct; full
-bleed, no mat, rigid 220gsm-looking paper. **Use this exact recipe for
-future UGC still-photo requests — see "Dokładny przepis" below for the
-full step-by-step.**
+User explicitly accepted TWO results on 2026-09-18: framed+held ("super
+wyszło dobrze") and unframed+flat-lying ("to jest ok zaakceptowane
+przezemnie"). Both: **Higgsfield, model "GPT Image 2.5 Sunburst"**, two
+reference images uploaded via `mcp__claude-in-chrome__file_upload` (real
+product `_thumb.jpg` + a `soul_cast`-generated persona image), prompt built
+from the permanent rules (full-bleed/no-passe-partout, exact real artwork,
+this model, correct 30x40cm scale). Full recipes below under "Dokładny
+przepis" (framed) and "Wariant BEZ ramy" (unframed).
+
+**For future pieces, vary ONLY**: the surface/background (rug type, table,
+floor, room), the camera angle/crop, and how much of the hand(s) is shown
+— user confirmed this 2026-09-18 ("możemy robić i podłoże i kadr tylko
+zmieniać... kąt kamery i osoby więcej ręki"). Keep the model, the two
+reference images, the size (30x40cm), and the full-bleed/no-passe-partout/
+real-artwork language IDENTICAL across variations — those are the parts
+that took multiple rejected iterations to get right, don't re-litigate them.
 
 Video (a still turning into a reveal/transition/unboxing clip) is a
 SEPARATE, still-unsolved problem — see "Why this is hard" below. Don't
@@ -168,15 +174,42 @@ mają być użyte razem w jednej sekwencji/karuzeli/wideo — **rozmiar (np.
 generowane niezależnie za każdym razem. Ustal rozmiar i styl ramy raz, wpisz
 identyczne wartości w każdy kolejny prompt tej samej serii.
 
-### Odrzucona wersja bez ramy — do poprawy w kolejnej sesji
+### Wariant BEZ ramy — FINALNIE ZAAKCEPTOWANY ("to jest ok zaakceptowane przezemnie")
 
-Próba "leżący płasko / rozwijany rękami na dywanie, mały naturalny zawinięcie
-tylko przy dłoniach" (inspirowana referencjami usera: plakaty leżące płasko
-na dywanie/kocu, dłonie rozwijające rolkę) była w trakcie generowania pod
-koniec sesji — sprawdzić wynik w kolejnej sesji, zanim uzna się tę pozę za
-gotową technikę. Zasada z odrzuconego wcześniej wariantu wciąż obowiązuje:
-plakat bez ramy NIGDY nie stoi samodzielnie oparty o ścianę — tylko leży
-płasko, jest trzymany, albo ma widoczne podparcie (dłonie/rolka).
+Iteracje po drodze i co odrzucono:
+1. ❌ Stojący oparty o ścianę bez ramy — fizycznie niemożliwe, papier nie
+   stoi sam.
+2. ❌ Leżący płasko, ręce W TRAKCIE rozwijania z rolki (widoczny zwinięty
+   koniec) — user: "plakat bez zawijania z rolki", chciał całkowicie płaski.
+3. ❌ Ze stylizacją (książki, doniczka z kwiatkiem) — user: "książka i
+   kwiatek w kadrze to głupie" — zero dodatkowych rekwizytów.
+4. ✅ **Zaakceptowane**: całkowicie płasko leżący plakat na jasnym dywanie,
+   WIDOK LEKKO Z GÓRY POD KĄTEM, jedna dłoń delikatnie dotykająca rogu
+   (nie trzymająca, nie rozwijająca), zero rekwizytów poza dywanem.
+
+Zaakceptowany prompt (kopiuj i podmieniaj tylko opis konkretnej sceny):
+
+> Photorealistic overhead lifestyle product photo, viewed from slightly
+> above at an angle. A poster print lies completely FLAT on a soft
+> cream-colored rug — no curl, no rolling, no bending anywhere, fully flat
+> from edge to edge as if freshly placed down. NO frame of any kind. A
+> woman's hand (matching the hands of the woman in the second reference
+> image, no face needed) rests gently on one corner of the print,
+> fingertips just touching the surface. The print is a modest 30x40cm
+> size. No other props, no books, no plants, no extra styling — just the
+> rug, the flat print, and the hand. Reproduce the artwork exactly as in
+> the first reference image — [opisz konkretne cechy: scena, paleta,
+> oświetlenie] — do not invent a different scene or lighting. The artwork
+> is full-bleed, edge-to-edge, with NO white border or margin around it at
+> all. CRITICAL paper quality: genuine thick 220gsm fine-art poster paper,
+> visible slight thickness at the edge, matte non-reflective surface,
+> completely flat and rigid — NOT thin flimsy copy paper, NOT curling, NOT
+> rolled. Soft warm daylight from a window, authentic photography look, no
+> text, no watermark.
+
+**Mamy teraz DWA gotowe, zaakceptowane przepisy**: z ramą trzymaną w rękach
+(wyżej) i bez ramy leżący płasko (tu). Oba: GPT Image 2.5 Sunburst, 30x40cm,
+2 referencje (produkt + persona), pełne zasady full-bleed/prawdziwy produkt.
 
 ## TRWAŁA ZASADA #3 — model obrazu: WYŁĄCZNIE GPT Image 2.5 Sunburst/Flare (2026-09-18, ZAMKNIĘTE — nie dyskutować ponownie)
 
