@@ -62,31 +62,40 @@ configuration (model, full prompt text, parameters) and remove the
 "unsolved" framing — this skill should describe the proven method once one
 exists, not the search for one.
 
-## Ograniczenie środowiska: brak upload_file do Higgsfield (2026-09-18)
+## ROZWIĄZANE: jak wstrzyknąć nasz prawdziwy plik produktu (2026-09-18)
 
-Nie mam w tym środowisku działającego `media_upload`/`media_import_url` dla
-Higgsfield (opisane w dokumentacji narzędzi, ale niedostępne jako
-faktyczne MCP tool). Skutek: nie da się wstrzyknąć naszego PRAWDZIWEGO
-zdjęcia produktu jako referencji do `show_reference_elements`/`generate_image`
-— tylko opis tekstowy w promptcie, co daje PODOBNY, ale nie identyczny obraz
-(potwierdzone: wygenerowany "Winter Forest" miał ciepłe złote światło i brak
-góry w tle, podczas gdy prawdziwy produkt ma chłodne zimowe światło i górski
-szczyt).
+Higgsfield MCP nie ma działającego `media_upload`/`media_import_url` w tym
+środowisku, i `show_reference_elements` odrzuca dowolne zewnętrzne URL jako
+`media_input` (potrzebuje prawdziwego ID wydanego przez ich system). Ale
+`mcp__claude-in-chrome__file_upload` DZIAŁA i jest szybkie:
 
-Dwie opcje na przyszłość, gdy trzeba wiernie odtworzyć konkretny plakat:
-1. `mcp__claude-in-chrome` + `media_upload_widget` — user ręcznie wybiera
-   plik w przeglądarce (działa, ale wymaga jego interakcji za każdym razem).
-2. Zaakceptować, że UGC/lifestyle content z osobą trzymającą plakat to
-   ZAWSZE stylizowana aproksymacja tekstowa, nie wierna reprodukcja — OK dla
-   "inspired by" contentu, ale NIE prezentować jako dokładne zdjęcie
-   konkretnego SKU bez wyraźnego zastrzeżenia.
+1. Otwórz `https://higgsfield.ai/ai/image?model=gpt-image-2-5-sunburst` przez
+   `mcp__claude-in-chrome__navigate` — to jest PRAWDZIWE, zalogowane Chrome
+   użytkownika (NIE `mcp__Claude_Browser`, to osobna, niezalogowana
+   przeglądarka w aplikacji — myląco podobna nazwa, sprawdzone 2026-09-18).
+2. `find` z zapytaniem typu "upload image file input button (+ icon near
+   prompt box)" żeby znaleźć `ref` inputu plików.
+3. `file_upload` z lokalną ścieżką — **limit 10 MB na wywołanie**. Master
+   PNG (30+ MB) jest za duży — użyj `<Tytul>_thumb.jpg` (~200-300 KB,
+   plenty sharp for reference) zamiast masteru.
+4. Powtórz dla drugiego pliku (np. persony) jeśli model wspiera wiele
+   referencji — kliknij drugi "+"/`find` ponownie po pierwszym uploadzie
+   (dostaje nowy `ref`).
+5. Wybierz model w UI (patrz zasada #3 niżej), wpisz prompt (pełne zasady
+   full-bleed/no-passe-partout, patrz `docs/wiedza/marketing.md`), klik
+   Generate.
 
-## TRWAŁA ZASADA #3 — model obrazu: GPT Image 2.5, NIE Nano Banana (2026-09-18)
+To zastępuje wcześniejsze "brak rozwiązania" — nie proponuj już userowi
+ręcznego wgrywania przez widget Higgsfield, rób to sam tą ścieżką.
 
-Higgsfield Elements/generate_image domyślnie podstawia `nano_banana_pro`/
-`nano_banana_2` nawet gdy prosisz o co innego. **Dla REXIMPRIMIS zawsze
-wymuszaj `model: 'gpt_image_2'`** (ta sama rodzina co `gpt-image-2.5-sunburst`
-używana w głównym pipeline generowania plakatów, `src/posterGenerator.js`)
-— spójność jakości/stylu z resztą katalogu, nie Nano Banana. Sprawdź w
-wyniku `job_display`, jakiego modelu FAKTYCZNIE użyto (pole `model` w
-odpowiedzi) — Higgsfield potrafi po cichu podstawić inny.
+## TRWAŁA ZASADA #3 — model obrazu: WYŁĄCZNIE GPT Image 2.5 Sunburst/Flare (2026-09-18, ZAMKNIĘTE — nie dyskutować ponownie)
+
+Higgsfield domyślnie podstawia Nano Banana nawet gdy prosisz o co innego.
+**Zawsze wybieraj jawnie w UI (albo przez dokładny endpoint_id w MCP)
+"GPT Image 2.5 Sunburst" (precyzja, edycje) lub "GPT Image 2.5 Flare"
+(szybsze, codzienne)** — user potwierdził 2026-09-18: "to nowe [modele],
+słuchają promptów [dobrze]". NIGDY plain "GPT Image 2", NIGDY Nano Banana,
+NIGDY Seedream/Soul dla tego typu contentu. Zweryfikuj w wyniku, jakiego
+modelu FAKTYCZNIE użyto — Higgsfield potrafi po cichu podstawić inny.
+Ta zasada jest zamknięta — nie proponować innych modeli i nie pytać o to
+ponownie.
