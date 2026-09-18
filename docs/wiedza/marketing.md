@@ -116,3 +116,15 @@ nano_banana_pro UGC test) mimo że reguła była już znana z innego pliku —
 **nie kopiować rozwiązania z pamięci, kopiować DOSŁOWNIE ten cytowany
 tekst** za każdym razem przy nowym promptcie dotykającym oprawionego
 plakatu.
+
+## TRWAŁA ZASADA #2 — content MUSI pokazywać nasz prawdziwy produkt (2026-09-18)
+
+Obok reguły full-bleed/no-passe-partout (wyżej): każda generacja AI z naszym
+plakatem MUSI pokazywać RZECZYWISTY plik produktu, nie tekstowe przybliżenie
+"na podstawie opisu". Złamane w tej samej sesji testowej (wygenerowany
+"Winter Forest" różnił się od prawdziwego SKU — ciepłe złote światło zamiast
+zimnego zimowego, brak góry w tle). Jeśli narzędzie nie przyjmuje realnego
+zdjęcia jako referencji (patrz ograniczenie w
+`.claude/skills/reximprimis-ugc-reveal-video/SKILL.md`), NIE generuj i nie
+prezentuj wyniku jako gotowego contentu — najpierw rozwiąż wstrzyknięcie
+prawdziwego pliku (np. user uploaduje ręcznie przez widget).
