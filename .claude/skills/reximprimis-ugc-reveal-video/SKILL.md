@@ -5,14 +5,26 @@ description: Use when generating an AI Before/After or UGC-style reveal video fo
 
 # REXIMPRIMIS Before/After & UGC reveal video
 
-## Status: unsolved, actively iterating (last updated 2026-09-18)
+## Status: promising candidate found, NOT yet finally accepted (last updated 2026-09-18)
 
-No configuration below has produced an accepted result yet. Do not present
-a new attempt as "the" solution — show it to the user first, every time,
-before assuming it's usable. Full context and every attempt so far lives in
-`docs/wiedza/marketing.md` under "Before/After / UGC wideo" — read that
-section before starting a new attempt, and add your attempt to that log
-regardless of outcome.
+Best result so far (2026-09-18, session end): Higgsfield GPT Image 2.5
+Sunburst, two reference images (real product thumb + Lena persona), prompt
+per "Dokładny przepis" section below. First variant (left, in a 1/4 batch)
+matched our real "Winter Forest in Snow" product closely — mountain peak,
+cool winter light, stream composition all correct; full-bleed, no
+passe-partout, rigid paper. **User has NOT yet given final explicit
+acceptance** — paused mid-review ("potestujemy inny dzień" / "to jest coś co
+możemy wykorzystać bez budowania od nowa może", also raised SimpliGen local
+app — UGC Studio / Product Studio — as a possible alternative worth testing).
+
+**Next session: pick up here** — show the saved result again, get explicit
+accept/reject, and/or evaluate SimpliGen (`mcp__simpligen__*` tools) as an
+alternative to Higgsfield for this workflow before declaring anything final.
+Do not present a new attempt as "the" solution until the user has explicitly
+signed off — show every result before assuming it's usable. Full context
+and every attempt so far lives in `docs/wiedza/marketing.md` under
+"Before/After / UGC wideo" — read that section before starting a new
+attempt, and add your attempt to that log regardless of outcome.
 
 ## Why this is hard
 
