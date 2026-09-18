@@ -128,3 +128,11 @@ zdjęcia jako referencji (patrz ograniczenie w
 `.claude/skills/reximprimis-ugc-reveal-video/SKILL.md`), NIE generuj i nie
 prezentuj wyniku jako gotowego contentu — najpierw rozwiąż wstrzyknięcie
 prawdziwego pliku (np. user uploaduje ręcznie przez widget).
+
+## Inspiracja UX dla przyszłej własnej aplikacji (2026-09-18)
+
+Higgsfield (UGC Builder, Actor/Elements library, generation widget) to dobry
+punkt odniesienia UX dla naszej przyszłej osobnej apki marketingowej (patrz
+"Decyzja architektoniczna" wyżej) — biblioteka referencji (postacie/sceny),
+prosty flow wyboru + promptu + generowania. Nie kopiować 1:1, ale warto
+review przy projektowaniu.
