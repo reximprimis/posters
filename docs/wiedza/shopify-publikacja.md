@@ -16,6 +16,22 @@ wewnętrznie (po incydencie: niewypchnięte miniatury dawały "Media processing
 failed" na Shopify) — ale rób sync/push ręcznie najpierw jeśli zależy Ci na
 przewidywalnej kolejności.
 
+**UWAGA — ten auto-sync celuje w `origin main`, NIEZALEŻNIE od tego, na jakim
+branchu aktualnie pracujesz**, i zbiera WSZYSTKIE niezacommitowane zmiany w
+`shopify_thumbs/` (nie tylko te związane z Twoją bieżącą publikacją) — jeśli
+w working tree leżą inne, niepowiązane niezacommitowane pliki (np. z
+wcześniejszej, przerwanej pracy), ten skrypt je też złapie i spróbuje
+wypchnąć. Sprawdzone 2026-09-18 (na szczęście bezpiecznie): `git push origin
+main` w tym skrypcie pcha stan LOKALNEJ gałęzi `main` (jej własny wskaźnik),
+NIE aktualnego `HEAD` — więc jeśli pracujesz na osobnym branchu, nowy commit
+z sync'iem ląduje na Twoim BIEŻĄCYM branchu, a `main` dostaje tylko to, co już
+wcześniej było na lokalnej `main` (i tak zostałoby wypchnięte). Mimo to: **gdy
+zależy Ci na "nic nie rusza main dopóki nie zatwierdzę" (aktywna kampania!),
+przed uruchomieniem `publishShopifyDirect.js` zrób `git stash` na
+niepowiązanych zmianach w `shopify_thumbs/`, albo je scommituj gdzie indziej
+najpierw** — nie polegaj wyłącznie na tym, że skrypt "przypadkiem" trafi we
+właściwy branch.
+
 ## Handle collision = duplikat, nie błąd do obejścia
 
 ```
