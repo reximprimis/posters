@@ -87,3 +87,32 @@ log technik, wielo-platformowe publikowanie FB/IG/TikTok/YouTube/Pinterest)
 (`public/index.html` ma już 10 895 linii — zbyt duża, żeby dokładać kolejny
 duży podsystem). Decyzja usera, nie zaczynamy budowy "na już" — to osobny,
 przyszły projekt (spec → plan → implementacja jak każdy większy feature).
+
+## TRWAŁA ZASADA — REXIMPRIMIS to full bleed, ZAWSZE (2026-09-18)
+
+**Nasze plakaty w 99% katalogu to full bleed** (`printLayout: 'full'` w
+`posterGenerator.js:194,643` — domyślny layout; `matFrame = printLayout !==
+'full'`, więc przy full bleed w ogóle NIE MA marginesu/passe-partout).
+Obraz wypełnia CAŁY arkusz do samej krawędzi, potem oprawiony edge-to-edge
+w ramie — **żadnego białego/kremowego marginesu między grafiką a ramą,
+NIGDY**, w żadnym materiale (packshot, salon, social, UGC wideo).
+
+To nie jest szczegół do przypominania za każdym razem — **jeśli generujesz
+JAKIKOLWIEK obraz pokazujący nasz plakat w ramie (real photo, AI, UGC,
+packshot, wideo), ZAWSZE explicite zabroń mat/passe-partout/border w
+promptcie, z góry, bez czekania aż wyjdzie źle.** Sprawdzony, silny wzorzec
+tekstu (z `src/galleryInteriorAI.js budujPrompt()`, już używany i działający
+w innym miejscu kodu):
+
+> "Do not add a mat board. Do not add a passe-partout. Do not add any cream,
+> white, off-white or paper-colored border strip between the artwork and
+> the inside of the frame. This rule matters more than anything else in
+> this brief — read it twice before generating. [...] the print is face-
+> mounted flush to the glass, edge-to-edge [...] zero gap, zero visible
+> paper, zero border of any color."
+
+Złapane 2 razy z rzędu w tej samej sesji testowej (2026-09-18, Higgsfield
+nano_banana_pro UGC test) mimo że reguła była już znana z innego pliku —
+**nie kopiować rozwiązania z pamięci, kopiować DOSŁOWNIE ten cytowany
+tekst** za każdym razem przy nowym promptcie dotykającym oprawionego
+plakatu.
