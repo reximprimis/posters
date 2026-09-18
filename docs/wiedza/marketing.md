@@ -36,6 +36,24 @@ Pełny przepis (scope tokenu, Page/IG ID, hosting na jsDelivr, FB video + IG
 posta przed publikacją, nigdy sam tekst — użytkownik chce to zaakceptować
 wizualnie, nie na podstawie opisu.
 
+## Before/After wideo — AI-generowane przejście ODRZUCONE (2026-09-18)
+
+Próba: `openai/gpt-image-2.5/sunburst` (fal.ai) wygenerował realistyczną pustą
+ścianę, potem `bytedance/seedance-2.5/image-to-video` (fal.ai, `image_url` =
+pusta ściana, `end_image_url` = gotowy packshot z plakatem na ścianie) miał
+zrobić płynne "przejście" między nimi. **Wynik odrzucony przez usera: wygląda
+sztucznie, "jakaś tragedia", widać że to AI-przejście.** Nie próbować
+ponownie tej samej metody (model generuje WŁASNY pomysł na przejście między
+klatkami — nie da się tego kontrolować na tyle precyzyjnie, żeby wyglądało
+jak prawdziwe ujęcie).
+
+Wniosek: do Before/After NIE używać AI do generowania samego przejścia.
+Następnym razem spróbować: (a) prosty cut/crossfade montowany ręcznie (nie
+przez model wideo) z dwóch gotowych zdjęć, (b) albo faktyczne nagranie wideo
+(prawdziwa kamera) jeśli dostępne, (c) albo zrezygnować z wideo dla tego
+formatu i zostać przy statycznym zdjęciu przed/po (split lub karuzela 2
+slajdów) — to była pierwotna, bezpieczniejsza propozycja w planie.
+
 ## TODO do uzupełnienia tutaj
 
 - Dokładne kroki Competitor Watch (setup tokenu, jak dodać nową markę do
