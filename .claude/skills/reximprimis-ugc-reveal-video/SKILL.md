@@ -160,6 +160,14 @@ plakat wyglądający jak 70×100 (za duży względem osoby, nienaturalna skala).
 sprawdzony, działający fragment do kopiowania przy każdym kolejnym promptcie
 z osobą trzymającą plakat.
 
+### Spójność między ujęciami w tej samej sekwencji/wideo (2026-09-18)
+
+Jeśli kilka zdjęć (np. plakat sam + plakat w ramie trzymany przez osobę)
+mają być użyte razem w jednej sekwencji/karuzeli/wideo — **rozmiar (np.
+30x40cm) i wygląd ramy muszą być identyczne we wszystkich ujęciach**, nie
+generowane niezależnie za każdym razem. Ustal rozmiar i styl ramy raz, wpisz
+identyczne wartości w każdy kolejny prompt tej samej serii.
+
 ### Odrzucona wersja bez ramy — do poprawy w kolejnej sesji
 
 Próba "leżący płasko / rozwijany rękami na dywanie, mały naturalny zawinięcie
