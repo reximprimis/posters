@@ -127,21 +127,48 @@ dokumentuj TU dokładny kształt promptu i który obraz pełni jaką rolę (pers
 vs produkt) — to przenosi się wprost na `images.edit(image: [ref1, ref2],
 prompt: "...")`.
 
-### Dokładny przepis z sesji 2026-09-18 (do powtórzenia/przeniesienia na własne API)
+### Dokładny przepis z sesji 2026-09-18 — FINALNIE ZAAKCEPTOWANY ("super")
 
 1. Referencja #1 (rola: produkt) — `<Tytul>_thumb.jpg` naszego prawdziwego
    plakatu (NIE master PNG — za duży, >10MB; thumb ~200-300KB wystarcza).
 2. Referencja #2 (rola: persona) — wygenerowany portret postaci (np.
    `soul_cast` multi-view sheet).
-3. Prompt (pełna wersja użyta, sprawdzona pod kątem 3 trwałych zasad —
-   full-bleed, prawdziwy produkt, model): zaczynaj od "Photorealistic
-   UGC-style selfie of the woman from the second reference image... holding
-   up the exact framed poster from the first reference image... Reproduce
-   the artwork inside the frame exactly as in the first reference image —
-   [opisz konkretne cechy: scena, paleta, oświetlenie] — do not invent a
-   different scene." Potem PEŁEN cytat anti-passe-partout (patrz wyżej), potem
-   opis papieru 220gsm.
-4. Model: GPT Image 2.5 Sunburst. Rozdzielczość 2K, jakość High.
+3. Model: **GPT Image 2.5 Sunburst**. Rozdzielczość 2K, jakość High.
+4. Prompt (pełna zaakceptowana wersja, złożona iteracyjnie):
+
+> Photorealistic UGC-style selfie of the woman from the second reference
+> image, at home, holding up a SMALL framed poster print with both hands
+> close to her chest, showing it to the camera. IMPORTANT SIZE: the poster
+> is a modest 30x40cm print — about the size of a large magazine or a
+> laptop screen, clearly smaller than her torso, held comfortably close to
+> her body with both hands without stretching her arms wide or the frame
+> extending past her shoulders. Do NOT make it large or oversized.
+> Reproduce the artwork inside the frame exactly as in the first reference
+> image — [opisz konkretne cechy: scena, paleta, oświetlenie] — do not
+> invent a different scene or lighting. [PEŁEN cytat anti-passe-partout,
+> patrz sekcja full-bleed wyżej] CRITICAL paper quality: genuine thick
+> 220gsm fine-art poster print, rigid, flat, substantial weight, matte
+> non-reflective surface, held firmly flat with no bending, sagging or
+> curling — NOT thin copy paper. Natural indoor daylight, cozy modern
+> living room background, authentic phone-camera look, candid genuine
+> smile.
+
+**Kluczowa poprawka z tej sesji: jawnie podaj rozmiar w cm i porównanie do
+znanego przedmiotu (magazyn/laptop)** — bez tego model domyślnie generuje
+plakat wyglądający jak 70×100 (za duży względem osoby, nienaturalna skala).
+"30x40cm... nie większy niż tors... blisko ciała, bez rozciągania ramion" to
+sprawdzony, działający fragment do kopiowania przy każdym kolejnym promptcie
+z osobą trzymającą plakat.
+
+### Odrzucona wersja bez ramy — do poprawy w kolejnej sesji
+
+Próba "leżący płasko / rozwijany rękami na dywanie, mały naturalny zawinięcie
+tylko przy dłoniach" (inspirowana referencjami usera: plakaty leżące płasko
+na dywanie/kocu, dłonie rozwijające rolkę) była w trakcie generowania pod
+koniec sesji — sprawdzić wynik w kolejnej sesji, zanim uzna się tę pozę za
+gotową technikę. Zasada z odrzuconego wcześniej wariantu wciąż obowiązuje:
+plakat bez ramy NIGDY nie stoi samodzielnie oparty o ścianę — tylko leży
+płasko, jest trzymany, albo ma widoczne podparcie (dłonie/rolka).
 
 ## TRWAŁA ZASADA #3 — model obrazu: WYŁĄCZNIE GPT Image 2.5 Sunburst/Flare (2026-09-18, ZAMKNIĘTE — nie dyskutować ponownie)
 
