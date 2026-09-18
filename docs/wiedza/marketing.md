@@ -36,23 +36,40 @@ Pełny przepis (scope tokenu, Page/IG ID, hosting na jsDelivr, FB video + IG
 posta przed publikacją, nigdy sam tekst — użytkownik chce to zaakceptować
 wizualnie, nie na podstawie opisu.
 
-## Before/After wideo — AI-generowane przejście ODRZUCONE (2026-09-18)
+## Before/After / UGC wideo — WCIĄŻ W TRAKCIE UCZENIA SIĘ, nie loguj jako gotowa technika dopóki nie zadziała
 
-Próba: `openai/gpt-image-2.5/sunburst` (fal.ai) wygenerował realistyczną pustą
-ścianę, potem `bytedance/seedance-2.5/image-to-video` (fal.ai, `image_url` =
-pusta ściana, `end_image_url` = gotowy packshot z plakatem na ścianie) miał
-zrobić płynne "przejście" między nimi. **Wynik odrzucony przez usera: wygląda
-sztucznie, "jakaś tragedia", widać że to AI-przejście.** Nie próbować
-ponownie tej samej metody (model generuje WŁASNY pomysł na przejście między
-klatkami — nie da się tego kontrolować na tyle precyzyjnie, żeby wyglądało
-jak prawdziwe ujęcie).
+**Zasada:** ten format (AI-generowane ujęcie "plakat pojawia się / zostaje
+odebrany / wisi na ścianie") wymaga jeszcze dużo prób — NIE zapisuj żadnej
+konkretnej konfiguracji jako "sprawdzoną technikę" dopóki wynik nie zostanie
+faktycznie zaakceptowany. Poniżej log prób, żeby nie powtarzać dokładnie
+tych samych błędów, ale żadna z nich NIE jest jeszcze wzorcem do kopiowania.
 
-Wniosek: do Before/After NIE używać AI do generowania samego przejścia.
-Następnym razem spróbować: (a) prosty cut/crossfade montowany ręcznie (nie
-przez model wideo) z dwóch gotowych zdjęć, (b) albo faktyczne nagranie wideo
-(prawdziwa kamera) jeśli dostępne, (c) albo zrezygnować z wideo dla tego
-formatu i zostać przy statycznym zdjęciu przed/po (split lub karuzela 2
-slajdów) — to była pierwotna, bezpieczniejsza propozycja w planie.
+Próby do tej pory:
+- **2026-09-17, Higgsfield UGC** (empty wall → 50×70 poster pickup →
+  framed): pierwsza wersja miała sztuczną taśmę/taping, kłóciła się z
+  "autentycznością" UGC — usunięta z publikacji. Scena poprawiona (bez
+  pokazywania mocowania/rozpakowania), przełączono model na Seedance 2.5 w
+  trakcie — wynik tamtej konkretnej próby nie został zapisany w pamięci
+  sesji (nie potwierdzone czy zaakceptowany).
+- **2026-09-17, Veo 3.1**: odrzucone — **papier/marginesy wyszły źle**
+  (grubość/wygląd papieru nierealistyczny), nie kwestia samego przejścia.
+- **2026-09-18, fal.ai `bytedance/seedance-2.5/image-to-video`**
+  (`image_url`=wygenerowana pusta ściana, `end_image_url`=gotowy packshot):
+  odrzucone — user: "jakaś tragedia, żadnych AI przejść", wygląda sztucznie.
+
+**Wspólny wątek:** za każdym razem inny konkretny problem (taśma, papier,
+teraz całe przejście) — to nie jeden łatwy bug do naprawienia, tylko obszar
+wymagający realnego treningu/iteracji nad promptami i doborem modeli. Nie
+traktować kolejnej próby jako "na pewno się uda" — testować małymi krokami,
+pokazywać user każdy wynik przed jakąkolwiek dalszą pracą nad nim.
+
+Gdy coś W KOŃCU zadziała i zostanie zaakceptowane: dopiero wtedy opisać tu
+dokładną konfigurację (model, dokładny prompt, parametry) jako referencyjną
+technikę do powtarzania.
+
+Bezpieczna alternatywa na czas nauki: statyczne zdjęcie przed/po (bez wideo,
+zero ryzyka sztucznego efektu) — użyte zamiast wideo, dopóki technika wideo
+nie dojrzeje.
 
 ## TODO do uzupełnienia tutaj
 
