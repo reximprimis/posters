@@ -4,6 +4,7 @@ Automated system to generate print-ready posters in 16+ categories using AI.
 
 ## Operational Docs
 
+- **Baza wiedzy operacyjnej (pipeline, Shopify, zestawy, marketing): `docs/wiedza/README.md`** — zaczynaj tutaj.
 - Frame + thumb + PDF workflow: `docs/FRAME_THUMB_PDF_FLOW.md`
 - Application versioning: `docs/VERSIONING.md`
 

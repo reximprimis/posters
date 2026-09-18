@@ -37,8 +37,12 @@ const sharp = require('sharp');
 
 const FRAME_COLOR = '#1a1a1a';
 const FRAME_CM = 1.1;
-const GAP_HERO_CM = 2.2;
-const GAP_STACK_CM = 1.6;
+// Musi zgadzac sie z tekstem w opisie produktu ("leaving 3-5 cm between
+// frames" / "odstep 3-5 cm miedzy ramami", src/galleryDescription.js) —
+// klient odtwarzajacy uklad z opisu zmierzy realny odstep, wiec kod i tekst
+// nie moga sie rozjezdzac. 4cm = srodek zadeklarowanego zakresu.
+const GAP_HERO_CM = 4;
+const GAP_STACK_CM = 4;
 const MARGIN_CM = 3.5;
 // Cien pod arkuszem BEZ ramy — wezszy niz cien pod rama, bo sugeruje lezacy
 // papier, a nie uniesiona, cięzka oprawe. Ten sam zabieg co "arkusze"
@@ -307,7 +311,7 @@ async function buildGalleryInterior(items, outputPath, opts) {
   const calkowiteHcm = ukladHcm + MARGIN_CM * 2 + FRAME_CM * 4.4;
 
   const pxPerCm = Math.min(zoneWpx / calkowiteWcm, zoneHpx / calkowiteHcm);
-  const wynik = await skladajUklad(items, pxPerCm, null, true);
+  const wynik = await skladajUklad(items, pxPerCm, null, true, opts.frameColor);
 
   const zoneX = Math.round(scene.zone.x * meta.width);
   const zoneY = Math.round(scene.zone.y * meta.height);
