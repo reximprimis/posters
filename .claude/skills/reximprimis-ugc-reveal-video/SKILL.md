@@ -1,11 +1,11 @@
 ---
 name: reximprimis-ugc-reveal-video
-description: Use when generating an AI UGC-style still photo (person holding/showing a REXIMPRIMIS poster, framed or unframed) for social content, via Higgsfield. TWO PROVEN recipes as of 2026-09-18 — see below. Video (reveal/transition) is still unsolved — read the failure log before attempting that.
+description: Use when generating an AI UGC-style still photo or short video (person holding/showing a REXIMPRIMIS poster, framed or unframed) for social content, via Higgsfield. Stills AND short image-to-video clips both have proven recipes as of 2026-09-18 — see below.
 ---
 
-# REXIMPRIMIS UGC content: persona + product photo
+# REXIMPRIMIS UGC content: persona + product photo/video
 
-## Status: STILL IMAGES SOLVED, 2 recipes (2026-09-18) — video still unsolved
+## Status: STILL IMAGES SOLVED (2 recipes) + VIDEO SOLVED (image-to-video, 2026-09-18)
 
 User explicitly accepted TWO results on 2026-09-18: framed+held ("super
 wyszło dobrze") and unframed+flat-lying ("to jest ok zaakceptowane
@@ -28,9 +28,12 @@ full-bleed/no-passe-partout/real-artwork language IDENTICAL across
 variations — those are the parts that took multiple rejected iterations to
 get right, don't re-litigate them.
 
-Video (a still turning into a reveal/transition/unboxing clip) is a
-SEPARATE, still-unsolved problem — see "Why this is hard" below. Don't
-assume solving stills also solved video; the failure modes were different.
+Video: see "VIDEO — PROVEN TECHNIQUE" below. Solved 2026-09-18 by abandoning
+the "reveal/transition" idea entirely (that's what failed 3 times — see
+"Why earlier video attempts failed") and instead animating an ALREADY-
+ACCEPTED still with minimal, subtle motion via Higgsfield's "Turn to video"
+(Kling 3.0, image-to-video). Not a reveal, not an unboxing, not a scene
+transition — just the existing photo very slightly coming alive.
 
 Also worth evaluating before assuming Higgsfield is the only option: the
 user has a local **SimpliGen** app (`mcp__simpligen__*` tools) with a
@@ -52,53 +55,103 @@ on a table/floor, (b) held by a person (hands provide the support), or
 (c) pinned/clipped to something. Never "self-standing" unless it's actually
 framed/rigid-backed.
 
-## Why this is hard
+## VIDEO — PROVEN TECHNIQUE (2026-09-18)
 
-Every attempt so far has failed for a DIFFERENT specific reason — not one
-recurring bug:
+User accepted two video results the same day both stills were finalized:
+the unframed flat-lay ("akceptuję" for the mandala reel) and the framed
+held-in-chest shot ("akceptuję" for the Winter Forest reel). Both used the
+exact same method — apply it as-is to any other already-accepted still.
+
+**The method:**
+1. Start from an ALREADY-ACCEPTED still from this skill's still-image
+   recipes (framed or unframed) — never a fresh/unvetted image. The still
+   must already pass full-bleed/real-product/scale checks before you
+   animate it; video does not fix a bad still.
+2. Open it in Higgsfield asset detail view and click **"Turn to video"** —
+   this lands on `https://higgsfield.ai/ai/video` (Create Video tab) with
+   the still pre-loaded as the start frame, model **Kling 3.0**.
+3. Clear whatever leftover prompt is in the textbox (the field often has
+   stale text from a previous unrelated project — always check and replace,
+   don't append).
+4. Write a MINIMAL-MOTION prompt, not a transition/reveal/story prompt.
+   This is the key insight that made it work where 3 prior attempts failed:
+   ask for the photo to *almost* stay still with one small natural motion,
+   never a scene change, unboxing, or camera move that reads as "effect".
+5. Generate (30 credits, ~5.0s @ 4K, 9:16, audio, takes ~2-3 min — poll
+   with screenshots every ~10s, don't resubmit while "Generating").
+6. Download via the panel download icon (top-right of the video player,
+   not the "..." menu) — it saves to the user's real Chrome Downloads
+   folder. Copy it into `scratchpad/social_weekend/` and send with
+   `SendUserFile` before reporting it as done — never describe a video
+   result in words only.
+
+**Accepted prompt template — unframed/flat-lay variant** (used on the
+Golden Mandala Bloom still):
+
+> Subtle, realistic overhead product video, almost still. A poster print
+> lies completely flat on a soft cream rug, a woman's hand resting on one
+> corner. The camera holds an almost static overhead angle with only a
+> very slight, slow, natural drift, like a handheld phone held steady.
+> Soft window daylight shifts very gently, shadows move subtly as if from
+> a passing cloud. The hand makes one small, natural motion: fingers
+> gently press down then relax, as if smoothing the print. The poster
+> paper itself stays perfectly flat, rigid and unmoving the entire time -
+> no curling, no lifting, no flapping, no bending. No camera zoom, no
+> cuts, no text, no watermark. Authentic phone-camera look, like a live
+> photo, not an obvious AI effect.
+
+**Accepted prompt template — framed/held variant** (used on the Winter
+Forest in Snow framed still):
+
+> Subtle, realistic UGC-style selfie video, almost still. A woman holds a
+> small framed poster print close to her chest with both hands, smiling
+> gently at the camera, exactly as in the reference image. The camera
+> holds an almost static handheld angle with only a very slight, slow,
+> natural sway, like a real phone held in one hand. Her expression shifts
+> very slightly and naturally - a soft blink, a small genuine smile
+> forming. The frame in her hands stays perfectly still and steady, held
+> firmly and confidently, no shaking, no tilting, no change in size or
+> position relative to her body. Soft indoor daylight flickers very
+> gently. No camera zoom, no cuts, no text, no watermark. Authentic
+> phone-camera look, like a live photo, not an obvious AI effect.
+
+**Pattern to copy for new variants**: keep the "almost static camera / one
+small natural motion / [the poster or frame] stays perfectly rigid and
+unmoving / no camera zoom, no cuts, no text, no watermark / authentic
+phone-camera look, not an obvious AI effect" skeleton — only swap in the
+specific pose/scene description and which single element gets the "one
+small natural motion" (hand for flat-lay, face/expression for held-in-hands).
+
+**Why this worked where 3 prior attempts failed**: every earlier attempt
+tried to generate a STORY (reveal, unboxing, before→after transition) —
+see "Why earlier video attempts failed" below for the specifics. A model
+generating a story has to invent new content each time, and that's exactly
+where "obvious AI effect" artifacts crept in. Asking for near-stillness
+instead sidesteps the problem: there's almost nothing left to hallucinate.
+
+**5s is short but usable** ("krótki ale do ujęcia się nada", user
+2026-09-18) — treat each clip as ONE shot in a longer sequence/carousel/
+reel, not a standalone finished video. Don't try to stretch duration or
+add a story to a single clip; cut multiple such clips together instead if
+a longer piece is needed.
+
+**Before spending credits**: confirm cost with the user before generating
+(30 credits ≈ real money) unless they've already said to proceed without
+asking each time — the Generate button shows the credit cost, read it back
+to the user or just state it plainly before clicking.
+
+## Why earlier video attempts failed (kept for reference — don't repeat)
+
+Every attempt before 2026-09-18 tried to generate a STORY/transition, and
+failed for a different specific reason each time:
 - Higgsfield UGC (2026-09-17): fake-looking tape/mounting broke authenticity.
 - Veo 3.1 (2026-09-17): paper/margins rendered unrealistically.
 - fal.ai `bytedance/seedance-2.5/image-to-video`, start→end frame
   (2026-09-18): whole transition read as an obvious "AI effect".
 
-Treat each new attempt as a genuine experiment, not a variation on a known
-formula. Budget for several rejected iterations.
-
-## Working pipeline shape (tools, not a validated result)
-
-1. Generate a photorealistic "before" still (empty wall, matching room style
-   used in `posters/_galerie/*/` salon shots) — fal.ai `search_models` /
-   `recommend_model` for text-to-image, currently `openai/gpt-image-2.5/sunburst`
-   (~$1/image). Reuse the room description in
-   `src/galleryInteriorAI.js` (`SCENY['living-room']`) for visual consistency
-   with existing product photography.
-2. For a video attempt: `search_models`/`recommend_model` (category
-   `image-to-video`) — do not assume Seedance is right for the next attempt,
-   it already failed once. Get pricing (`get_pricing`) and schema
-   (`get_model_schema`) before running.
-3. Upload local/generated images to fal.ai's CDN with `upload_file` (accepts
-   a `url` directly — no separate "import" step needed; Higgsfield's
-   `media_import_url` referenced in its own tool docs is NOT available in
-   this environment, don't rely on it).
-4. Long-running video jobs return `status: "processing"` — poll with
-   `check_job` (respect `poll_after_seconds`), fetch with `get_job_result`.
-   Don't resubmit while a job is in flight — that starts a new billable job.
-5. Download the result locally (`scratchpad/social_weekend/` or similar) and
-   send it to the user with `SendUserFile` before any further work — never
-   describe a video result in words only.
-
-## Before spending credits
-
-Always confirm with the user before generating (video generation costs
-real money) unless they've already said to proceed without asking each
-time. Show cost via `get_pricing`/`get_cost` when available.
-
-## When it finally works
-
-Replace this whole file's pipeline section with the exact accepted
-configuration (model, full prompt text, parameters) and remove the
-"unsolved" framing — this skill should describe the proven method once one
-exists, not the search for one.
+The fix wasn't a better prompt for any of these specific problems — it was
+abandoning the "story" premise entirely (see "VIDEO — PROVEN TECHNIQUE"
+above).
 
 ## ROZWIĄZANE: jak wstrzyknąć nasz prawdziwy plik produktu (2026-09-18)
 

@@ -142,5 +142,16 @@ review przy projektowaniu.
 Po testach z tego dnia: user potwierdził wynik jako "super wyszło dobrze",
 w tym konkretnie ramę/full-bleed jako OK. Pełny przepis (model, referencje,
 prompt) w `.claude/skills/reximprimis-ugc-reveal-video/SKILL.md` — status
-zmieniony z "unsolved" na "PROVEN dla zdjęć statycznych". Wideo (przejście/
-reveal) NADAL nierozwiązane, osobny problem.
+zmieniony z "unsolved" na "PROVEN dla zdjęć statycznych".
+
+## UGC wideo — ROZWIĄZANE (2026-09-18)
+
+Po 3 nieudanych próbach z "historią"/przejściem (taśma, papier, sztuczny
+AI-transition — patrz log w SKILL.md) rozwiązanie okazało się odwrotnością
+problemu: zamiast generować przejście/reveal, animować JUŻ ZAAKCEPTOWANE
+zdjęcie statyczne z minimalnym ruchem (Higgsfield "Turn to video" →
+Kling 3.0, image-to-video, ~5s @ 4K, 30 kredytów). User zaakceptował 2
+wyniki tego dnia (plakat płasko na dywanie + plakat w ramie trzymany).
+Dokładny przepis (prompty, workflow) w SKILL.md, sekcja "VIDEO — PROVEN
+TECHNIQUE". Kling 3.0 dobrze radzi sobie w ~5s zakresie — traktować jako
+pojedyncze ujęcie w dłuższej sekwencji/karuzeli, nie samodzielne wideo.
